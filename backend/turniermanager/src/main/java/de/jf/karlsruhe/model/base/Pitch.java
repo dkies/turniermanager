@@ -16,16 +16,11 @@ public class Pitch {
 
 	@Id
 	@GeneratedValue(generator = "UUID")
-	@GenericGenerator(
-			name = "UUID",
-			strategy = "org.hibernate.id.UUIDGenerator"
-	)
-	private UUID id;
+	private UUID id = UUID.randomUUID();
 
 	private String name;
 
-	@ManyToMany
-	@ToString.Exclude
-	@EqualsAndHashCode.Exclude
-	private List<AgeGroup> ageGroups;
+	@OneToOne
+	@JoinColumn(name = "age_group_id")
+	private AgeGroup ageGroup;
 }
