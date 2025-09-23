@@ -17,19 +17,9 @@ public class GameSettings {
 
 	@Id
 	@GeneratedValue(generator = "UUID")
-	@GenericGenerator(
-			name = "UUID",
-			strategy = "org.hibernate.id.UUIDGenerator"
-	)
-	private UUID id;
+	private UUID id = UUID.randomUUID();
 
 	private LocalDateTime startTime;
 	private int breakTime;
 	private int playTime;
-
-	// Beziehung zu Tournament (One-to-One)
-	//@OneToOne(mappedBy = "gameSettings", cascade = CascadeType.ALL)
-	//@ToString.Exclude // Verhindert rekursive Schleifen in toString()
-	//@EqualsAndHashCode.Exclude // Beziehung wird von Equals/HashCode ausgeschlossen
-	//private Tournament tournament;
 }

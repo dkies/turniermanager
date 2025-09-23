@@ -1,7 +1,6 @@
 package de.jf.karlsruhe.logic;
 
 import de.jf.karlsruhe.controller.GameController;
-import de.jf.karlsruhe.model.base.Game;
 import de.jf.karlsruhe.model.base.Pitch;
 import de.jf.karlsruhe.model.base.Team;
 import de.jf.karlsruhe.model.repos.GameRepository;

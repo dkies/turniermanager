@@ -1,27 +1,7 @@
 package de.jf.karlsruhe.controller;
 
-import com.lowagie.text.*;
-import com.lowagie.text.Font;
-import com.lowagie.text.alignment.HorizontalAlignment;
-import com.lowagie.text.pdf.BaseFont;
-import com.lowagie.text.pdf.PdfWriter;
-import de.jf.karlsruhe.model.base.Game;
-import de.jf.karlsruhe.model.base.Round;
-import de.jf.karlsruhe.model.repos.GameRepository;
-import de.jf.karlsruhe.model.repos.RoundRepository;
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.awt.*;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.*;
-import java.util.List;
 
 @CrossOrigin(origins = "*")
 

@@ -1,21 +1,6 @@
 package de.jf.karlsruhe.controller;
 
-import de.jf.karlsruhe.model.base.AgeGroup;
-import de.jf.karlsruhe.model.base.Game;
-import de.jf.karlsruhe.model.base.League;
-import de.jf.karlsruhe.model.base.Round;
-import de.jf.karlsruhe.model.repos.AgeGroupRepository;
-import de.jf.karlsruhe.model.repos.RoundRepository;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 

@@ -1,4 +1,4 @@
-package de.jf.karlsruhe.model;
+package de.jf.karlsruhe.model.base;
 
 import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
@@ -12,6 +12,5 @@ import lombok.Setter;
 @Entity
 @NoArgsConstructor
 public class ScheduledBreak extends ScheduledEntity {
-    private String breakType;
     private String message;
 }

@@ -1,10 +1,12 @@
-package de.jf.karlsruhe.model;
+package de.jf.karlsruhe.model.base;
 
 import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
 
 @Getter
 @Setter
@@ -18,5 +20,8 @@ public class ScheduledGame extends ScheduledEntity {
 
     private long gameNumber;
 
+    @ManyToOne
+    @JoinColumn(name = "pitch_id")
+    private Pitch scheduledPitch;
 
 }

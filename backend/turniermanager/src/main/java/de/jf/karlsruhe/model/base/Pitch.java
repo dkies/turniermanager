@@ -20,7 +20,7 @@ public class Pitch {
 
 	private String name;
 
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(name = "age_group_id")
 	private AgeGroup ageGroup;
 }

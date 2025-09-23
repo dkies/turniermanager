@@ -17,11 +17,7 @@ public class League {
 
     @Id
     @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-            name = "UUID",
-            strategy = "org.hibernate.id.UUIDGenerator"
-    )
-    private UUID id;
+    private UUID id = UUID.randomUUID();
 
     private String name;
 

@@ -1,21 +1,6 @@
 package de.jf.karlsruhe.controller;
 
-import de.jf.karlsruhe.model.base.AgeGroup;
-import de.jf.karlsruhe.model.base.Game;
-import de.jf.karlsruhe.model.base.Pitch;
-import de.jf.karlsruhe.model.base.GameSettings;
-import de.jf.karlsruhe.model.repos.GameRepository;
-import de.jf.karlsruhe.model.repos.GameSettingsRepository;
-import de.jf.karlsruhe.model.repos.PitchRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.stereotype.Component;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Component
 public class PitchScheduler {
