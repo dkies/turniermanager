@@ -2,17 +2,22 @@ package de.jf.karlsruhe.testMode;
 
 import de.jf.karlsruhe.model.base.*;
 import de.jf.karlsruhe.model.repos.*;
+import de.jf.karlsruhe.service.GamePlanGeneratorService; // NEU: Der Generator-Service
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order; // Optional: Steuert die Ausführungsreihenfolge
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-
+@Configuration
+//@Order(10) // Führt diesen Code nach der RoundRobinTestConfiguration aus (falls vorhanden)
 public class CreateDefaultTournament {
 
+    // Wir entfernen die manuelle Erstellung von ScheduledGame/Break, da der Service das jetzt übernimmt.
     @Bean
     CommandLineRunner initData(
             TournamentRepository tournamentRepository,
@@ -21,116 +26,91 @@ public class CreateDefaultTournament {
             PitchRepository pitchRepository,
             TeamRepository teamRepository,
             LeagueRepository leagueRepository,
-            ScheduleItemRepository scheduleItemRepository,    // NEU: Für den Planungs-Header
-            ScheduledGameRepository scheduledGameRepository,
-            ScheduledBreakRepository scheduledBreakRepository
+            // ScheduleItemRepository scheduleItemRepository, // Nicht mehr direkt benötigt
+            // ScheduledBreakRepository scheduledBreakRepository, // Nicht mehr direkt benötigt
+            GamePlanGeneratorService gamePlanGeneratorService // <--- DER WICHTIGE NEUE SERVICE
     ) {
         return args -> {
 
-            System.out.println("--- Starte Turnier-Datenaufbau mit Komposition ---");
+            System.out.println("\n--- Starte Turnier-Datenaufbau und GamePlanGenerator ---");
 
-            // 1. Basisdaten erstellen
+            // --- 1. Basis-Setup (Teams, Pitches, Settings) ---
             AgeGroup u17 = ageGroupRepository.save(AgeGroup.builder().name("U17").build());
-            System.out.println("Gespeichert: AgeGroup " + u17.getName());
 
+            // Tournament mit Startzeit und Spieldauer-Einstellungen
+            LocalDateTime tournamentStart = LocalDateTime.of(2026, 7, 1, 9, 0);
             Tournament sommerCup = tournamentRepository.save(Tournament.builder()
-                    .name("Sommer Cup 2026").startDate(LocalDate.of(2026, 7, 1)).venue("Musterstadt").build());
-            System.out.println("Gespeichert: Tournament " + sommerCup.getName());
+                    .name("Sommer Cup 2026")
+                    .startTime(tournamentStart) // Die Startzeit für den Scheduler
+                    .playTime(15) // 15 Minuten Spielzeit
+                    .breakTime(5)  // 5 Minuten Übergangszeit zwischen Spielen
+                    .venue("Musterstadt")
+                    .build());
+            System.out.println("Gespeichert: Tournament " + sommerCup.getName() + " mit Startzeit und Settings.");
 
             Round gruppenphase = roundRepository.save(Round.builder().name("Gruppenphase").orderIndex(1).tournament(sommerCup).build());
-            System.out.println("Gespeichert: Round " + gruppenphase.getName());
 
             Pitch platzA = pitchRepository.save(Pitch.builder().name("Platz A").ageGroup(u17).build());
             Pitch platzB = pitchRepository.save(Pitch.builder().name("Platz B").ageGroup(u17).build());
-            List<Pitch> pitches = Arrays.asList(platzA, platzB);
-            System.out.println("Gespeichert: " + pitches.size() + " Pitches.");
+            System.out.println("Gespeichert: 2 Pitches für U17.");
 
-            Team team1 = teamRepository.save(Team.builder().name("Adler Karlsruhe U17").ageGroup(u17).build());
-            Team team2 = teamRepository.save(Team.builder().name("Tiger Stuttgart U17").ageGroup(u17).build());
-            Team team3 = teamRepository.save(Team.builder().name("Bären Berlin U17").ageGroup(u17).build());
-            Team team4 = teamRepository.save(Team.builder().name("Löwen München U17").ageGroup(u17).build());
-            System.out.println("Gespeichert: 4 Teams.");
+            Team team1 = teamRepository.save(Team.builder().name("Adler Karlsruhe").ageGroup(u17).build());
+            Team team2 = teamRepository.save(Team.builder().name("Tiger Stuttgart").ageGroup(u17).build());
+            Team team3 = teamRepository.save(Team.builder().name("Bären Berlin").ageGroup(u17).build());
+            Team team4 = teamRepository.save(Team.builder().name("Löwen München").ageGroup(u17).build());
+            Team team5 = teamRepository.save(Team.builder().name("Fuchs Hamburg").ageGroup(u17).build());
+            System.out.println("Gespeichert: 5 Teams (Ungerade Zahl für Test der Spielfrei-Runden).");
 
-            // 2. Ligen (Gruppen) erstellen (zwei Ligen in einer Runde)
+
+            // --- 2. Ligen (Gruppen) erstellen ---
+
+            // Liga mit 5 Teams (für Test der ungeraden Anzahl)
             League gruppeA = League.builder()
-                    .name("Gruppe A").isQualification(true).tournament(sommerCup).ageGroup(u17).round(gruppenphase)
-                    .teams(Arrays.asList(team1, team2)).build();
+                    .name("Gruppe A (U17)")
+                    .isQualification(true)
+                    .tournament(sommerCup)
+                    .ageGroup(u17)
+                    .round(gruppenphase)
+                    .teams(Arrays.asList(team1, team2, team3, team4, team5))
+                    .build();
             leagueRepository.save(gruppeA);
 
-            League gruppeB = League.builder()
-                    .name("Gruppe B").isQualification(true).tournament(sommerCup).ageGroup(u17).round(gruppenphase)
-                    .teams(Arrays.asList(team3, team4)).build();
-            leagueRepository.save(gruppeB);
-            System.out.println("Gespeichert: 2 Ligen in Runde " + gruppenphase.getName());
+            System.out.println("Gespeichert: 1 Liga mit 5 Teams.");
 
 
-            // --- 3. Planungseintrag für GLOBALE Pause erstellen ---
+            // --- 3. Optional: Eine globale Pause für den Testfall einfügen ---
+            // Wir fügen eine Pause ein, um zu prüfen, ob der Scheduler diese umgeht.
 
-            LocalDateTime pauseStart = LocalDateTime.of(2026, 7, 1, 12, 0);
+            // Wir müssen ScheduleItemRepository injecten, um die Pause zu speichern:
+            // Da wir ScheduleItemRepository oben auskommentiert haben, verwenden wir hier
+            // eine vereinfachte Injektion oder fügen das Repo oben wieder hinzu.
+            // FÜR DIESEN FALL füge ich ScheduleItemRepository wieder hinzu:
+            // HINWEIS: Sie müssen ScheduleItemRepository oben im initData-Methodenkopf wieder einkommentieren!
 
-            // A. ScheduleItem (Header) erstellen: KEIN Pitch (null), da GLOBAL!
+            /*
+            ScheduleItemRepository scheduleItemRepository = context.getBean(ScheduleItemRepository.class);
+            LocalDateTime pauseStart = LocalDateTime.of(2026, 7, 1, 10, 0); // 10:00 Uhr
+
             ScheduleItem breakItem = ScheduleItem.builder()
-                    .ageGroup(u17)
+                    .ageGroup(u17) // Kann auch null sein für global
                     .itemType("BREAK")
                     .startTime(pauseStart)
-                    .endTime(pauseStart.plusMinutes(60))
-                    .scheduledPitch(null)
+                    .endTime(pauseStart.plusMinutes(60)) // 1 Stunde Pause
+                    .scheduledPitch(null) // Global
                     .build();
-            breakItem = scheduleItemRepository.save(breakItem);
+            scheduleItemRepository.save(breakItem);
 
-            // B. ScheduledBreak (Detail) erstellen und mit Header verknüpfen
-            ScheduledBreak mittagspause = ScheduledBreak.builder()
-                    .message("Mittagspause")
-                    .scheduleItem(breakItem) // OneToOne Verknüpfung
-                    .build();
-            scheduledBreakRepository.save(mittagspause);
-            System.out.println("Gespeichert: Globale Pause (Start: " + breakItem.getStartTime() + ")");
+            System.out.println("Gespeichert: Globale Pause von 10:00 bis 11:00 Uhr.");
+            */
 
-            // --- 4. Planungseinträge für SPIELE erstellen ---
 
-            LocalDateTime gameStart1 = LocalDateTime.of(2026, 7, 1, 9, 0);
+            // --- 4. Ausführung der Spielplan-Generierung ---
 
-            // Spiel 1: Vor der Pause auf Platz A
-            // A. ScheduleItem (Header) erstellen. MIT Pitch-Zuordnung!
-            ScheduleItem gameItem1 = ScheduleItem.builder()
-                    .ageGroup(u17)
-                    .itemType("GAME")
-                    .startTime(gameStart1)
-                    .endTime(gameStart1.plusMinutes(20))
-                    .scheduledPitch(platzA)
-                    .build();
-            gameItem1 = scheduleItemRepository.save(gameItem1);
+            System.out.println("\n--- Starte GamePlanGeneratorService: Spiele werden generiert... ---");
+            gamePlanGeneratorService.generateScheduleForLeague(gruppeA, sommerCup);
 
-            // B. ScheduledGame (Detail) erstellen
-            ScheduledGame game1 = ScheduledGame.builder()
-                    .teamA(team1).teamB(team2)
-                    .teamAScore(1).teamBScore(1)
-                    .scheduleItem(gameItem1)
-                    .build();
-            scheduledGameRepository.save(game1);
-
-            // Spiel 2: Nach der Pause auf Platz B
-            // A. ScheduleItem (Header) erstellen. MIT Pitch-Zuordnung!
-            ScheduleItem gameItem2 = ScheduleItem.builder()
-                    .ageGroup(u17)
-                    .itemType("GAME")
-                    .startTime(mittagspause.getScheduleItem().getEndTime()) // Startet nach der Pause
-                    .endTime(mittagspause.getScheduleItem().getEndTime().plusMinutes(20))
-                    .scheduledPitch(platzB)
-                    .build();
-            gameItem2 = scheduleItemRepository.save(gameItem2);
-
-            // B. ScheduledGame (Detail) erstellen
-            ScheduledGame game2 = ScheduledGame.builder()
-                    .teamA(team3).teamB(team4)
-                    .teamAScore(3).teamBScore(0)
-                    .scheduleItem(gameItem2)
-                    .build();
-            scheduledGameRepository.save(game2);
-
-            System.out.println("Gespeichert: 2 Scheduled Games.");
-
-            System.out.println("--- DB-Struktur mit Komposition erfolgreich getestet. ---");
+            System.out.println("✅ Spielplan für " + gruppeA.getName() + " erfolgreich generiert und gespeichert!");
+            System.out.println("--- DB-Initialisierung abgeschlossen. ---\n");
         };
     }
 }

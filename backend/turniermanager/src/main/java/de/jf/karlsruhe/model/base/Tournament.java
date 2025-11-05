@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,13 +32,16 @@ public class Tournament {
     /**
      * Datum, an dem das Turnier beginnt
      */
-    private LocalDate startDate;
+    private LocalDateTime startTime;
 
     /**
      * Datum, an dem das Turnier endet
      */
     private LocalDate endDate;
 
+    private int breakTime;
+
+    private int playTime;
     /**
      * Optionale Beschreibung des Veranstaltungsorts
      */

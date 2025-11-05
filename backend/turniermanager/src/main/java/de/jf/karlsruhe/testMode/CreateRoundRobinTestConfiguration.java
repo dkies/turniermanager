@@ -13,7 +13,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-@Configuration
+//@Configuration
 public class CreateRoundRobinTestConfiguration {
 
     private static final AtomicLong teamCounter = new AtomicLong(1);

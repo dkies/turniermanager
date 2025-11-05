@@ -13,8 +13,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PitchRepository extends JpaRepository<Pitch, UUID>{
-//    @EntityGraph(attributePaths = "ageGroups")
-//    List<Pitch> findAll();
-//
-//    List<Pitch> findByAgeGroup(AgeGroup ageGroup);
+    List<Pitch> findByAgeGroup(AgeGroup ageGroup);
 }
