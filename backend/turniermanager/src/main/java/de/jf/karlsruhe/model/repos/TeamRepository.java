@@ -8,5 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface TeamRepository extends JpaRepository<Team, UUID> {
-    List<Team> findByAgeGroupId(UUID ageGroupId);
+    //List<Team> findByAgeGroupId(UUID ageGroupId);
 }

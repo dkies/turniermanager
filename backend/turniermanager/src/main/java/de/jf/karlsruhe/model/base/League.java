@@ -17,7 +17,7 @@ public class League {
 
     @Id
     @GeneratedValue(generator = "UUID")
-    private UUID id = UUID.randomUUID();
+    private UUID id;
 
     private String name;
 
@@ -50,11 +50,4 @@ public class League {
     @EqualsAndHashCode.Exclude
     private Round round;
 
-    public void addTeam(Team team) {
-        if (this.teams == null) {
-            this.teams = new ArrayList<>();
-        }else{
-            this.teams.add(team);
-        }
-    }
 }

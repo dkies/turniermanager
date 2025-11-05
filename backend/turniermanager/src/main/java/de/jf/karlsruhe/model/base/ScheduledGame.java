@@ -1,27 +1,35 @@
 package de.jf.karlsruhe.model.base;
 
-import jakarta.persistence.Entity;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.JoinColumn;
+import jakarta.persistence.*;
+import lombok.*;
 
-@Getter
-@Setter
-@AllArgsConstructor
+import java.util.UUID;
+
 @Entity
+@Data
+@Builder
 @NoArgsConstructor
-public class ScheduledGame extends ScheduledEntity {
+@AllArgsConstructor
+public class ScheduledGame {
 
+    @Id
+    @GeneratedValue(generator = "UUID")
+    private UUID id; // Das ist die Game-ID
+
+    // --- Spiel-spezifische Daten ---
     private int teamAScore;
     private int teamBScore;
 
-    private long gameNumber;
+    @ManyToOne
+    @JoinColumn(name = "team_a_id")
+    private Team teamA;
 
     @ManyToOne
-    @JoinColumn(name = "pitch_id")
-    private Pitch scheduledPitch;
+    @JoinColumn(name = "team_b_id")
+    private Team teamB;
 
+    // --- Verknüpfung zum Planungs-Header ---
+    @OneToOne // EINE Spiel-Instanz gehört zu EINEM Planungs-Eintrag
+    @JoinColumn(name = "schedule_item_id")
+    private ScheduleItem scheduleItem;
 }

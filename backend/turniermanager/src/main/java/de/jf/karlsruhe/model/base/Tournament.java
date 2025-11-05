@@ -2,10 +2,9 @@ package de.jf.karlsruhe.model.base;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import org.hibernate.annotations.GenericGenerator;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,22 +23,42 @@ public class Tournament {
     )
     private UUID id;
 
+    /**
+     * Name des gesamten Events (z.B. "Sommer Cup 2025")
+     */
     private String name;
 
+    /**
+     * Datum, an dem das Turnier beginnt
+     */
+    private LocalDate startDate;
+
+    /**
+     * Datum, an dem das Turnier endet
+     */
+    private LocalDate endDate;
+
+    /**
+     * Optionale Beschreibung des Veranstaltungsorts
+     */
+    private String venue;
+
+    // --- Beziehungen (One-to-Many) ---
+
+    /**
+     * 1. Verknüpfung zu den Ligen/Gruppen (ONE Tournament has MANY Leagues)
+     */
+    // 'mappedBy' verweist auf das Feld 'tournament' in der League-Entität
+    // Cascade.ALL stellt sicher, dass Ligen gelöscht werden, wenn das Turnier gelöscht wird
     @OneToMany(mappedBy = "tournament", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ToString.Exclude // Verhindert rekursive Schleifen in toString()
-    @EqualsAndHashCode.Exclude // Beziehung wird von Equals/HashCode ausgeschlossen
+    @ToString.Exclude
+    private List<League> leagues;
+
+    /**
+     * 2. Verknüpfung zu den Phasen (ONE Tournament has MANY Rounds)
+     */
+    @OneToMany(mappedBy = "tournament", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private List<Round> rounds;
-
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "game_settings_id", referencedColumnName = "id")
-    private GameSettings gameSettings;
-
-    public void addRound(Round round) {
-        if (this.rounds == null) {
-            this.rounds = new ArrayList<>();
-        }
-        this.rounds.add(round);
-    }
 
 }

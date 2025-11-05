@@ -1,20 +1,7 @@
 package de.jf.karlsruhe.controller;
 
-import de.jf.karlsruhe.model.base.*;
-import de.jf.karlsruhe.model.repos.GameRepository;
-import de.jf.karlsruhe.model.repos.GameSettingsRepository;
-import de.jf.karlsruhe.model.repos.TournamentRepository;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.*;
 
 @CrossOrigin(origins = "*")
 

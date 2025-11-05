@@ -24,13 +24,13 @@ public class Team {
 
     private String name;
 
-    // Beziehung zu einer Altersgruppe
+
     @ManyToOne
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private AgeGroup ageGroup;
 
-    @ManyToMany(mappedBy = "teams")  // Rückbeziehung, da "teams" in League die Many-to-Many-Seite ist
+    @ManyToMany(mappedBy = "teams")
     @ToString.Exclude
     private List<League> leagues;
 

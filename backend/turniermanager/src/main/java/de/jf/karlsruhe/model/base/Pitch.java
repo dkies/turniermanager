@@ -16,7 +16,7 @@ public class Pitch {
 
 	@Id
 	@GeneratedValue(generator = "UUID")
-	private UUID id = UUID.randomUUID();
+	private UUID id;
 
 	private String name;
 

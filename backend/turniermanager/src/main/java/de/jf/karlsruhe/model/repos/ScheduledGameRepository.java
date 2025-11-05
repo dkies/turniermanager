@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface GameRepository extends JpaRepository<ScheduledGame, UUID> {
-    Optional<ScheduledGame> findTopByScheduledPitchOrderByEndTimeDesc(Pitch pitch);
+public interface ScheduledGameRepository extends JpaRepository<ScheduledGame, UUID> {
+    //Optional<ScheduledGame> findTopByScheduledPitchOrderByEndTimeDesc(Pitch pitch);
     //List<Game> findByRound(Round round);
 
     //@Query("SELECT g FROM Game g WHERE g.round IN :rounds")

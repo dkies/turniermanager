@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,37 +14,40 @@ import java.util.UUID;
 @Builder
 public class Round {
 
-	@Id
-	@GeneratedValue(generator = "UUID")
-	@GenericGenerator(
-			name = "UUID",
-			strategy = "org.hibernate.id.UUIDGenerator"
-	)
-	private UUID id;
+    @Id
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(
+            name = "UUID",
+            strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    private UUID id;
 
-	private boolean active;
+    /**
+     * Name der Phase (z.B. "Gruppenphase", "Viertelfinale", "Finale")
+     */
+    private String name;
 
-	private String name;
+    /**
+     * Die Reihenfolge der Runde im Turnier (z.B. 1 für Gruppenphase, 4 für Halbfinale)
+     */
+    private int orderIndex;
 
-	@OneToMany(mappedBy = "round", cascade = CascadeType.ALL, orphanRemoval = true)
-	@ToString.Exclude
-	@EqualsAndHashCode.Exclude
-	private List<League> leagues;
+    // --- Beziehungen ---
 
-	@OneToMany(mappedBy = "round", cascade = CascadeType.ALL, orphanRemoval = true)
-	@ToString.Exclude
-	@EqualsAndHashCode.Exclude
-	private List<Game> games;
+    /**
+     * 1. Verknüpfung zum Turnier (One Round belongs to ONE Tournament)
+     */
+    @ManyToOne
+    @JoinColumn(name = "tournament_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Tournament tournament;
 
-	public void addGames(List<Game> newGames) {
-		if (this.games == null) {
-			this.games = new ArrayList<>();
-		}
-		this.games.addAll(newGames);
-	}
-
-	@ManyToOne
-	@JoinColumn(name = "tournament_id")
-	private Tournament tournament;
-
+    /**
+     * 2. Verknüpfung zu den Ligen (ONE Round has MANY Leagues/Groups)
+     */
+    // Dies ist die Gegenseite der Many-to-One in League
+    @OneToMany(mappedBy = "round", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    private List<League> leagues;
 }
