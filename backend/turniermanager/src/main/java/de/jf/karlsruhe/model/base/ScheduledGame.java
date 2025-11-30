@@ -1,8 +1,8 @@
 package de.jf.karlsruhe.model.base;
 
+import de.jf.karlsruhe.model.enums.GameStatus;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.util.UUID;
 
 @Entity
@@ -27,6 +27,10 @@ public class ScheduledGame {
     @ManyToOne
     @JoinColumn(name = "team_b_id")
     private Team teamB;
+
+    @Enumerated(EnumType.STRING) // Speichert den Enum-Namen als String in der DB
+    @Builder.Default // Wird beim Bauen automatisch gesetzt, falls nicht explizit angegeben
+    private GameStatus status = GameStatus.SCHEDULED;
 
     // --- Verknüpfung zum Planungs-Header ---
     @OneToOne // EINE Spiel-Instanz gehört zu EINEM Planungs-Eintrag

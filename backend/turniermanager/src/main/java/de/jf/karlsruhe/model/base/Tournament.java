@@ -39,9 +39,9 @@ public class Tournament {
      */
     private LocalDate endDate;
 
-    private int breakTime;
+    private int breakTimeInSeconds;
 
-    private int playTime;
+    private int playTimeInSeconds;
     /**
      * Optionale Beschreibung des Veranstaltungsorts
      */

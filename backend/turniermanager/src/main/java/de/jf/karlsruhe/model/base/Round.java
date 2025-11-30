@@ -1,5 +1,6 @@
 package de.jf.karlsruhe.model.base;
 
+import de.jf.karlsruhe.model.enums.RoundType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -26,6 +27,9 @@ public class Round {
      * Name der Phase (z.B. "Gruppenphase", "Viertelfinale", "Finale")
      */
     private String name;
+
+    @Enumerated(EnumType.STRING)
+    private RoundType roundType;
 
     /**
      * Die Reihenfolge der Runde im Turnier (z.B. 1 für Gruppenphase, 4 für Halbfinale)
