@@ -3,6 +3,7 @@ package de.jf.karlsruhe.service;
 import de.jf.karlsruhe.model.base.*;
 import de.jf.karlsruhe.model.dto.TeamStats;
 import de.jf.karlsruhe.model.enums.GameStatus;
+import de.jf.karlsruhe.model.enums.RoundType;
 import de.jf.karlsruhe.model.repos.*;
 import de.jf.karlsruhe.util.RoundRobinScheduler;
 import jakarta.transaction.Transactional;
@@ -22,6 +23,8 @@ public class GamePlanGeneratorService {
     private final ScheduledGameRepository scheduledGameRepository;
     private final PitchRepository pitchRepository;
     private final LeagueRepository leagueRepository;
+    private final RoundRepository roundRepository;
+    private final TournamentRepository tournamentRepository;
 
     /**
      * Sammelt die nächstverfügbare Startzeit für alle Pitches einer Altersgruppe,
@@ -188,11 +191,63 @@ public class GamePlanGeneratorService {
                 .collect(Collectors.toList());
     }
 
+    private void createEqualLeagues(AgeGroup ageGroup, int maxTeamsPerLeague, Tournament tournament, Round round, List<Team> teamsToDivide) {
+        int totalTeams = teamsToDivide.size();
+        int numberOfLeagues = (int) Math.ceil((double) totalTeams / maxTeamsPerLeague);
 
+        List<League> leagues = new java.util.ArrayList<>();
+        for (int i = 0; i < numberOfLeagues; i++) {
+            // Generieren Sie Gruppennamen A, B, C, ...
+            leagues.add(League.builder()
+                    .name(String.format("Gruppe %s (%s)", (char) ('A' + i), ageGroup.getName()))
+                    .isQualification(false)
+                    .tournament(tournament)
+                    .ageGroup(ageGroup)
+                    .round(round)
+                    .teams(new java.util.ArrayList<>()) // Wichtig: Leere, manipulierbare Liste initialisieren
+                    .build());
+        }
 
+        int leagueIndex = 0;
+        HashMap<League, Integer> numberOfTeamsPerLeague = new HashMap<>();
+        for (Team team : teamsToDivide) {
+            League currentLeague = leagues.get(leagueIndex);
+            Integer value = numberOfTeamsPerLeague.get(currentLeague);
+            if (value == null) {
+                numberOfTeamsPerLeague.put(currentLeague, 1);
+            } else {
+                value += 1;
+                numberOfTeamsPerLeague.put(currentLeague, value);
+            }
+            leagueIndex = (leagueIndex + 1) % leagues.size();
+        }
 
+        Queue<Team> teamsQueue = new LinkedList<>(teamsToDivide);
+        for (League league : numberOfTeamsPerLeague.keySet()) {
+            int i = numberOfTeamsPerLeague.get(league);
+            for (int j = 0; j < i; j++) {
+                Team poll = teamsQueue.poll();
+                league.getTeams().add(poll);
+            }
+        }
 
+        round.setLeagues(leagues);
+        tournament.getRounds().add(round);
+    }
 
+    @Transactional
+    public void endQualification(int maxTeamsPerLeague, String roundName) {
+        Tournament tournament = tournamentRepository.findAll().getFirst();
+        if (tournament == null) return;
+        Round finalPhase = roundRepository.save(Round.builder().name(roundName).orderIndex(2).roundType(RoundType.FINAL_STAGE).tournament(tournament).build());
+        List<League> leagues = leagueRepository.findAll();
+        for (League league : leagues) {
+            List<Team> rankedTeams = rankTeamsByPerformance(league);
+            createEqualLeagues(league.getAgeGroup(), maxTeamsPerLeague, tournament, finalPhase, rankedTeams);
+            generateScheduleForLeague(league,tournament);
+        }
+
+    }
 
 
 

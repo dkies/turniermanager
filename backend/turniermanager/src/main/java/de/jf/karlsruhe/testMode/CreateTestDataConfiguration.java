@@ -79,7 +79,7 @@ public class CreateTestDataConfiguration {
 
             // --- SETUP CODE ---
             LocalDateTime tournamentStart = LocalDateTime.of(2026, 7, 1, 9, 0);
-            Tournament sommerCup = tournamentRepository.save(Tournament.builder().name("Sommer Cup 2026").startTime(tournamentStart).playTimeInSeconds(600).breakTimeInSeconds(300).venue("Musterstadt").build());
+            Tournament sommerCup = tournamentRepository.save(Tournament.builder().name("Sommer Cup 2026").startTime(tournamentStart).playTimeInSeconds(600).breakTimeInSeconds(300).build());
             Round gruppenphase = roundRepository.save(Round.builder().name("Gruppenphase").orderIndex(1).roundType(RoundType.QUALIFICATION).tournament(sommerCup).build());
 
             // A) SETUP FÜR U17
@@ -114,4 +114,5 @@ public class CreateTestDataConfiguration {
             dataCompletionService.completeGamesRandomly(gruppeB_U13);
         };
     }
+
 }

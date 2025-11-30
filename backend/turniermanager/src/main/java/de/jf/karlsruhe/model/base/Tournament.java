@@ -34,20 +34,9 @@ public class Tournament {
      */
     private LocalDateTime startTime;
 
-    /**
-     * Datum, an dem das Turnier endet
-     */
-    private LocalDate endDate;
-
     private int breakTimeInSeconds;
 
     private int playTimeInSeconds;
-    /**
-     * Optionale Beschreibung des Veranstaltungsorts
-     */
-    private String venue;
-
-    // --- Beziehungen (One-to-Many) ---
 
     /**
      * 1. Verknüpfung zu den Ligen/Gruppen (ONE Tournament has MANY Leagues)

@@ -1,39 +1,36 @@
 package de.jf.karlsruhe.controller;
 
-import de.jf.karlsruhe.model.base.*;
+import de.jf.karlsruhe.model.dto.TournamentCreationDTO;
 import de.jf.karlsruhe.model.repos.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import de.jf.karlsruhe.service.GamePlanGeneratorService;
+import de.jf.karlsruhe.service.TournamentManagementService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpClientErrorException;
-
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/turniersetup")
+@RequestMapping("/turnier")
 @RequiredArgsConstructor
 public class TournamentController {
 
-//    private final TournamentRepository tournamentRepository;
-//    private final TeamRepository teamRepository;
-//    private final PitchRepository pitchRepository;
-//    private final AgeGroupRepository ageGroupRepository;
-//    private final LeagueRepository leagueRepository;
-//    private final RoundRepository roundRepository;
-//    private final GameRepository gameRepository;
-//    private final PitchScheduler pitchScheduler;
-//    private final GameSettingsRepository gameSettingsRepository;
-//    private final Logger log = Logger.getLogger(TournamentController.class.getName());
+    private final GamePlanGeneratorService gamePlanGeneratorService;
+    private final TournamentManagementService tournamentManagementService;
+
+    @PostMapping("/create")
+    private void createTournament(@RequestBody TournamentCreationDTO tournamentCreationDTO) {
+        tournamentManagementService.createTournament(tournamentCreationDTO);
+    }
+
+
+    @PostMapping("/endQualification")
+    private void endQualificationRound(@RequestBody int maxTeamsPerLeague, @RequestBody String roundName) {
+        gamePlanGeneratorService.endQualification(maxTeamsPerLeague, roundName);
+    }
+
+
+
+
 //
 //
 //    @PostMapping("/create")
