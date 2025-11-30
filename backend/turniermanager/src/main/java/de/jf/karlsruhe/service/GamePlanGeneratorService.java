@@ -168,18 +168,17 @@ public class GamePlanGeneratorService {
      * @param league
      * @return
      */
+    @Transactional
     public List<Team> rankTeamsByPerformance(League league) {
 
         List<TeamStats> statsList = getTeamStatisticsForLeague(league);
 
         Comparator<TeamStats> rankingComparator = Comparator
-                // 2. Sekundäres Kriterium: Durchschnittliche Tordifferenz pro Spiel (absteigend)
                 .comparing((TeamStats s) -> {
                     if (s.gamesPlayed() == 0) return 0.0;
                     return (double) (s.goalsScored() - s.goalsAgainst()) / s.gamesPlayed();
                 }, Comparator.reverseOrder())
 
-                // 3. Tertiäres Kriterium (Tie-Breaker): Gesamt-Tore erzielt (absteigend)
                 .thenComparing(TeamStats::goalsScored, Comparator.reverseOrder());
 
         statsList.sort(rankingComparator);

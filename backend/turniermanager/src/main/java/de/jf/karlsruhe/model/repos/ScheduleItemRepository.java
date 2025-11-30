@@ -20,6 +20,7 @@ public interface ScheduleItemRepository extends JpaRepository<ScheduleItem, UUID
     List<ScheduleItem> findByItemTypeOrderByStartTimeAsc(String itemType);
 
 
+
     @Query("SELECT MAX(si.endTime) FROM ScheduleItem si WHERE si.ageGroup = :ageGroup")
     Optional<LocalDateTime> findLatestEndTimeByAgeGroup(AgeGroup ageGroup);
 
@@ -27,4 +28,5 @@ public interface ScheduleItemRepository extends JpaRepository<ScheduleItem, UUID
     @Query("SELECT MAX(si.endTime) FROM ScheduleItem si WHERE si.scheduledPitch.id = :pitchId")
     Optional<LocalDateTime> findLatestEndTimeByPitchId(UUID pitchId);
 
+    List<ScheduleItem> findByAgeGroup(AgeGroup ageGroup);
 }
