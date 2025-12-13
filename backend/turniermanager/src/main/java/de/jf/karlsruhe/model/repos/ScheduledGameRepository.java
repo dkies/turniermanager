@@ -15,8 +15,6 @@ public interface ScheduledGameRepository extends JpaRepository<ScheduledGame, UU
 
     List<ScheduledGame> findByStatus(GameStatus status);
 
-    List<ScheduledGame> findGamesByAgeGroupAndStartTimeGreaterThanEqual(AgeGroup ageGroup, LocalDateTime startTime);
-
     @Query("""
         SELECT sg 
         FROM ScheduledGame sg

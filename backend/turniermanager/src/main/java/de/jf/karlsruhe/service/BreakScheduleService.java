@@ -1,18 +1,17 @@
 package de.jf.karlsruhe.service;
 
-import de.jf.karlsruhe.model.base.AgeGroup;
-import de.jf.karlsruhe.model.base.ScheduleItem;
-import de.jf.karlsruhe.model.base.ScheduledBreak;
-import de.jf.karlsruhe.model.repos.AgeGroupRepository;
-import de.jf.karlsruhe.model.repos.ScheduleItemRepository;
-import de.jf.karlsruhe.model.repos.ScheduledBreakRepository;
+import de.jf.karlsruhe.model.base.*;
+import de.jf.karlsruhe.model.dto.BreakGlobalCreationDTO;
+import de.jf.karlsruhe.model.dto.BreakSingleCreationDTO;
+import de.jf.karlsruhe.model.repos.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,90 +21,182 @@ public class BreakScheduleService {
     private final AgeGroupRepository ageGroupRepository;
     private final ScheduleItemRepository scheduleItemRepository;
     private final ScheduledBreakRepository scheduledBreakRepository;
+    private final PitchRepository pitchRepository;
+    private final TournamentRepository tournamentRepository;
 
 
     // --- 1. Pause für eine spezifische Altersgruppe ---
 
-    /**
-     * Legt eine Pause für eine spezifische Altersgruppe an.
-     * Es werden ein ScheduleItem und ein zugehöriges ScheduledBreak-Objekt erstellt.
-     *
-     * @param ageGroupId Die ID der Altersgruppe, für die die Pause gilt.
-     * @param startTime Die Startzeit der Pause.
-     * @param endTime Die Endzeit der Pause.
-     * @param message Eine optionale Nachricht für die Pause (z.B. "Mittagspause").
-     * @return Das erstellte und gespeicherte ScheduledBreak-Objekt.
-     */
     @Transactional
-    public ScheduledBreak setBreakForAgeGroup(
-            UUID ageGroupId,
-            LocalDateTime startTime,
-            LocalDateTime endTime,
-            String message) {
+    public List<ScheduledBreak> setBreakForAgeGroup(BreakSingleCreationDTO breakCreationDTO) {
 
-        AgeGroup ageGroup = ageGroupRepository.findById(ageGroupId)
-                .orElseThrow(() -> new IllegalArgumentException("Altersgruppe nicht gefunden: " + ageGroupId));
+        AgeGroup ageGroup = ageGroupRepository.findById(breakCreationDTO.ageGroupName())
+                .orElseThrow(() -> new IllegalArgumentException("Altersgruppe nicht gefunden: " + breakCreationDTO.ageGroupName()));
 
-        return createBreakEntry(startTime, endTime, ageGroup, message);
+        List<ScheduledBreak> breaksToSave = createBreakEntries(
+                breakCreationDTO.startTime(),
+                breakCreationDTO.endTime(),
+                ageGroup,
+                breakCreationDTO.message()
+        );
+
+        // Führt die Batch-Speicherung durch
+        return batchSaveBreaks(breaksToSave);
     }
 
 
     // --- 2. Pause für alle Altersgruppen ---
 
-    /**
-     * Legt eine Pause für alle vorhandenen Altersgruppen an.
-     *
-     * @param startTime Die Startzeit der Pause.
-     * @param endTime Die Endzeit der Pause.
-     * @param message Eine optionale Nachricht für die Pause (z.B. "Mittagspause").
-     * @return Eine Liste der erstellten und gespeicherten ScheduledBreak-Objekte.
-     */
     @Transactional
-    public List<ScheduledBreak> setBreakForAllAgeGroups(
-            LocalDateTime startTime,
-            LocalDateTime endTime,
-            String message) {
+    public List<ScheduledBreak> setBreakForAllAgeGroups(BreakGlobalCreationDTO breakGlobalCreationDTO) {
 
         List<AgeGroup> allAgeGroups = ageGroupRepository.findAll();
+        List<ScheduledBreak> breaksToSave = new ArrayList<>();
 
-        // Erstellt für jede Altersgruppe einen separaten Pauseneintrag
-        return allAgeGroups.stream()
-                .map(ageGroup -> createBreakEntry(startTime, endTime, ageGroup, message))
-                .collect(Collectors.toList());
+        // Sammelt FÜR JEDE Altersgruppe die zugehörigen Pauseneinträge
+        allAgeGroups.forEach(ageGroup -> {
+            List<ScheduledBreak> agBreaks = createBreakEntries(
+                    breakGlobalCreationDTO.startTime(),
+                    breakGlobalCreationDTO.endTime(),
+                    ageGroup,
+                    breakGlobalCreationDTO.message()
+            );
+            breaksToSave.addAll(agBreaks);
+        });
+
+        return batchSaveBreaks(breaksToSave);
     }
 
 
-    // --- HILFSMETHODE ZUR ERSTELLUNG DER ENTITÄTEN ---
-
     /**
-     * Erstellt und speichert die ScheduleItem und die verknüpfte ScheduledBreak Entität.
+     * Speichert ScheduleItems (Header) und ScheduledBreaks (Details) in einem Batch.
      */
-    private ScheduledBreak createBreakEntry(
+    @Transactional
+    public List<ScheduledBreak> batchSaveBreaks(List<ScheduledBreak> breaksToSave) {
+
+        List<ScheduleItem> itemsToSave = breaksToSave.stream()
+                .map(ScheduledBreak::getScheduleItem)
+                .collect(Collectors.toList());
+
+        scheduleItemRepository.saveAll(itemsToSave);
+        for (ScheduleItem item : itemsToSave) {
+            shiftScheduleDueToBreak(item,tournamentRepository.findAll().getFirst());
+        }
+        return scheduledBreakRepository.saveAll(breaksToSave);
+    }
+
+
+    private List<ScheduledBreak> createBreakEntries(
             LocalDateTime startTime,
             LocalDateTime endTime,
             AgeGroup ageGroup,
             String message) {
 
-        // 1. ScheduleItem (Header) erstellen und speichern
-        ScheduleItem scheduleItem = ScheduleItem.builder()
-                .startTime(startTime)
-                .endTime(endTime)
-                .ageGroup(ageGroup)
-                .scheduledPitch(null)
-                .itemType("BREAK") // WICHTIG: Setzt den Typ der geplanten Aktivität
-                .build();
-        scheduleItem = scheduleItemRepository.save(scheduleItem);
+        List<Pitch> pitches = pitchRepository.findByAgeGroup(ageGroup);
 
-        // 2. ScheduledBreak (Detail) erstellen, mit Verknüpfung zum ScheduleItem
-        ScheduledBreak scheduledBreak = ScheduledBreak.builder()
-                .message(message)
-                .scheduleItem(scheduleItem) // Verknüpfung zum Header
-                .build();
-        return scheduledBreakRepository.save(scheduledBreak);
+        if (pitches.isEmpty()) {
+            ScheduleItem item = createBreakScheduleItem(startTime, endTime, ageGroup, null);
+            ScheduledBreak breakDetail = createScheduledBreakDetail(message, item);
+            return List.of(breakDetail);
+
+        } else {
+            return pitches.stream()
+                    .map(pitch -> {
+                        ScheduleItem item = createBreakScheduleItem(startTime, endTime, ageGroup, pitch);
+                        return createScheduledBreakDetail(message, item);
+                    })
+                    .collect(Collectors.toList());
+        }
     }
 
 
 
+    private ScheduleItem createBreakScheduleItem(LocalDateTime startTime, LocalDateTime endTime, AgeGroup ageGroup, Pitch pitch) {
+        return ScheduleItem.builder()
+                .startTime(startTime)
+                .endTime(endTime)
+                .ageGroup(ageGroup)
+                .scheduledPitch(pitch)
+                .itemType("BREAK")
+                .build();
+    }
+
+    private ScheduledBreak createScheduledBreakDetail(String message, ScheduleItem scheduleItem) {
+        return ScheduledBreak.builder()
+                .message(message)
+                .scheduleItem(scheduleItem)
+                .build();
+    }
+
+
+    /**
+     * Update Methode zum verschieben von Spielen die in Games sind.
+     * @param newBreakItem
+     * @param tournament
+     */
+    @Transactional
+    public void shiftScheduleDueToBreak(ScheduleItem newBreakItem, Tournament tournament) {
+
+        // 1. Parameter aus dem neuen Pausen-Item
+        Pitch pitch = newBreakItem.getScheduledPitch();
+        AgeGroup ageGroup = newBreakItem.getAgeGroup();
+        LocalDateTime newBreakStart = newBreakItem.getStartTime();
+        LocalDateTime newBreakEnd = newBreakItem.getEndTime();
+
+        Duration transitionTime = Duration.ofSeconds(tournament.getBreakTimeInSeconds());
+
+        List<ScheduleItem> affectedGameItems;
+
+        if (pitch != null) {
+            affectedGameItems = scheduleItemRepository.findByScheduledPitchAndStartTimeIsAfterOrderByStartTimeAsc(pitch, newBreakStart.minus(Duration.ofSeconds(tournament.getPlayTimeInSeconds())));
+        } else if (ageGroup != null) {
+            throw new UnsupportedOperationException("Die Verschiebung globaler Pausen in bereits geplanter Zeit ist derzeit nicht unterstützt. Bitte verwenden Sie Pitch-spezifische Pausen.");
+        } else {
+            return;
+        }
+
+        Duration cumulativeShiftDuration = Duration.ZERO;
+        boolean shiftStarted = false;
+
+        for (ScheduleItem gameItem : affectedGameItems) {
+
+            if (!"GAME".equals(gameItem.getItemType())) {
+                continue;
+            }
+
+            LocalDateTime gameStart = gameItem.getStartTime();
+            LocalDateTime gameEnd = gameItem.getEndTime();
+
+            if (shiftStarted || gameStart.isBefore(newBreakEnd) && gameEnd.isAfter(newBreakStart)) {
+
+                shiftStarted = true;
+
+                Duration requiredShift = Duration.ZERO;
+
+                if (gameStart.isBefore(newBreakEnd)) {
+                    LocalDateTime requiredNewStart = newBreakEnd.plus(transitionTime);
+                    requiredShift = Duration.between(gameStart, requiredNewStart);
+
+                    if (requiredShift.isNegative() || requiredShift.isZero()) {
+                        requiredShift = Duration.ZERO;
+                    }
+
+                    if (cumulativeShiftDuration.isZero()) {
+                        cumulativeShiftDuration = requiredShift;
+                    }
+                }
+
+
+                if (!cumulativeShiftDuration.isZero()) {
+
+                    gameItem.setStartTime(gameStart.plus(cumulativeShiftDuration));
+                    gameItem.setEndTime(gameEnd.plus(cumulativeShiftDuration));
+
+                    scheduleItemRepository.save(gameItem);
+                }
+            }
+        }
+    }
 
 
 }

@@ -29,4 +29,6 @@ public interface ScheduleItemRepository extends JpaRepository<ScheduleItem, UUID
     Optional<LocalDateTime> findLatestEndTimeByPitchId(UUID pitchId);
 
     List<ScheduleItem> findByAgeGroup(AgeGroup ageGroup);
+
+    List<ScheduleItem> findByScheduledPitchAndStartTimeIsAfterOrderByStartTimeAsc(Pitch pitch, LocalDateTime minus);
 }
