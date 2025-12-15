@@ -5,6 +5,7 @@ import de.jf.karlsruhe.model.dto.AgeGroupCreationDTO; // NEU
 import de.jf.karlsruhe.model.dto.AgeGroupBulkCreationDTO; // NEU
 import de.jf.karlsruhe.service.AgeGroupService; // NEU
 
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor; // Besser als @Autowired für Controller
@@ -15,7 +16,7 @@ import java.util.UUID;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/agegroups")
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class AgeGroupController {
 
     private final AgeGroupService ageGroupService;

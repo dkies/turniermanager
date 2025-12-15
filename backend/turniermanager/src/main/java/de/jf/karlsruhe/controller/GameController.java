@@ -6,20 +6,21 @@ import de.jf.karlsruhe.model.dto.GameScoreUUIDUpdateDTO;
 import de.jf.karlsruhe.model.dto.GameScoreUpdateDTO;
 import de.jf.karlsruhe.service.GamePlanGeneratorService;
 import de.jf.karlsruhe.service.GameScoreService;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*")
-
 @RestController
 @RequestMapping("/games")
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class GameController {
 
     private GamePlanGeneratorService gamePlanGeneratorService;
     private GameScoreService gameScoreService;
+
 
     @PostMapping("/score")
     public ResponseEntity<ScheduledGame> updateScore(@RequestBody GameScoreUpdateDTO dto) {

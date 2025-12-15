@@ -5,7 +5,7 @@ import de.jf.karlsruhe.model.dto.TeamCreationDTO;
 import de.jf.karlsruhe.model.dto.TeamBulkCreationDTO;
 import de.jf.karlsruhe.model.dto.TeamsSmall;
 import de.jf.karlsruhe.service.TeamService;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +16,7 @@ import java.util.UUID;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/teams")
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class TeamController {
 
     private final TeamService teamService;

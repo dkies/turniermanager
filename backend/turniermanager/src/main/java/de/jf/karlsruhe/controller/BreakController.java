@@ -19,10 +19,7 @@ public class BreakController {
 
     private final BreakScheduleService breakService;
 
-    /**
-     * Erstellt eine neue geplante Pause (Global oder Pitch-spezifisch).
-     * POST /api/breaks
-     */
+
     @PostMapping("/createBreak")
     public ResponseEntity<List<ScheduledBreak>> createBreak(@RequestBody BreakSingleCreationDTO dto) {
         List<ScheduledBreak> response = breakService.setBreakForAgeGroup(dto);

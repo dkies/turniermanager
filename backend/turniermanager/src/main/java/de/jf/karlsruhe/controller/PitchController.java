@@ -1,192 +1,122 @@
 package de.jf.karlsruhe.controller;
 
+import de.jf.karlsruhe.model.base.Pitch;
+import de.jf.karlsruhe.model.dto.PitchCreationDTO;
+import de.jf.karlsruhe.model.dto.PitchBulkCreationDTO;
+import de.jf.karlsruhe.service.PitchService;
+import de.jf.karlsruhe.service.ReportingService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin(origins = "*")
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
+@CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/turniersetup/pitches")
+@RequestMapping("/pitches")
 @RequiredArgsConstructor
 public class PitchController {
 
-//    private final PitchRepository pitchRepository;
-//    private final GameRepository gameRepository;
-//    private final RoundRepository roundRepository;
-//
-//    // Create a new Pitch
-//    @PostMapping
-//    public ResponseEntity<Pitch> createPitch(@RequestBody Pitch pitch) {
-//        Pitch savedPitch = pitchRepository.save(pitch);
-//        return ResponseEntity.ok(savedPitch);
-//    }
-//
-//    // Read/Get a Pitch by ID
-//    @GetMapping("/{id}")
-//    public ResponseEntity<Pitch> getPitchById(@PathVariable UUID id) {
-//        Optional<Pitch> optionalPitch = pitchRepository.findById(id);
-//        return optionalPitch.map(ResponseEntity::ok)
-//                .orElse(ResponseEntity.notFound().build());
-//    }
-//
-//    // Read/Get all Pitches
-//    @GetMapping
-//    public ResponseEntity<List<Pitch>> getAllPitches() {
-//        List<Pitch> pitches = pitchRepository.findAll();
-//        return ResponseEntity.ok(pitches);
-//    }
-//
-//    // Update a Pitch
-//    @PutMapping("/{id}")
-//    public ResponseEntity<Pitch> updatePitch(@PathVariable UUID id, @RequestBody Pitch pitchDetails) {
-//        Optional<Pitch> optionalPitch = pitchRepository.findById(id);
-//
-//        if (optionalPitch.isPresent()) {
-//            Pitch existingPitch = optionalPitch.get();
-//            existingPitch.setName(pitchDetails.getName());
-//            existingPitch.setAgeGroups(pitchDetails.getAgeGroups());
-//            Pitch updatedPitch = pitchRepository.save(existingPitch);
-//            return ResponseEntity.ok(updatedPitch);
-//        } else {
-//            return ResponseEntity.notFound().build();
-//        }
-//    }
-//
-//    // Delete a Pitch
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<Void> deletePitch(@PathVariable UUID id) {
-//        if (pitchRepository.existsById(id)) {
-//            pitchRepository.deleteById(id);
-//            return ResponseEntity.noContent().build();
-//        } else {
-//            return ResponseEntity.notFound().build();
-//        }
-//    }
-//
-//    // Bulk Insert Multiple Pitches
-//    @PostMapping("/bulk")
-//    public ResponseEntity<List<Pitch>> createMultiplePitches(@RequestBody List<Pitch> pitches) {
-//        List<Pitch> savedPitches = pitchRepository.saveAll(pitches);
-//        return ResponseEntity.ok(savedPitches);
-//    }
-//
-//    @GetMapping(value = "/result-card/{id}", produces = MediaType.APPLICATION_PDF_VALUE)
-//    public ResponseEntity<byte[]> getResultCards(@PathVariable UUID id) {
-//        List<GameDTO> games = new ArrayList<>();
-//        Optional<Pitch> optionalPitch = pitchRepository.findById(id);
-//
-//        if (optionalPitch.isEmpty()) {
-//            return ResponseEntity.notFound().build();
-//        }
-//
-//        Pitch pitch = optionalPitch.get();
-//        List<Game> byPitchId = getActiveRoundGamesByPitchId(pitch.getId());
-//        byPitchId.sort(Comparator.comparing(Game::getGameNumber));
-//        if(byPitchId.isEmpty())return ResponseEntity.noContent().build();
-//        byPitchId.forEach(game -> {
-//            games.add(new GameDTO(game.getTeamA().getName(), game.getTeamB().getName(), pitch.getName(), game.getGameNumber()));
-//        });
-//
-//        try {
-//            ByteArrayOutputStream out = createPdf(games);
-//            HttpHeaders headers = new HttpHeaders();
-//            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=spielfeld" + id + ".pdf");
-//            return ResponseEntity.ok().headers(headers).body(out.toByteArray());
-//        } catch (RuntimeException e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-//        }
-//    }
-//
-//    private ByteArrayOutputStream createPdf(List<GameDTO> games) {
-//        try {
-//            ByteArrayOutputStream out = new ByteArrayOutputStream();
-//            Document document = new Document(PageSize.A4.rotate());
-//            PdfWriter writer = PdfWriter.getInstance(document, out);
-//            writer.setCloseStream(false);
-//            document.open();
-//
-//            Font headlineFont = new Font(
-//                    BaseFont.createFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, BaseFont.NOT_EMBEDDED),
-//                    20F,
-//                    Font.BOLD,
-//                    Color.BLACK
-//            );
-//            Font boldFont = new Font(
-//                    BaseFont.createFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, BaseFont.NOT_EMBEDDED),
-//                    14F,
-//                    Font.BOLD,
-//                    Color.BLACK
-//            );
-//
-//            for (GameDTO game : games) {
-//                Paragraph header = new Paragraph("Platz: " + game.fieldNumber + "    Spiel: " + game.matchNumber, headlineFont);
-//                header.setAlignment(Element.ALIGN_CENTER);
-//                document.add(header);
-//                document.add(new Paragraph("\n"));
-//
-//                Table table = new Table(2);
-//                table.setBorderWidth(1F);
-//                table.setBorderColor(new Color(0, 0, 0));
-//                table.setPadding(5F);
-//                table.setWidth(100);
-//                table.addCell(createCell(game.team1 + "\n\n\n\n\n\n\n"));
-//                table.addCell(createCell(game.team2));
-//                table.endHeaders();
-//                table.addCell(createCell(game.team2 + "\n\n\n\n\n\n\n"));
-//                table.addCell(createCell(game.team1));
-//                document.add(table);
-//                document.add(new Paragraph("\n"));
-//
-//                document.add(new Paragraph("Endergebnis:", headlineFont));
-//                document.add(new Paragraph("\n" + game.team1 + ": ________________", boldFont));
-//                document.add(new Paragraph("\n" + game.team2 + ": ________________", boldFont));
-//
-//                document.newPage();
-//            }
-//
-//            document.close();
-//            return out;
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
-//
-//    private static Cell createCell(String text) throws IOException {
-//        Font font = new Font(
-//                BaseFont.createFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, BaseFont.NOT_EMBEDDED),
-//                13F,
-//                Font.BOLD,
-//                Color.BLACK
-//        );
-//        Paragraph paragraph = new Paragraph(text, font);
-//        paragraph.setAlignment(Element.ALIGN_CENTER);
-//        Cell cell = new Cell(paragraph);
-//        cell.setHorizontalAlignment(HorizontalAlignment.CENTER);
-//        return cell;
-//    }
-//
-//    @Data
-//    @AllArgsConstructor
-//    @NoArgsConstructor
-//    public class GameDTO {
-//        String team1;
-//        String team2;
-//        String fieldNumber;
-//        long matchNumber;
-//    }
-//
-//    public List<Game> getActiveRoundGames() {
-//        return roundRepository.findByActiveTrue().stream()
-//                .flatMap(round -> gameRepository.findByRound(round).stream())
-//                .collect(Collectors.toList());
-//    }
-//
-//    public List<Game> getActiveRoundGamesByPitchId(UUID pitchId) {
-//        return roundRepository.findByActiveTrue().stream()
-//                .flatMap(round -> gameRepository.findByRound(round).stream())
-//                .filter(game -> game.getPitch().getId().equals(pitchId))
-//                .collect(Collectors.toList());
-//    }
+    private final PitchService pitchService;
+    private final ReportingService reportingService;
 
+    // --- CRUD Operationen (PitchService) ---
 
+    // Erstellt ein neues Spielfeld
+    @PostMapping
+    public ResponseEntity<Pitch> createPitch(@RequestBody PitchCreationDTO dto) {
+        try {
+            Pitch savedPitch = pitchService.createPitch(dto);
+            return new ResponseEntity<>(savedPitch, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            // Fängt Fehler wie "Altersgruppe nicht gefunden"
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    // Liest ein Spielfeld anhand der ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Pitch> getPitchById(@PathVariable UUID id) {
+        return pitchService.getPitchById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // Liest alle Spielfelder
+    @GetMapping
+    public ResponseEntity<List<Pitch>> getAllPitches() {
+        List<Pitch> pitches = pitchService.getAllPitches();
+        return ResponseEntity.ok(pitches);
+    }
+
+    // Aktualisiert ein Spielfeld
+    @PutMapping("/{id}")
+    public ResponseEntity<Pitch> updatePitch(@PathVariable UUID id, @RequestBody PitchCreationDTO dto) {
+        try {
+            return pitchService.updatePitch(id, dto)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (IllegalArgumentException e) {
+            // Fängt Fehler wie "Altersgruppe nicht gefunden"
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    // Löscht ein Spielfeld
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePitch(@PathVariable UUID id) {
+        boolean deleted = pitchService.deletePitch(id);
+
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // Massenerstellung von Spielfeldern
+    @PostMapping("/bulk")
+    public ResponseEntity<List<Pitch>> createMultiplePitches(@RequestBody PitchBulkCreationDTO dto) {
+        try {
+            List<Pitch> savedPitches = pitchService.createMultiplePitches(dto);
+            return new ResponseEntity<>(savedPitches, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    // --- Reporting Operation (ReportingService) ---
+
+    // Generiert die Ergebnis-Karten als PDF
+    @GetMapping(value = "/result-card/{id}", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> getResultCards(@PathVariable UUID id) {
+
+        // Delegiert die gesamte Logik zur Datenerfassung und PDF-Generierung an den Service
+        Optional<byte[]> pdfContent = reportingService.generateResultCardsPdf(id);
+
+        if (pdfContent.isEmpty()) {
+            // Spielfeld nicht gefunden
+            return ResponseEntity.notFound().build();
+        }
+
+        byte[] pdfBytes = pdfContent.get();
+
+        // Wenn das PDF leer ist (keine ausstehenden Spiele gefunden)
+        if (pdfBytes.length == 0) {
+            return ResponseEntity.noContent().build();
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        // Setzt den Dateinamen für den Download
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=spielfeld" + id + ".pdf");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(pdfBytes);
+    }
 }

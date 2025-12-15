@@ -11,13 +11,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface RoundRepository extends JpaRepository<Round, UUID> {
-//    @Query("SELECT r FROM Round r JOIN FETCH r.leagues WHERE r.tournament.id = :tournamentId")
+    //    @Query("SELECT r FROM Round r JOIN FETCH r.leagues WHERE r.tournament.id = :tournamentId")
 //    List<Round> findAllRoundsByTournamentId(UUID tournamentId);
 //
 //    @Query("SELECT r FROM Round r JOIN r.leagues l WHERE l.ageGroup = :ageGroup")
 //    List<Round> findByAgeGroup(@Param("ageGroup") AgeGroup ageGroup);
-//
-//    List<Round> findByActiveTrue();
 //
 //    @Query("SELECT r FROM Round r JOIN r.leagues l WHERE l.ageGroup = :ageGroup AND r.active = true")
 //    Optional<Round> findActiveRoundByAgeGroup(@Param("ageGroup") AgeGroup ageGroup);
