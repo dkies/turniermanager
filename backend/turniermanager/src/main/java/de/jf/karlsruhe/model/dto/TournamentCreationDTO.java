@@ -10,7 +10,5 @@ public record TournamentCreationDTO(
 
         int breakTimeInSeconds,
 
-        int playTimeInSeconds,
-
-        String venue
+        int playTimeInSeconds
 ) {}
