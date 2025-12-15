@@ -2,13 +2,10 @@ package de.jf.karlsruhe.controller;
 
 import de.jf.karlsruhe.model.dto.EndQualificationRoundDTO;
 import de.jf.karlsruhe.model.dto.TournamentCreationDTO;
-import de.jf.karlsruhe.model.repos.*;
 import de.jf.karlsruhe.service.GamePlanGeneratorService;
 import de.jf.karlsruhe.service.TournamentManagementService;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import java.util.logging.Logger;
 
 @CrossOrigin(origins = "*")
 @RestController
