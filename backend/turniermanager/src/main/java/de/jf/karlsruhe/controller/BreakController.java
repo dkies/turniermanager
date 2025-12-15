@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @AllArgsConstructor
 @RestController
@@ -34,4 +35,11 @@ public class BreakController {
         List<ScheduledBreak> response = breakService.setBreakForAllAgeGroups(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void> deleteBreak(@RequestBody UUID id) {
+        breakService.deleteBreak(id);
+        return ResponseEntity.ok().build();
+    }
+
 }

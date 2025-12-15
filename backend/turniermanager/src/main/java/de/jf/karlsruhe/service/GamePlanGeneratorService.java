@@ -1,6 +1,7 @@
 package de.jf.karlsruhe.service;
 
 import de.jf.karlsruhe.model.base.*;
+import de.jf.karlsruhe.model.dto.EmergencyGameInsertationDTO;
 import de.jf.karlsruhe.model.dto.TeamStats;
 import de.jf.karlsruhe.model.enums.GameStatus;
 import de.jf.karlsruhe.model.enums.RoundType;
@@ -25,6 +26,8 @@ public class GamePlanGeneratorService {
     private final LeagueRepository leagueRepository;
     private final RoundRepository roundRepository;
     private final TournamentRepository tournamentRepository;
+    private final TeamRepository teamRepository;
+    private final AgeGroupRepository ageGroupRepository;
 
     /**
      * Sammelt die nächstverfügbare Startzeit für alle Pitches einer Altersgruppe,
@@ -51,6 +54,7 @@ public class GamePlanGeneratorService {
 
     /**
      * Findet den Pitch, der am frühesten verfügbar ist, basierend auf der aktuellen Map.
+     *
      * @param pitchNextAvailableTimes Die Map der Pitches und ihrer nächsten freien Zeitpunkte.
      * @return Der Pitch, der am frühesten frei wird.
      */
@@ -80,6 +84,7 @@ public class GamePlanGeneratorService {
         Map<Pitch, LocalDateTime> pitchNextAvailableTimes =
                 getNextAvailableTimePerPitch(ageGroup, tournamentStartTime, breakTimeSeconds);
 
+        int nextNumber = getNextGameNumber();
         for (RoundRobinScheduler.GamePair pairing : allFixtures) {
 
             Pitch bestPitch = findBestAvailablePitch(pitchNextAvailableTimes);
@@ -101,6 +106,7 @@ public class GamePlanGeneratorService {
             ScheduledGame game = ScheduledGame.builder()
                     .teamA(pairing.teamA())
                     .teamB(pairing.teamB())
+                    .gameNumber(nextNumber++)
                     .scheduleItem(gameItem)
                     .status(GameStatus.SCHEDULED)
                     .build();
@@ -112,6 +118,7 @@ public class GamePlanGeneratorService {
 
     /**
      * Auswertung der einzelnen Games
+     *
      * @param league
      * @return
      */
@@ -168,6 +175,7 @@ public class GamePlanGeneratorService {
 
     /**
      * Ranking der Teams nach Performance
+     *
      * @param league
      * @return
      */
@@ -244,11 +252,58 @@ public class GamePlanGeneratorService {
         for (League league : leagues) {
             List<Team> rankedTeams = rankTeamsByPerformance(league);
             createEqualLeagues(league.getAgeGroup(), maxTeamsPerLeague, tournament, finalPhase, rankedTeams);
-            generateScheduleForLeague(league,tournament);
+            generateScheduleForLeague(league, tournament);
         }
 
     }
 
+    @Transactional
+    public ScheduledGame insertEmergencyGame(EmergencyGameInsertationDTO dto) {
+        Tournament tournament = tournamentRepository.findAll().getFirst();
+        // 1. Validierung und Laden der Entitäten
+        Team teamA = teamRepository.findById(dto.teamAId())
+                .orElseThrow(() -> new IllegalArgumentException("Team A nicht gefunden: " + dto.teamAId()));
+        Team teamB = teamRepository.findById(dto.teamBId())
+                .orElseThrow(() -> new IllegalArgumentException("Team B nicht gefunden: " + dto.teamBId()));
+        AgeGroup ageGroup = ageGroupRepository.findById(dto.ageGroupId())
+                .orElseThrow(() -> new IllegalArgumentException("Altersgruppe nicht gefunden: " + dto.ageGroupId()));
+        Pitch pitch = pitchRepository.findById(dto.pitchId())
+                .orElseThrow(() -> new IllegalArgumentException("Spielfeld nicht gefunden: " + dto.pitchId()));
 
+        // 2. Spielzeit ermitteln
+        Duration playTime = Duration.ofSeconds(tournament.getPlayTimeInSeconds());
+        LocalDateTime endTime = dto.startTime().plus(playTime);
+
+        // 3. Game Number ermitteln
+        int nextGameNumber = getNextGameNumber();
+
+        // 4. ScheduleItem erstellen (Header)
+        ScheduleItem scheduleItem = ScheduleItem.builder()
+                .startTime(dto.startTime())
+                .endTime(endTime)
+                .ageGroup(ageGroup)
+                .scheduledPitch(pitch)
+                .itemType("GAME")
+                .build();
+        scheduleItem = scheduleItemRepository.save(scheduleItem);
+
+        // 5. ScheduledGame erstellen (Detail)
+        ScheduledGame scheduledGame = ScheduledGame.builder()
+                .gameNumber(nextGameNumber)
+                .teamA(teamA)
+                .teamB(teamB)
+                .teamAScore(0)
+                .teamBScore(0)
+                .status(GameStatus.SCHEDULED)
+                .scheduleItem(scheduleItem)
+                .build();
+
+        return scheduledGameRepository.save(scheduledGame);
+    }
+
+
+    private int getNextGameNumber() {
+        return scheduledGameRepository.findMaxGameNumber().orElse(0) + 1;
+    }
 
 }

@@ -1,6 +1,14 @@
 package de.jf.karlsruhe.controller;
 
+import de.jf.karlsruhe.model.base.ScheduledGame;
+import de.jf.karlsruhe.model.dto.EmergencyGameInsertationDTO;
+import de.jf.karlsruhe.model.dto.GameScoreUUIDUpdateDTO;
+import de.jf.karlsruhe.model.dto.GameScoreUpdateDTO;
+import de.jf.karlsruhe.service.GamePlanGeneratorService;
+import de.jf.karlsruhe.service.GameScoreService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*")
@@ -9,6 +17,48 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/games")
 @RequiredArgsConstructor
 public class GameController {
+
+    private GamePlanGeneratorService gamePlanGeneratorService;
+    private GameScoreService gameScoreService;
+
+    @PostMapping("/score")
+    public ResponseEntity<ScheduledGame> updateScore(@RequestBody GameScoreUpdateDTO dto) {
+        try {
+            ScheduledGame updatedGame = gameScoreService.updateGameScore(dto);
+            return ResponseEntity.ok(updatedGame);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/score-by-id")
+    public ResponseEntity<ScheduledGame> updateScoreByUuid(@RequestBody GameScoreUUIDUpdateDTO dto) {
+        try {
+            ScheduledGame updatedGame = gameScoreService.updateGameScoreByUuid(
+                    dto.gameId(),
+                    dto.teamAScore(),
+                    dto.teamBScore());
+            return ResponseEntity.ok(updatedGame);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/emergency-game")
+    public ResponseEntity<ScheduledGame> insertEmergencyGame(@RequestBody EmergencyGameInsertationDTO dto) {
+        try {
+            ScheduledGame newGame = gamePlanGeneratorService.insertEmergencyGame(dto);
+            return new ResponseEntity<>(newGame, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+
+
 //
 //    private final GameRepository gameRepository;
 //    private final PitchScheduler pitchScheduler;

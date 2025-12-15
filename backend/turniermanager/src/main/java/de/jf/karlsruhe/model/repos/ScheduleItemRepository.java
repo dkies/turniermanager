@@ -13,13 +13,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ScheduleItemRepository extends JpaRepository<ScheduleItem, UUID> {
-    // Finde das zuletzt beendete Item auf einem bestimmten Pitch
-    Optional<ScheduleItem> findTopByScheduledPitchOrderByEndTimeDesc(Pitch pitch);
-
-    // Finde alle Pausen, sortiert nach Startzeit
-    List<ScheduleItem> findByItemTypeOrderByStartTimeAsc(String itemType);
-
-
 
     @Query("SELECT MAX(si.endTime) FROM ScheduleItem si WHERE si.ageGroup = :ageGroup")
     Optional<LocalDateTime> findLatestEndTimeByAgeGroup(AgeGroup ageGroup);
@@ -31,4 +24,9 @@ public interface ScheduleItemRepository extends JpaRepository<ScheduleItem, UUID
     List<ScheduleItem> findByAgeGroup(AgeGroup ageGroup);
 
     List<ScheduleItem> findByScheduledPitchAndStartTimeIsAfterOrderByStartTimeAsc(Pitch pitch, LocalDateTime minus);
+
+    @Query("SELECT si FROM ScheduleItem si WHERE si.startTime >= :startTime ORDER BY si.startTime ASC")
+    List<ScheduleItem> findItemsStartingAtOrAfter(LocalDateTime startTime);
+
 }
+

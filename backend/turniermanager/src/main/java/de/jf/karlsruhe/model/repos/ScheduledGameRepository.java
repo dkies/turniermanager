@@ -9,11 +9,15 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ScheduledGameRepository extends JpaRepository<ScheduledGame, UUID> {
 
     List<ScheduledGame> findByStatus(GameStatus status);
+
+    @Query("SELECT MAX(g.gameNumber) FROM ScheduledGame g")
+    Optional<Integer> findMaxGameNumber();
 
     @Query("""
         SELECT sg 
@@ -27,4 +31,7 @@ public interface ScheduledGameRepository extends JpaRepository<ScheduledGame, UU
             @Param("leagueId") UUID leagueId,
             @Param("status") GameStatus status
     );
+
+    Optional<ScheduledGame> findByGameNumber(int number);
 }
+

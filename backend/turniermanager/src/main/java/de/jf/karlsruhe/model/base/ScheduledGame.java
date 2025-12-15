@@ -16,6 +16,8 @@ public class ScheduledGame {
     @GeneratedValue(generator = "UUID")
     private UUID id; // Das ist die Game-ID
 
+    private int gameNumber;
+
     // --- Spiel-spezifische Daten ---
     private int teamAScore;
     private int teamBScore;

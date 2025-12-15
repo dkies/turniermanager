@@ -12,6 +12,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +25,26 @@ public class BreakScheduleService {
     private final PitchRepository pitchRepository;
     private final TournamentRepository tournamentRepository;
 
+
+    /**
+     * Löscht einen geplanten Pauseneintrag sowie den zugehörigen ScheduleItem-Header.
+     *
+     * @param breakId Die UUID der zu löschenden ScheduledBreak-Entität.
+     */
+    @Transactional
+    public void deleteBreak(UUID breakId) {
+
+        ScheduledBreak scheduledBreak = scheduledBreakRepository.findById(breakId)
+                .orElseThrow(() -> new IllegalArgumentException("Pause mit ID " + breakId + " nicht gefunden."));
+
+        ScheduleItem scheduleItem = scheduledBreak.getScheduleItem();
+
+        scheduledBreakRepository.delete(scheduledBreak);
+
+        if (scheduleItem != null) {
+            scheduleItemRepository.delete(scheduleItem);
+        }
+    }
 
     // --- 1. Pause für eine spezifische Altersgruppe ---
 
