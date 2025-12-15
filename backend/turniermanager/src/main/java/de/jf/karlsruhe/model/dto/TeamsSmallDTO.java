@@ -2,15 +2,15 @@ package de.jf.karlsruhe.model.dto;
 
 import java.util.UUID;
 
-public class TeamsSmall {
+public class TeamsSmallDTO {
     private UUID id;
     private String name;
     private String ageGroup;
 
-    public TeamsSmall() {
+    public TeamsSmallDTO() {
     }
 
-    public TeamsSmall(UUID id, String name, String ageGroup) {
+    public TeamsSmallDTO(UUID id, String name, String ageGroup) {
         this.id = id;
         this.name = name;
         this.ageGroup = ageGroup;

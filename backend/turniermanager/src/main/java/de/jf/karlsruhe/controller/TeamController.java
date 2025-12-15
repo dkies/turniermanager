@@ -3,7 +3,7 @@ package de.jf.karlsruhe.controller;
 import de.jf.karlsruhe.model.base.Team;
 import de.jf.karlsruhe.model.dto.TeamCreationDTO;
 import de.jf.karlsruhe.model.dto.TeamBulkCreationDTO;
-import de.jf.karlsruhe.model.dto.TeamsSmall;
+import de.jf.karlsruhe.model.dto.TeamsSmallDTO;
 import de.jf.karlsruhe.service.TeamService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -53,11 +53,11 @@ public class TeamController {
     }
 
     @GetMapping("/getAll")
-    public ResponseEntity<List<TeamsSmall>> getTeams(
+    public ResponseEntity<List<TeamsSmallDTO>> getTeams(
             @RequestParam(required = false) String league,
             @RequestParam(required = false) String ageGroup) {
 
-        List<TeamsSmall> response = teamService.getTeamsSmall(league, ageGroup);
+        List<TeamsSmallDTO> response = teamService.getTeamsSmall(league, ageGroup);
 
         return ResponseEntity.ok(response);
     }

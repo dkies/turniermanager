@@ -2,7 +2,7 @@ package de.jf.karlsruhe.service;
 
 import de.jf.karlsruhe.model.base.*;
 import de.jf.karlsruhe.model.dto.EmergencyGameInsertationDTO;
-import de.jf.karlsruhe.model.dto.TeamStats;
+import de.jf.karlsruhe.model.dto.TeamStatsDTO;
 import de.jf.karlsruhe.model.enums.GameStatus;
 import de.jf.karlsruhe.model.enums.RoundType;
 import de.jf.karlsruhe.model.repos.*;
@@ -122,7 +122,7 @@ public class GamePlanGeneratorService {
      * @param league
      * @return
      */
-    public List<TeamStats> getTeamStatisticsForLeague(League league) {
+    public List<TeamStatsDTO> getTeamStatisticsForLeague(League league) {
 
         List<Team> teams = league.getTeams();
         List<ScheduledGame> finishedGames = scheduledGameRepository.findGamesByLeagueIdAndStatus(
@@ -130,11 +130,11 @@ public class GamePlanGeneratorService {
                 GameStatus.COMPLETED
         );
 
-        Map<Team, TeamStats> statsMap = new HashMap<>();
+        Map<Team, TeamStatsDTO> statsMap = new HashMap<>();
 
         // Initialisieren aller Teams der Liga in der Map
         for (Team team : teams) {
-            statsMap.put(team, new TeamStats(team, 0, 0, 0, 0, 0));
+            statsMap.put(team, new TeamStatsDTO(team, 0, 0, 0, 0, 0));
         }
 
         // Iteration über abgeschlossene Spiele, um Statistiken zu aggregieren
@@ -150,7 +150,7 @@ public class GamePlanGeneratorService {
             int pointsB = (scoreB > scoreA) ? 3 : (scoreB == scoreA) ? 1 : 0;
 
             // Aktualisiere Team A Stats
-            statsMap.computeIfPresent(teamA, (t, oldStats) -> new TeamStats(
+            statsMap.computeIfPresent(teamA, (t, oldStats) -> new TeamStatsDTO(
                     t,
                     oldStats.gamesPlayed() + 1,
                     oldStats.pointsScored() + pointsA,
@@ -160,7 +160,7 @@ public class GamePlanGeneratorService {
             ));
 
             // Aktualisiere Team B Stats
-            statsMap.computeIfPresent(teamB, (t, oldStats) -> new TeamStats(
+            statsMap.computeIfPresent(teamB, (t, oldStats) -> new TeamStatsDTO(
                     t,
                     oldStats.gamesPlayed() + 1,
                     oldStats.pointsScored() + pointsB,
@@ -182,20 +182,20 @@ public class GamePlanGeneratorService {
     @Transactional
     public List<Team> rankTeamsByPerformance(League league) {
 
-        List<TeamStats> statsList = getTeamStatisticsForLeague(league);
+        List<TeamStatsDTO> statsList = getTeamStatisticsForLeague(league);
 
-        Comparator<TeamStats> rankingComparator = Comparator
-                .comparing((TeamStats s) -> {
+        Comparator<TeamStatsDTO> rankingComparator = Comparator
+                .comparing((TeamStatsDTO s) -> {
                     if (s.gamesPlayed() == 0) return 0.0;
                     return (double) (s.goalsScored() - s.goalsAgainst()) / s.gamesPlayed();
                 }, Comparator.reverseOrder())
 
-                .thenComparing(TeamStats::goalsScored, Comparator.reverseOrder());
+                .thenComparing(TeamStatsDTO::goalsScored, Comparator.reverseOrder());
 
         statsList.sort(rankingComparator);
 
         return statsList.stream()
-                .map(TeamStats::team)
+                .map(TeamStatsDTO::team)
                 .collect(Collectors.toList());
     }
 

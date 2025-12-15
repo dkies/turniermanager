@@ -25,21 +25,16 @@ public class PitchController {
     private final PitchService pitchService;
     private final ReportingService reportingService;
 
-    // --- CRUD Operationen (PitchService) ---
-
-    // Erstellt ein neues Spielfeld
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<Pitch> createPitch(@RequestBody PitchCreationDTO dto) {
         try {
             Pitch savedPitch = pitchService.createPitch(dto);
             return new ResponseEntity<>(savedPitch, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
-            // Fängt Fehler wie "Altersgruppe nicht gefunden"
             return ResponseEntity.badRequest().build();
         }
     }
 
-    // Liest ein Spielfeld anhand der ID
     @GetMapping("/{id}")
     public ResponseEntity<Pitch> getPitchById(@PathVariable UUID id) {
         return pitchService.getPitchById(id)
@@ -62,12 +57,10 @@ public class PitchController {
                     .map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
         } catch (IllegalArgumentException e) {
-            // Fängt Fehler wie "Altersgruppe nicht gefunden"
             return ResponseEntity.badRequest().build();
         }
     }
 
-    // Löscht ein Spielfeld
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePitch(@PathVariable UUID id) {
         boolean deleted = pitchService.deletePitch(id);
@@ -79,7 +72,6 @@ public class PitchController {
         }
     }
 
-    // Massenerstellung von Spielfeldern
     @PostMapping("/bulk")
     public ResponseEntity<List<Pitch>> createMultiplePitches(@RequestBody PitchBulkCreationDTO dto) {
         try {
@@ -90,7 +82,6 @@ public class PitchController {
         }
     }
 
-    // --- Reporting Operation (ReportingService) ---
 
     // Generiert die Ergebnis-Karten als PDF
     @GetMapping(value = "/result-card/{id}", produces = MediaType.APPLICATION_PDF_VALUE)

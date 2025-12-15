@@ -4,7 +4,7 @@ import de.jf.karlsruhe.model.base.AgeGroup;
 import de.jf.karlsruhe.model.base.Team;
 import de.jf.karlsruhe.model.dto.TeamCreationDTO;
 import de.jf.karlsruhe.model.dto.TeamBulkCreationDTO;
-import de.jf.karlsruhe.model.dto.TeamsSmall; // DTO für die Ausgabe
+import de.jf.karlsruhe.model.dto.TeamsSmallDTO; // DTO für die Ausgabe
 import de.jf.karlsruhe.model.repos.AgeGroupRepository;
 import de.jf.karlsruhe.model.repos.TeamRepository;
 import lombok.RequiredArgsConstructor;
@@ -64,7 +64,7 @@ public class TeamService {
     }
 
     @Transactional(readOnly = true)
-    public List<TeamsSmall> getTeamsSmall(String leagueName, String ageGroupName) {
+    public List<TeamsSmallDTO> getTeamsSmall(String leagueName, String ageGroupName) {
 
         List<Team> teams = teamRepository.findAll();
 
@@ -77,7 +77,7 @@ public class TeamService {
         }
 
         return teams.stream()
-                .map(team -> new TeamsSmall(team.getId(), team.getName(), team.getAgeGroup().getName()))
+                .map(team -> new TeamsSmallDTO(team.getId(), team.getName(), team.getAgeGroup().getName()))
                 .toList();
     }
 }
