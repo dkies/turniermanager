@@ -2,6 +2,7 @@ package de.jf.karlsruhe.model.repos;
 
 import de.jf.karlsruhe.model.base.AgeGroup;
 import de.jf.karlsruhe.model.base.Pitch;
+import de.jf.karlsruhe.model.base.ScheduleItem;
 import de.jf.karlsruhe.model.base.ScheduledGame;
 import de.jf.karlsruhe.model.enums.GameStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -38,5 +39,6 @@ public interface ScheduledGameRepository extends JpaRepository<ScheduledGame, UU
             Pitch pitch,
             GameStatus status
     );
+    List<ScheduledGame> findByScheduleItemIn(List<ScheduleItem> items);
 }
 

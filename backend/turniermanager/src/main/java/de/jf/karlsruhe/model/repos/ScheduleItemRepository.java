@@ -28,5 +28,6 @@ public interface ScheduleItemRepository extends JpaRepository<ScheduleItem, UUID
     @Query("SELECT si FROM ScheduleItem si WHERE si.startTime >= :startTime ORDER BY si.startTime ASC")
     List<ScheduleItem> findItemsStartingAtOrAfter(LocalDateTime startTime);
 
+    List<ScheduleItem> findByAgeGroupAndStartTimeIsAfterOrderByStartTimeAsc(AgeGroup ageGroup, LocalDateTime startTime);
 }
 

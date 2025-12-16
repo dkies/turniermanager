@@ -5,6 +5,7 @@ import de.jf.karlsruhe.model.dto.EmergencyGameInsertationDTO;
 import de.jf.karlsruhe.model.dto.TeamStatsDTO;
 import de.jf.karlsruhe.model.enums.GameStatus;
 import de.jf.karlsruhe.model.enums.RoundType;
+import de.jf.karlsruhe.model.enums.ScheduledItemType;
 import de.jf.karlsruhe.model.repos.*;
 import de.jf.karlsruhe.util.RoundRobinScheduler;
 import jakarta.transaction.Transactional;
@@ -96,7 +97,7 @@ public class GamePlanGeneratorService {
 
             ScheduleItem gameItem = ScheduleItem.builder()
                     .ageGroup(ageGroup)
-                    .itemType("GAME")
+                    .itemType(ScheduledItemType.GAME)
                     .startTime(actualStartTime)
                     .endTime(actualEndTime)
                     .scheduledPitch(bestPitch)
@@ -119,8 +120,6 @@ public class GamePlanGeneratorService {
     /**
      * Auswertung der einzelnen Games
      *
-     * @param league
-     * @return
      */
     public List<TeamStatsDTO> getTeamStatisticsForLeague(League league) {
 
@@ -175,9 +174,6 @@ public class GamePlanGeneratorService {
 
     /**
      * Ranking der Teams nach Performance
-     *
-     * @param league
-     * @return
      */
     @Transactional
     public List<Team> rankTeamsByPerformance(League league) {
@@ -283,7 +279,7 @@ public class GamePlanGeneratorService {
                 .endTime(endTime)
                 .ageGroup(ageGroup)
                 .scheduledPitch(pitch)
-                .itemType("GAME")
+                .itemType(ScheduledItemType.GAME)
                 .build();
         scheduleItem = scheduleItemRepository.save(scheduleItem);
 

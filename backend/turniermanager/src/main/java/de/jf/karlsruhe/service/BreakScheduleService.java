@@ -3,6 +3,7 @@ package de.jf.karlsruhe.service;
 import de.jf.karlsruhe.model.base.*;
 import de.jf.karlsruhe.model.dto.BreakGlobalCreationDTO;
 import de.jf.karlsruhe.model.dto.BreakSingleCreationDTO;
+import de.jf.karlsruhe.model.enums.ScheduledItemType;
 import de.jf.karlsruhe.model.repos.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -138,7 +139,7 @@ public class BreakScheduleService {
                 .endTime(endTime)
                 .ageGroup(ageGroup)
                 .scheduledPitch(pitch)
-                .itemType("BREAK")
+                .itemType(ScheduledItemType.BREAK)
                 .build();
     }
 
