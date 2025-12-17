@@ -1,0 +1,18 @@
+package de.jf.karlsruhe.model.base;
+
+import java.util.List;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
+
+@Entity
+public class League {
+
+	private int roundNumber;
+	private AgeGroup ageGroup;
+	private String name;
+
+	@OneToMany
+	private List<Team> teams;
+
+}

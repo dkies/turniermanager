@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: turnier
+    ports:
+      - "3306:3306"
+
