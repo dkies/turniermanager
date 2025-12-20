@@ -20,10 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
-import java.util.UUID;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,12 +41,18 @@ public class ReportingService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<byte[]> generateResultCardsPdf(UUID pitchId) {
+    public Optional<byte[]> generateResultCardsPdf(UUID pitchId, boolean printAll) {
 
         Pitch pitch = pitchRepository.findById(pitchId)
                 .orElseThrow(() -> new IllegalArgumentException("Spielfeld mit ID " + pitchId + " nicht gefunden."));
 
-        List<ScheduledGame> games = getPendingGamesByPitch(pitch);
+        List<ScheduledGame> games = new ArrayList<>();
+        if (printAll) {
+            games = scheduledGameRepository.findByScheduleItem_ScheduledPitchOrderByScheduleItem_StartTimeAsc(pitch);
+        } else {
+            games = getPendingGamesByPitch(pitch);
+
+        }
 
         if (games.isEmpty()) {
             return Optional.of(new byte[0]);

@@ -39,6 +39,10 @@ public interface ScheduledGameRepository extends JpaRepository<ScheduledGame, UU
             Pitch pitch,
             GameStatus status
     );
+
+    List<ScheduledGame> findByScheduleItem_ScheduledPitchOrderByScheduleItem_StartTimeAsc(
+            Pitch pitch
+    );
     List<ScheduledGame> findByScheduleItemIn(List<ScheduleItem> items);
 }
 

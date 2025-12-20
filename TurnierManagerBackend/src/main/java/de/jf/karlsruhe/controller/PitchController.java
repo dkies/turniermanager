@@ -88,8 +88,12 @@ public class PitchController {
     public ResponseEntity<byte[]> getResultCards(@PathVariable UUID id) {
 
         // Delegiert die gesamte Logik zur Datenerfassung und PDF-Generierung an den Service
-        Optional<byte[]> pdfContent = reportingService.generateResultCardsPdf(id);
+        Optional<byte[]> pdfContent = reportingService.generateResultCardsPdf(id, false);
 
+        return getResponseEntityForResultCard(id, pdfContent);
+    }
+
+    private static ResponseEntity<byte[]> getResponseEntityForResultCard(UUID id, Optional<byte[]> pdfContent) {
         if (pdfContent.isEmpty()) {
             // Spielfeld nicht gefunden
             return ResponseEntity.notFound().build();
@@ -109,5 +113,14 @@ public class PitchController {
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(pdfBytes);
+    }
+
+    // Generiert die Ergebnis-Karten als PDF
+    @GetMapping(value = "/all-result-card/{id}", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> getAllResultCards(@PathVariable UUID id) {
+
+        // Delegiert die gesamte Logik zur Datenerfassung und PDF-Generierung an den Service
+        Optional<byte[]> pdfContent = reportingService.generateResultCardsPdf(id, true);
+        return getResponseEntityForResultCard(id, pdfContent);
     }
 }
