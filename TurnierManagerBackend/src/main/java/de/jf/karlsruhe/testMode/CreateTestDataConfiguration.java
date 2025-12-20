@@ -110,8 +110,8 @@ public class CreateTestDataConfiguration {
 
             // 5. TEST DATEN ERSTELLEN: ZUFÄLLIGE ERGEBNISSE EINTRAGEN (WIRD ÜBER DEN TRANSAKTIONALEN SERVICE GEMACHT)
             System.out.println("\n--- Zufallsergebnisse werden eingetragen (Transaktion Phase) ---");
-            //dataCompletionService.completeGamesRandomly(gruppeA);
-            //dataCompletionService.completeGamesRandomly(gruppeB_U13);
+            dataCompletionService.completeGamesRandomly(gruppeA);
+            dataCompletionService.completeGamesRandomly(gruppeB_U13);
         };
     }
 

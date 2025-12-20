@@ -37,7 +37,7 @@ public class GameScoreService {
     private ScheduledGame applyScoreUpdate(ScheduledGame game, int teamAScore, int teamBScore) {
         game.setTeamAScore(teamAScore);
         game.setTeamBScore(teamBScore);
-        game.setStatus(GameStatus.COMPLETED);
+        //game.setStatus(GameStatus.COMPLETED);
 
         return scheduledGameRepository.save(game);
     }
