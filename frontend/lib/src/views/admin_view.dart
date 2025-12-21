@@ -5,6 +5,7 @@ import 'package:separated_row/separated_row.dart';
 import 'package:tournament_manager/src/constants.dart';
 import 'package:tournament_manager/src/helper/error_helper.dart';
 import 'package:tournament_manager/src/manager/game_manager.dart';
+import 'package:tournament_manager/src/model/admin/extended_game.dart';
 import 'package:watch_it/watch_it.dart';
 
 class AdminView extends StatelessWidget {
@@ -26,51 +27,37 @@ class AdminView extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
-        child: ListView(children: [
-          GameScoreView(),
-          const SizedBox(height: 10),
-          PitchPrinter(),
-        ]),
+        child: ListView(
+          children: const [
+            GameScoreView(),
+            SizedBox(height: 10),
+            PitchPrinter(),
+          ],
+        ),
       ),
     );
   }
 }
 
 class PitchPrinter extends StatelessWidget with WatchItMixin {
-  PitchPrinter({super.key});
+  const PitchPrinter({super.key});
 
   final _gameManager = di<GameManager>();
 
   @override
   Widget build(BuildContext context) {
-    var pitches = watchPropertyValue((GameManager manager) => manager.pitches);
-    List<Widget> pitchWidgets = pitches.map(
-      (pitch) {
-        return SeparatedRow(
-          separatorBuilder: (context, index) => const SizedBox(width: 10),
-          children: [
-            Text('${pitch.name} (ID: ${pitch.id})'),
-            IconButton(
-              onPressed: () async {
-                var result = await _gameManager.printPitchCommand
-                    .executeWithFuture(pitch.id);
-
-                if (result) {
-                  return;
-                }
-
-                if (!context.mounted) {
-                  return;
-                }
-
-                showError(context,
-                    'Schiedrichterzettel für Platz #${pitch.id} konnte nicht erstellt werden!');
-              },
-              icon: const Icon(Icons.print),
-            ),
-          ],
-        );
-      },
+    final pitches = watchPropertyValue((GameManager manager) => manager.pitches);
+    final pitchWidgets = pitches.map(
+      (pitch) => SeparatedRow(
+        separatorBuilder: (context, index) => const SizedBox(width: 10),
+        children: [
+          Text('${pitch.name} (ID: ${pitch.id})'),
+          IconButton(
+            onPressed: () => _handlePrintPitch(context, pitch.id),
+            icon: const Icon(Icons.print),
+          ),
+        ],
+      ),
     ).toList();
 
     return SeparatedColumn(
@@ -85,21 +72,7 @@ class PitchPrinter extends StatelessWidget with WatchItMixin {
               style: Constants.mediumHeaderTextStyle,
             ),
             IconButton(
-              onPressed: () async {
-                var result = await _gameManager.printAllPitchesCommand
-                    .executeWithFuture();
-
-                if (result) {
-                  return;
-                }
-
-                if (!context.mounted) {
-                  return;
-                }
-
-                showError(context,
-                    'Ein oder mehrere Schiedrichterzettel konnten nicht erstellt werden!');
-              },
+              onPressed: () => _handlePrintAllPitches(context),
               icon: const Icon(Icons.print),
               tooltip: 'Alles drucken',
             ),
@@ -109,103 +82,60 @@ class PitchPrinter extends StatelessWidget with WatchItMixin {
       ],
     );
   }
+
+  Future<void> _handlePrintPitch(BuildContext context, String pitchId) async {
+    final result = await _gameManager.printPitchCommand.executeWithFuture(pitchId);
+
+    if (result || !context.mounted) {
+      return;
+    }
+
+    showError(
+      context,
+      'Schiedrichterzettel für Platz #$pitchId konnte nicht erstellt werden!',
+    );
+  }
+
+  Future<void> _handlePrintAllPitches(BuildContext context) async {
+    final result = await _gameManager.printAllPitchesCommand.executeWithFuture();
+
+    if (result || !context.mounted) {
+      return;
+    }
+
+    showError(
+      context,
+      'Ein oder mehrere Schiedrichterzettel konnten nicht erstellt werden!',
+    );
+  }
 }
 
 class GameScoreView extends StatelessWidget with WatchItMixin {
-  GameScoreView({super.key});
+  const GameScoreView({super.key});
 
   final _gameManager = di<GameManager>();
+
+  static const _columns = [
+    DataColumn(label: Text('#', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
+    DataColumn(label: Text('Startzeit', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
+    DataColumn(label: Text('Platz', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
+    DataColumn(label: Text('Altersklasse', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
+    DataColumn(label: Text('Liga', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
+    DataColumn(label: Text('Team A Name', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
+    DataColumn(label: Text('Team A Score', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
+    DataColumn(label: Text(':', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
+    DataColumn(label: Text('Team B Score', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
+    DataColumn(label: Text('Team B Name', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
+    DataColumn(label: Text('Actions', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
+  ];
 
   @override
   Widget build(BuildContext context) {
     var games = watchPropertyValue((GameManager manager) => manager.games);
-    games.sort((a, b) {
-      if (a == b) {
-        return 0;
-      }
-
-      if (a.startTime.isBefore(b.startTime)) {
-        return -1;
-      }
-
-      return 1;
-    });
-
-    List<DataColumn> columns = [
-      addDataColumn('#'),
-      addDataColumn('Startzeit'),
-      addDataColumn('Platz'),
-      addDataColumn('Altersklasse'),
-      addDataColumn('Liga'),
-      addDataColumn('Team A Name'),
-      addDataColumn('Team A Score'),
-      addDataColumn(':'),
-      addDataColumn('Team B Score'),
-      addDataColumn('Team B Name'),
-      addDataColumn('Actions'),
-    ];
-
-    List<DataRow> rows = [];
-    for (var game in games) {
-      final teamAController =
-          TextEditingController(text: game.pointsTeamA.toString());
-      final teamBController =
-          TextEditingController(text: game.pointsTeamB.toString());
-
-      List<DataCell> cells = [
-        addDataCell(game.gameNumber.toString()),
-        addDataCell(DateFormat.Hm().format(game.startTime)),
-        addDataCell(game.pitch),
-        addDataCell(game.ageGroupName),
-        addDataCell(game.leagueName),
-        addDataCell(game.teamA),
-        DataCell(
-          TextField(
-            controller: teamAController,
-          ),
-        ),
-        addDataCell(':'),
-        DataCell(
-          TextField(
-            controller: teamBController,
-          ),
-        ),
-        addDataCell(game.teamB),
-        DataCell(
-          IconButton(
-            onPressed: () async {
-              var teamAScore = int.tryParse(teamAController.text);
-              var teamBScore = int.tryParse(teamBController.text);
-
-              if (teamAScore == null || teamBScore == null) {
-                showError(context,
-                    "Spiel #${game.gameNumber} konnte nicht gespeichert werden! Falsches Zahlenformat!");
-                return;
-              }
-
-              var result =
-                  await _gameManager.saveGameCommand.executeWithFuture((
-                game.gameNumber,
-                teamAScore,
-                teamBScore,
-              ));
-
-              if (!context.mounted) {
-                return;
-              }
-
-              if (!result) {
-                showError(context,
-                    "Spiel #${game.gameNumber} konnte nicht gespeichert werden! Server-Fehler / Exception!");
-              }
-            },
-            icon: const Icon(Icons.save),
-          ),
-        ),
-      ];
-
-      rows.add(DataRow(cells: cells));
-    }
+    
+    // Create a sorted copy instead of mutating the original list
+    final sortedGames = List<ExtendedGame>.from(games)
+      ..sort((a, b) => a.startTime.compareTo(b.startTime));
 
     return SeparatedColumn(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -218,8 +148,8 @@ class GameScoreView extends StatelessWidget with WatchItMixin {
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: DataTable(
-            columns: columns,
-            rows: rows,
+            columns: _columns,
+            rows: sortedGames.map((game) => _GameRow(game: game, gameManager: _gameManager)).toList(),
           ),
         ),
       ],
@@ -227,24 +157,89 @@ class GameScoreView extends StatelessWidget with WatchItMixin {
   }
 }
 
-DataColumn addDataColumn(String header) {
-  var columnHeaderTextStyle = Constants.standardTextStyle.copyWith(
-    fontWeight: FontWeight.bold,
-  );
+class _GameRow extends StatefulWidget {
+  const _GameRow({
+    required this.game,
+    required this.gameManager,
+  });
 
-  return DataColumn(
-    label: Text(
-      header,
-      style: columnHeaderTextStyle,
-    ),
-  );
+  final ExtendedGame game;
+  final GameManager gameManager;
+
+  @override
+  State<_GameRow> createState() => _GameRowState();
 }
 
-DataCell addDataCell(String text) {
-  return DataCell(
-    Text(
-      text,
-      style: Constants.standardTextStyle,
-    ),
-  );
+class _GameRowState extends State<_GameRow> {
+  late final TextEditingController _teamAController;
+  late final TextEditingController _teamBController;
+
+  @override
+  void initState() {
+    super.initState();
+    _teamAController = TextEditingController(text: widget.game.pointsTeamA.toString());
+    _teamBController = TextEditingController(text: widget.game.pointsTeamB.toString());
+  }
+
+  @override
+  void dispose() {
+    _teamAController.dispose();
+    _teamBController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DataRow(
+      cells: [
+        DataCell(Text(widget.game.gameNumber.toString(), style: Constants.standardTextStyle)),
+        DataCell(Text(DateFormat.Hm().format(widget.game.startTime), style: Constants.standardTextStyle)),
+        DataCell(Text(widget.game.pitch, style: Constants.standardTextStyle)),
+        DataCell(Text(widget.game.ageGroupName, style: Constants.standardTextStyle)),
+        DataCell(Text(widget.game.leagueName, style: Constants.standardTextStyle)),
+        DataCell(Text(widget.game.teamA, style: Constants.standardTextStyle)),
+        DataCell(TextField(controller: _teamAController)),
+        const DataCell(Text(':', style: Constants.standardTextStyle)),
+        DataCell(TextField(controller: _teamBController)),
+        DataCell(Text(widget.game.teamB, style: Constants.standardTextStyle)),
+        DataCell(
+          IconButton(
+            onPressed: () async {
+              final teamAScore = int.tryParse(_teamAController.text);
+              final teamBScore = int.tryParse(_teamBController.text);
+
+              if (teamAScore == null || teamBScore == null) {
+                if (context.mounted) {
+                  showError(
+                    context,
+                    "Spiel #${widget.game.gameNumber} konnte nicht gespeichert werden! Falsches Zahlenformat!",
+                  );
+                }
+                return;
+              }
+
+              final result = await widget.gameManager.saveGameCommand.executeWithFuture((
+                widget.game.gameNumber,
+                teamAScore,
+                teamBScore,
+              ));
+
+              if (!context.mounted) {
+                return;
+              }
+
+              if (!result) {
+                showError(
+                  context,
+                  "Spiel #${widget.game.gameNumber} konnte nicht gespeichert werden! Server-Fehler / Exception!",
+                );
+              }
+            },
+            icon: const Icon(Icons.save),
+          ),
+        ),
+      ],
+    );
+  }
 }
+

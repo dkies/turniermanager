@@ -5,6 +5,7 @@ import 'package:tournament_manager/src/constants.dart';
 import 'package:tournament_manager/src/helper/error_helper.dart';
 import 'package:tournament_manager/src/manager/game_manager.dart';
 import 'package:tournament_manager/src/manager/settings_manager.dart';
+import 'package:tournament_manager/src/model/age_group.dart';
 import 'package:tournament_manager/src/model/referee/game.dart';
 import 'package:tournament_manager/src/model/referee/game_group.dart';
 import 'package:tournament_manager/src/model/referee/game_settings.dart';
@@ -23,7 +24,6 @@ class RefereeView extends StatefulWidget with WatchItStatefulWidgetMixin {
 }
 
 class _RefereeViewState extends State<RefereeView> {
-  // final Map<String, int> ageGroupIdToMaxTeams = {};
   final roundSettings = RoundSettings(
     GameSettings(
       DateTime.now(),
@@ -31,30 +31,57 @@ class _RefereeViewState extends State<RefereeView> {
       3,
     ),
   );
-  var barrierDissmissed = false;
+  bool barrierDissmissed = false;
+  late final GameManager _gameManager;
+  late final SettingsManager _settingsManager;
+
+  @override
+  void initState() {
+    super.initState();
+    _gameManager = di<GameManager>();
+    _settingsManager = di<SettingsManager>();
+
+    // Initialize round settings when age groups are available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ageGroups = _gameManager.ageGroups;
+      for (var ageGroup in ageGroups) {
+        roundSettings.numberPerRounds.update(
+          ageGroup.id,
+          (value) => Constants.maxNumberOfTeamsDefault,
+          ifAbsent: () => Constants.maxNumberOfTeamsDefault,
+        );
+      }
+    });
+  }
+
+  void _dismissBarrier() {
+    setState(() {
+      barrierDissmissed = true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    var gameManager = di<GameManager>();
-    var settingsManager = di<SettingsManager>();
-
-    var gameGroups =
+    final gameGroups =
         watchPropertyValue((GameManager manager) => manager.gameGroups);
-    var ageGroups =
+    final ageGroups =
         watchPropertyValue((GameManager manager) => manager.ageGroups);
 
-    bool canPauseGames =
-        watchPropertyValue((SettingsManager manager) => manager.canPause);
-    var currentlyRunningGames = watchPropertyValue(
-        (SettingsManager manager) => manager.currentlyRunningGames);
-
-    for (var ageGroup in ageGroups) {
-      roundSettings.numberPerRounds.update(
-        ageGroup.id,
-        (value) => 6,
-        ifAbsent: () => 6,
-      );
+    // Update round settings when age groups change
+    if (ageGroups.isNotEmpty) {
+      for (var ageGroup in ageGroups) {
+        roundSettings.numberPerRounds.update(
+          ageGroup.id,
+          (value) => Constants.maxNumberOfTeamsDefault,
+          ifAbsent: () => Constants.maxNumberOfTeamsDefault,
+        );
+      }
     }
+
+    final canPauseGames =
+        watchPropertyValue((SettingsManager manager) => manager.canPause);
+    final currentlyRunningGames = watchPropertyValue(
+        (SettingsManager manager) => manager.currentlyRunningGames);
 
     var mainContent = Scaffold(
       appBar: AppBar(
@@ -71,7 +98,7 @@ class _RefereeViewState extends State<RefereeView> {
             child: Switch(
               value: canPauseGames,
               onChanged: (value) {
-                settingsManager.setCanPauseCommand(!canPauseGames);
+                _settingsManager.setCanPauseCommand(!canPauseGames);
               },
               activeColor: Colors.blue,
             ),
@@ -81,94 +108,10 @@ class _RefereeViewState extends State<RefereeView> {
             onPressed: () {
               showDialog(
                 context: context,
-                builder: (dialogContext) {
-                  return AlertDialog(
-                    title: const Text('Einstellungen (nächste Runde)'),
-                    content: SizedBox(
-                      height: MediaQuery.of(context).size.height / 2,
-                      width: 300,
-                      child: Column(
-                        children: [
-                          const Text('Max. Anzahl Teams / Runde'),
-                          Expanded(
-                            child: ListView.separated(
-                              itemBuilder: (_, index) {
-                                var ageGroup = ageGroups[index];
-
-                                return TextField(
-                                  controller: TextEditingController(
-                                    text: Constants.maxNumberOfTeamsDefault
-                                        .toString(),
-                                  ),
-                                  decoration: InputDecoration(
-                                    label: Text(ageGroup.name),
-                                  ),
-                                  onChanged: (userInput) {
-                                    var result = int.tryParse(userInput);
-                                    if (result == null) {
-                                      return;
-                                    }
-
-                                    roundSettings.numberPerRounds.update(
-                                      ageGroup.id,
-                                      (value) => result,
-                                      ifAbsent: () => 6,
-                                    );
-                                  },
-                                );
-                              },
-                              separatorBuilder: (_, index) {
-                                return const SizedBox(height: 10);
-                              },
-                              itemCount: ageGroups.length,
-                            ),
-                          ),
-                          const Text('Sonstiges'),
-                          TextField(
-                            controller: TextEditingController(
-                              text: roundSettings.gameSettings.breakTime
-                                  .toString(),
-                            ),
-                            decoration: const InputDecoration(
-                              label: Text('Pausenzeit (min)'),
-                            ),
-                            onChanged: (userInput) {
-                              var result = int.tryParse(userInput);
-                              if (result == null) {
-                                return;
-                              }
-
-                              roundSettings.gameSettings.breakTime = result;
-                            },
-                          ),
-                          TextField(
-                            controller: TextEditingController(
-                              text: roundSettings.gameSettings.playTime
-                                  .toString(),
-                            ),
-                            decoration: const InputDecoration(
-                              label: Text('Spielzeit / Spiel (min)'),
-                            ),
-                            onChanged: (userInput) {
-                              var result = int.tryParse(userInput);
-                              if (result == null) {
-                                return;
-                              }
-
-                              roundSettings.gameSettings.playTime = result;
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => GoRouter.of(dialogContext).pop(),
-                        child: const Text('OK'),
-                      ),
-                    ],
-                  );
-                },
+                builder: (dialogContext) => _SettingsDialog(
+                  roundSettings: roundSettings,
+                  ageGroups: ageGroups,
+                ),
               );
             },
             icon: const Icon(Icons.settings),
@@ -202,13 +145,14 @@ class _RefereeViewState extends State<RefereeView> {
                     actions: [
                       ElevatedButton(
                         onPressed: () async {
-                          var result = await gameManager.startNextRoundCommand
+                          final result = await _gameManager
+                              .startNextRoundCommand
                               .executeWithFuture(roundSettings);
                           if (result) {
-                            gameManager.getCurrentRoundCommand();
-                            settingsManager
+                            _gameManager.getCurrentRoundCommand();
+                            _settingsManager
                                 .setCurrentlyRunningGamesCommand(null);
-                            settingsManager
+                            _settingsManager
                                 .setCurrentTimeInMillisecondsCommand(null);
                           }
 
@@ -218,7 +162,7 @@ class _RefereeViewState extends State<RefereeView> {
 
                           GoRouter.of(dialogContext).pop();
 
-                          if (!result) {
+                          if (!result && context.mounted) {
                             showError(context,
                                 'Nächste Runde konnte nicht gestartet werden!');
                           }
@@ -269,13 +213,7 @@ class _RefereeViewState extends State<RefereeView> {
               first: index == 0,
               gameGroup: gameGroup,
               canPauseGames: canPauseGames,
-              onStart: () {
-                setState(
-                  () {
-                    barrierDissmissed = true;
-                  },
-                );
-              },
+              onStart: _dismissBarrier,
             );
           },
           itemCount: gameGroups.length,
@@ -298,22 +236,14 @@ class _RefereeViewState extends State<RefereeView> {
       ),
     );
 
-    List<Widget> unmuteBarrier = [
+    final unmuteBarrier = [
       ModalBarrier(
         color: Colors.white.withOpacity(0.3),
-        onDismiss: () {
-          setState(() {
-            barrierDissmissed = true;
-          });
-        },
+        onDismiss: _dismissBarrier,
       ),
       Center(
         child: IconButton(
-          onPressed: () {
-            setState(() {
-              barrierDissmissed = true;
-            });
-          },
+          onPressed: _dismissBarrier,
           icon: const Icon(
             Icons.volume_up,
             size: 100,
@@ -327,6 +257,133 @@ class _RefereeViewState extends State<RefereeView> {
         mainContent,
         if (currentlyRunningGames != null && !barrierDissmissed)
           ...unmuteBarrier,
+      ],
+    );
+  }
+}
+
+class _SettingsDialog extends StatefulWidget {
+  const _SettingsDialog({
+    required this.roundSettings,
+    required this.ageGroups,
+  });
+
+  final RoundSettings roundSettings;
+  final List<AgeGroup> ageGroups;
+
+  @override
+  State<_SettingsDialog> createState() => _SettingsDialogState();
+}
+
+class _SettingsDialogState extends State<_SettingsDialog> {
+  late final Map<String, TextEditingController> _teamControllers;
+  late final TextEditingController _breakTimeController;
+  late final TextEditingController _playTimeController;
+
+  @override
+  void initState() {
+    super.initState();
+    _teamControllers = {
+      for (var ageGroup in widget.ageGroups)
+        ageGroup.id: TextEditingController(
+          text: widget.roundSettings.numberPerRounds[ageGroup.id]?.toString() ??
+              Constants.maxNumberOfTeamsDefault.toString(),
+        )
+    };
+    _breakTimeController = TextEditingController(
+      text: widget.roundSettings.gameSettings.breakTime.toString(),
+    );
+    _playTimeController = TextEditingController(
+      text: widget.roundSettings.gameSettings.playTime.toString(),
+    );
+  }
+
+  @override
+  void dispose() {
+    for (var controller in _teamControllers.values) {
+      controller.dispose();
+    }
+    _breakTimeController.dispose();
+    _playTimeController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Einstellungen (nächste Runde)'),
+      content: SizedBox(
+        height: MediaQuery.of(context).size.height / 2,
+        width: 300,
+        child: Column(
+          children: [
+            const Text('Max. Anzahl Teams / Runde'),
+            Expanded(
+              child: ListView.separated(
+                itemBuilder: (_, index) {
+                  final ageGroup = widget.ageGroups[index];
+                  final controller = _teamControllers[ageGroup.id]!;
+
+                  return TextField(
+                    controller: controller,
+                    decoration: InputDecoration(
+                      label: Text(ageGroup.name),
+                    ),
+                    onChanged: (userInput) {
+                      final result = int.tryParse(userInput);
+                      if (result == null) {
+                        return;
+                      }
+
+                      widget.roundSettings.numberPerRounds.update(
+                        ageGroup.id,
+                        (value) => result,
+                        ifAbsent: () => result,
+                      );
+                    },
+                  );
+                },
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemCount: widget.ageGroups.length,
+              ),
+            ),
+            const Text('Sonstiges'),
+            TextField(
+              controller: _breakTimeController,
+              decoration: const InputDecoration(
+                label: Text('Pausenzeit (min)'),
+              ),
+              onChanged: (userInput) {
+                final result = int.tryParse(userInput);
+                if (result == null) {
+                  return;
+                }
+
+                widget.roundSettings.gameSettings.breakTime = result;
+              },
+            ),
+            TextField(
+              controller: _playTimeController,
+              decoration: const InputDecoration(
+                label: Text('Spielzeit / Spiel (min)'),
+              ),
+              onChanged: (userInput) {
+                final result = int.tryParse(userInput);
+                if (result == null) {
+                  return;
+                }
+
+                widget.roundSettings.gameSettings.playTime = result;
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => GoRouter.of(context).pop(),
+          child: const Text('OK'),
+        ),
       ],
     );
   }
@@ -359,19 +416,25 @@ class _GameViewState extends State<GameView> {
   Color standardTextColor = Colors.white;
 
   final soundPlayerService = di<SoundPlayerService>();
-  var settingsManager = di<SettingsManager>();
+  late final SettingsManager _settingsManager;
+  late final GameManager _gameManager;
 
   bool gameTimeEnded = false;
 
   @override
-  Widget build(BuildContext context) {
-    var gameManager = di<GameManager>();
-    settingsManager.getCurrentTimeInMillisecondsCommand();
+  void initState() {
+    super.initState();
+    _settingsManager = di<SettingsManager>();
+    _gameManager = di<GameManager>();
+    _settingsManager.getCurrentTimeInMillisecondsCommand();
+  }
 
+  @override
+  Widget build(BuildContext context) {
     void startOrPauseGames() {
       if (!currentlyRunning && currentGamesActualStart == null) {
         currentGamesActualStart = DateTime.now();
-        settingsManager
+        _settingsManager
             .setCurrentlyRunningGamesCommand(widget.gameGroup.startTime);
       }
 
@@ -390,35 +453,35 @@ class _GameViewState extends State<GameView> {
       });
     }
 
-    var currentlyRunningGames = watchPropertyValue(
+    final currentlyRunningGames = watchPropertyValue(
         (SettingsManager manager) => manager.currentlyRunningGames);
 
     if (currentlyRunningGames != null &&
         currentlyRunningGames == widget.gameGroup.startTime &&
         !currentlyRunning &&
         !reset) {
-      settingsManager.getCurrentTimeInMillisecondsCommand();
+      _settingsManager.getCurrentTimeInMillisecondsCommand();
       startOrPauseGames();
     }
 
-    List<Widget> rows = [];
+    final textColor = currentlyRunning ? selectedTextColor : standardTextColor;
+    final games = widget.gameGroup.games;
+    final gameWidgets = <Widget>[];
 
-    for (var game in widget.gameGroup.games) {
-      rows.add(
+    for (var i = 0; i < games.length; i++) {
+      gameWidgets.add(
         GameEntryView(
-          gameRoundEntry: game,
-          textColor: currentlyRunning ? selectedTextColor : standardTextColor,
+          gameRoundEntry: games[i],
+          textColor: textColor,
         ),
       );
-
-      rows.add(const Divider());
+      if (i < games.length - 1) {
+        gameWidgets.add(const Divider());
+      }
     }
 
-    rows.removeLast();
-
-    var color = currentlyRunning ? selectedTextColor : standardTextColor;
-    var headerTextStyle = Constants.mediumHeaderTextStyle.copyWith(
-      color: color,
+    final headerTextStyle = Constants.mediumHeaderTextStyle.copyWith(
+      color: textColor,
     );
 
     return Card(
@@ -447,31 +510,27 @@ class _GameViewState extends State<GameView> {
                                   ? null
                                   : () {
                                       startOrPauseGames();
-                                      if (widget.onStart != null) {
-                                        widget.onStart!();
-                                      }
+                                      widget.onStart?.call();
                                     }
                               : () {
                                   startOrPauseGames();
-                                  if (widget.onStart != null) {
-                                    widget.onStart!();
-                                  }
+                                  widget.onStart?.call();
                                 },
                           icon: Icon(currentlyRunning
                               ? Icons.pause
                               : Icons.play_arrow),
-                          color: color,
+                          color: textColor,
                           tooltip: "Spiel starten",
                         ),
                       const SizedBox(width: 5),
                       CountDownView(
                         timeInMinutes: widget.gameGroup.gameDurationInMinutes,
-                        textColor: color,
+                        textColor: textColor,
                         start: currentlyRunning,
                         refresh: reset,
                         startTimeInMilliSeconds: currentlyRunningGames == null
                             ? null
-                            : settingsManager.currentTimeInMilliseconds,
+                            : _settingsManager.currentTimeInMilliseconds,
                         onHalftime: () {
                           if (!widget.canPauseGames) {
                             return;
@@ -493,9 +552,9 @@ class _GameViewState extends State<GameView> {
                           onPressed: !widget.canPauseGames
                               ? null
                               : () {
-                                  settingsManager
+                                  _settingsManager
                                       .setCurrentlyRunningGamesCommand(null);
-                                  settingsManager
+                                  _settingsManager
                                       .setCurrentTimeInMillisecondsCommand(
                                           null);
 
@@ -507,7 +566,7 @@ class _GameViewState extends State<GameView> {
                                   currentGamesActualStart = null;
                                 },
                           icon: const Icon(Icons.refresh),
-                          color: color,
+                          color: textColor,
                           tooltip: "Spiel zurücksetzen",
                         ),
                     ],
@@ -517,126 +576,18 @@ class _GameViewState extends State<GameView> {
                       width: 100,
                       child: Tooltip(
                         message: 'Pause einfügen (vorher)',
-                        child: TextField(
-                          decoration: const InputDecoration(
-                            suffixIcon: Icon(Icons.more_time),
-                          ),
-                          onSubmitted: (value) async {
-                            var parsed = int.tryParse(value);
-                            if (parsed == null) {
-                              showError(context, 'Falsches Zahlenformat!');
-                              return;
-                            }
-
-                            var result = await gameManager.addBreakCommand
-                                .executeWithFuture(
-                              (
-                                widget.gameGroup.startTime.subtract(
-                                  const Duration(
-                                    minutes: 1,
-                                  ), //subtract one minute to start the break before these games
-                                ),
-                                parsed,
-                              ),
-                            );
-
-                            if (result) {
-                              gameManager.getCurrentRoundCommand();
-                              return;
-                            }
-
-                            if (!context.mounted) {
-                              return;
-                            }
-
-                            showError(context,
-                                'Pause konnte nicht eingefügt werden!');
-                          },
+                        child: _BreakTextField(
+                          gameGroup: widget.gameGroup,
+                          gameManager: _gameManager,
                         ),
                       ),
                     ),
                   if (widget.first)
                     IconButton(
-                      onPressed: () async {
-                        if (currentGamesActualStart == null) {
-                          showError(context,
-                              'Spiele wurden nicht gestartet und konnten daher nicht beendet werden');
-                          return;
-                        }
-
-                        if (!gameTimeEnded) {
-                          bool? dialogResult = await showDialog<bool>(
-                            context: context,
-                            builder: (dialogContext) {
-                              return AlertDialog(
-                                icon: const Icon(Icons.warning),
-                                iconColor: Colors.yellow,
-                                title: const Text('Spiele beenden'),
-                                content: const SizedBox(
-                                  height: 100,
-                                  child: Center(
-                                    child: Text(
-                                      'Spielzeit ist noch nicht abgelaufen. Spiele wirklich beenden?',
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ),
-                                actions: [
-                                  ElevatedButton(
-                                    onPressed: () async {
-                                      GoRouter.of(dialogContext).pop(true);
-                                    },
-                                    child: const Text('OK'),
-                                  ),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      GoRouter.of(dialogContext).pop(false);
-                                    },
-                                    child: const Text('Abbrechen'),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-
-                          if (dialogResult != null && !dialogResult) {
-                            return;
-                          }
-                        }
-
-                        var result = await gameManager.endCurrentGamesCommand
-                            .executeWithFuture(
-                          (
-                            widget.gameGroup.startTime,
-                            currentGamesActualStart!,
-                            DateTime.now(),
-                          ),
-                        );
-
-                        setState(() {
-                          currentlyRunning = false;
-                          reset = true;
-                          currentGamesActualStart = null;
-                        });
-
-                        if (result) {
-                          settingsManager.setCurrentlyRunningGamesCommand(null);
-                          settingsManager
-                              .setCurrentTimeInMillisecondsCommand(null);
-                          gameManager.getCurrentRoundCommand();
-                          return;
-                        }
-
-                        if (!context.mounted) {
-                          return;
-                        }
-
-                        showError(
-                            context, 'Spiele konnten nicht beendet werden');
-                      },
+                      onPressed: () => _handleEndGames(context),
                       icon: Icon(
                         Icons.start,
-                        color: color,
+                        color: textColor,
                       ),
                       tooltip: "Spiel beenden",
                     )
@@ -651,11 +602,126 @@ class _GameViewState extends State<GameView> {
               bottom: 10,
             ),
             child: Column(
-              children: rows.toList(),
+              children: gameWidgets,
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _handleEndGames(BuildContext context) async {
+    if (currentGamesActualStart == null) {
+      if (context.mounted) {
+        showError(context,
+            'Spiele wurden nicht gestartet und konnten daher nicht beendet werden');
+      }
+      return;
+    }
+
+    if (!gameTimeEnded) {
+      final dialogResult = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          icon: const Icon(Icons.warning),
+          iconColor: Colors.yellow,
+          title: const Text('Spiele beenden'),
+          content: const SizedBox(
+            height: 100,
+            child: Center(
+              child: Text(
+                'Spielzeit ist noch nicht abgelaufen. Spiele wirklich beenden?',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => GoRouter.of(dialogContext).pop(true),
+              child: const Text('OK'),
+            ),
+            ElevatedButton(
+              onPressed: () => GoRouter.of(dialogContext).pop(false),
+              child: const Text('Abbrechen'),
+            ),
+          ],
+        ),
+      );
+
+      if (dialogResult != true) {
+        return;
+      }
+    }
+
+    final result = await _gameManager.endCurrentGamesCommand.executeWithFuture(
+      (
+        widget.gameGroup.startTime,
+        currentGamesActualStart!,
+        DateTime.now(),
+      ),
+    );
+
+    setState(() {
+      currentlyRunning = false;
+      reset = true;
+      currentGamesActualStart = null;
+    });
+
+    if (result) {
+      _settingsManager.setCurrentlyRunningGamesCommand(null);
+      _settingsManager.setCurrentTimeInMillisecondsCommand(null);
+      _gameManager.getCurrentRoundCommand();
+      return;
+    }
+
+    if (context.mounted) {
+      showError(context, 'Spiele konnten nicht beendet werden');
+    }
+  }
+}
+
+class _BreakTextField extends StatelessWidget {
+  const _BreakTextField({
+    required this.gameGroup,
+    required this.gameManager,
+  });
+
+  final GameGroup gameGroup;
+  final GameManager gameManager;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      decoration: const InputDecoration(
+        suffixIcon: Icon(Icons.more_time),
+      ),
+      onSubmitted: (value) async {
+        final parsed = int.tryParse(value);
+        if (parsed == null) {
+          if (context.mounted) {
+            showError(context, 'Falsches Zahlenformat!');
+          }
+          return;
+        }
+
+        final result = await gameManager.addBreakCommand.executeWithFuture(
+          (
+            gameGroup.startTime.subtract(
+              const Duration(minutes: 1),
+            ),
+            parsed,
+          ),
+        );
+
+        if (result) {
+          gameManager.getCurrentRoundCommand();
+          return;
+        }
+
+        if (context.mounted) {
+          showError(context, 'Pause konnte nicht eingefügt werden!');
+        }
+      },
     );
   }
 }
@@ -713,21 +779,18 @@ class _CountDownViewState extends State<CountDownView> {
           currentTime = displayTime;
         });
 
-        if ((value <= totalTimeInMilliSeconds / 2) && !halfTimeSoundPlayed) {
+        final halfTimeThreshold = totalTimeInMilliSeconds / 2;
+        if (value <= halfTimeThreshold && !halfTimeSoundPlayed) {
           soundPlayerService.playSound(Sounds.horn);
           setState(() {
             halfTimeSoundPlayed = true;
           });
-
-          if (widget.onHalftime == null) {
-            return;
-          }
-
-          widget.onHalftime!();
+          widget.onHalftime?.call();
         }
 
         // end music is 32 seconds, where 3 seconds are the horn that signals the end
-        if (value <= (29 * 1000) && !onEndedCalled) {
+        const endMusicThreshold = 29 * 1000;
+        if (value <= endMusicThreshold && !onEndedCalled) {
           soundPlayerService.playSound(Sounds.endMusic);
           setState(() {
             onEndedCalled = true;
@@ -737,30 +800,24 @@ class _CountDownViewState extends State<CountDownView> {
       onEnded: () {
         settingsManager.setCurrentlyRunningGamesCommand(null);
         settingsManager.setCurrentTimeInMillisecondsCommand(null);
-
-        if (widget.onEnded != null) {
-          widget.onEnded!();
-        }
-
-        if (onEndedCalled) {
-          return;
-        }
+        widget.onEnded?.call();
 
         // in case the end music was not yet played (maybe because of too short duration), play horn at the end
-        soundPlayerService.playSound(Sounds.horn);
-
-        setState(() {
-          onEndedCalled = true;
-        });
+        if (!onEndedCalled) {
+          soundPlayerService.playSound(Sounds.horn);
+          setState(() {
+            onEndedCalled = true;
+          });
+        }
       },
     );
     super.initState();
   }
 
   @override
-  void dispose() async {
+  void dispose() {
+    _stopWatchTimer.dispose();
     super.dispose();
-    await _stopWatchTimer.dispose();
   }
 
   @override
@@ -768,30 +825,27 @@ class _CountDownViewState extends State<CountDownView> {
     if (widget.refresh) {
       if (_stopWatchTimer.isRunning) {
         _stopWatchTimer.onResetTimer();
-
         _stopWatchTimer.clearPresetTime();
       }
 
-      setState(() {
-        onEndedCalled = false;
-        halfTimeSoundPlayed = false;
-      });
-    } else {
-      if (widget.start) {
-        if (!_stopWatchTimer.isRunning) {
-          if (widget.startTimeInMilliSeconds != null) {
-            _stopWatchTimer.setPresetTime(
-              mSec: widget.startTimeInMilliSeconds!,
-              add: false,
-            );
-          }
-          _stopWatchTimer.onStartTimer();
-        }
-      } else {
-        if (_stopWatchTimer.isRunning) {
-          _stopWatchTimer.onStopTimer();
-        }
+      if (mounted) {
+        setState(() {
+          onEndedCalled = false;
+          halfTimeSoundPlayed = false;
+        });
       }
+    } else if (widget.start) {
+      if (!_stopWatchTimer.isRunning) {
+        if (widget.startTimeInMilliSeconds != null) {
+          _stopWatchTimer.setPresetTime(
+            mSec: widget.startTimeInMilliSeconds!,
+            add: false,
+          );
+        }
+        _stopWatchTimer.onStartTimer();
+      }
+    } else if (_stopWatchTimer.isRunning) {
+      _stopWatchTimer.onStopTimer();
     }
 
     return Text(
