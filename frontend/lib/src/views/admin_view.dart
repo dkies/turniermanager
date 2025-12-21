@@ -42,23 +42,26 @@ class AdminView extends StatelessWidget {
 class PitchPrinter extends StatelessWidget with WatchItMixin {
   const PitchPrinter({super.key});
 
-  final _gameManager = di<GameManager>();
+  GameManager get _gameManager => di<GameManager>();
 
   @override
   Widget build(BuildContext context) {
-    final pitches = watchPropertyValue((GameManager manager) => manager.pitches);
-    final pitchWidgets = pitches.map(
-      (pitch) => SeparatedRow(
-        separatorBuilder: (context, index) => const SizedBox(width: 10),
-        children: [
-          Text('${pitch.name} (ID: ${pitch.id})'),
-          IconButton(
-            onPressed: () => _handlePrintPitch(context, pitch.id),
-            icon: const Icon(Icons.print),
+    final pitches =
+        watchPropertyValue((GameManager manager) => manager.pitches);
+    final pitchWidgets = pitches
+        .map(
+          (pitch) => SeparatedRow(
+            separatorBuilder: (context, index) => const SizedBox(width: 10),
+            children: [
+              Text('${pitch.name} (ID: ${pitch.id})'),
+              IconButton(
+                onPressed: () => _handlePrintPitch(context, pitch.id),
+                icon: const Icon(Icons.print),
+              ),
+            ],
           ),
-        ],
-      ),
-    ).toList();
+        )
+        .toList();
 
     return SeparatedColumn(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,7 +87,8 @@ class PitchPrinter extends StatelessWidget with WatchItMixin {
   }
 
   Future<void> _handlePrintPitch(BuildContext context, String pitchId) async {
-    final result = await _gameManager.printPitchCommand.executeWithFuture(pitchId);
+    final result =
+        await _gameManager.printPitchCommand.executeWithFuture(pitchId);
 
     if (result || !context.mounted) {
       return;
@@ -97,7 +101,8 @@ class PitchPrinter extends StatelessWidget with WatchItMixin {
   }
 
   Future<void> _handlePrintAllPitches(BuildContext context) async {
-    final result = await _gameManager.printAllPitchesCommand.executeWithFuture();
+    final result =
+        await _gameManager.printAllPitchesCommand.executeWithFuture();
 
     if (result || !context.mounted) {
       return;
@@ -113,26 +118,59 @@ class PitchPrinter extends StatelessWidget with WatchItMixin {
 class GameScoreView extends StatelessWidget with WatchItMixin {
   const GameScoreView({super.key});
 
-  final _gameManager = di<GameManager>();
+  GameManager get _gameManager => di<GameManager>();
 
-  static const _columns = [
-    DataColumn(label: Text('#', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
-    DataColumn(label: Text('Startzeit', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
-    DataColumn(label: Text('Platz', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
-    DataColumn(label: Text('Altersklasse', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
-    DataColumn(label: Text('Liga', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
-    DataColumn(label: Text('Team A Name', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
-    DataColumn(label: Text('Team A Score', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
-    DataColumn(label: Text(':', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
-    DataColumn(label: Text('Team B Score', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
-    DataColumn(label: Text('Team B Name', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
-    DataColumn(label: Text('Actions', style: Constants.standardTextStyle.copyWith(fontWeight: FontWeight.bold))),
-  ];
+  static List<DataColumn> get _columns => [
+        DataColumn(
+            label: Text('#',
+                style: Constants.standardTextStyle
+                    .copyWith(fontWeight: FontWeight.bold))),
+        DataColumn(
+            label: Text('Startzeit',
+                style: Constants.standardTextStyle
+                    .copyWith(fontWeight: FontWeight.bold))),
+        DataColumn(
+            label: Text('Platz',
+                style: Constants.standardTextStyle
+                    .copyWith(fontWeight: FontWeight.bold))),
+        DataColumn(
+            label: Text('Altersklasse',
+                style: Constants.standardTextStyle
+                    .copyWith(fontWeight: FontWeight.bold))),
+        DataColumn(
+            label: Text('Liga',
+                style: Constants.standardTextStyle
+                    .copyWith(fontWeight: FontWeight.bold))),
+        DataColumn(
+            label: Text('Team A Name',
+                style: Constants.standardTextStyle
+                    .copyWith(fontWeight: FontWeight.bold))),
+        DataColumn(
+            label: Text('Team A Score',
+                style: Constants.standardTextStyle
+                    .copyWith(fontWeight: FontWeight.bold))),
+        DataColumn(
+            label: Text(':',
+                style: Constants.standardTextStyle
+                    .copyWith(fontWeight: FontWeight.bold))),
+        DataColumn(
+            label: Text('Team B Score',
+                style: Constants.standardTextStyle
+                    .copyWith(fontWeight: FontWeight.bold))),
+        DataColumn(
+            label: Text('Team B Name',
+                style: Constants.standardTextStyle
+                    .copyWith(fontWeight: FontWeight.bold))),
+        DataColumn(
+            label: Text('Actions',
+                style: Constants.standardTextStyle
+                    .copyWith(fontWeight: FontWeight.bold))),
+      ];
 
   @override
   Widget build(BuildContext context) {
     var games = watchPropertyValue((GameManager manager) => manager.games);
-    
+
     // Create a sorted copy instead of mutating the original list
     final sortedGames = List<ExtendedGame>.from(games)
       ..sort((a, b) => a.startTime.compareTo(b.startTime));
@@ -147,9 +185,10 @@ class GameScoreView extends StatelessWidget with WatchItMixin {
         ),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          child: DataTable(
+          child: _GameDataTable(
+            games: sortedGames,
+            gameManager: _gameManager,
             columns: _columns,
-            rows: sortedGames.map((game) => _GameRow(game: game, gameManager: _gameManager)).toList(),
           ),
         ),
       ],
@@ -157,89 +196,110 @@ class GameScoreView extends StatelessWidget with WatchItMixin {
   }
 }
 
-class _GameRow extends StatefulWidget {
-  const _GameRow({
-    required this.game,
+class _GameDataTable extends StatefulWidget {
+  const _GameDataTable({
+    required this.games,
     required this.gameManager,
+    required this.columns,
   });
 
-  final ExtendedGame game;
+  final List<ExtendedGame> games;
   final GameManager gameManager;
+  final List<DataColumn> columns;
 
   @override
-  State<_GameRow> createState() => _GameRowState();
+  State<_GameDataTable> createState() => _GameDataTableState();
 }
 
-class _GameRowState extends State<_GameRow> {
-  late final TextEditingController _teamAController;
-  late final TextEditingController _teamBController;
+class _GameDataTableState extends State<_GameDataTable> {
+  final Map<int, TextEditingController> _teamAControllers = {};
+  final Map<int, TextEditingController> _teamBControllers = {};
 
   @override
   void initState() {
     super.initState();
-    _teamAController = TextEditingController(text: widget.game.pointsTeamA.toString());
-    _teamBController = TextEditingController(text: widget.game.pointsTeamB.toString());
+    for (final game in widget.games) {
+      _teamAControllers[game.gameNumber] =
+          TextEditingController(text: game.pointsTeamA.toString());
+      _teamBControllers[game.gameNumber] =
+          TextEditingController(text: game.pointsTeamB.toString());
+    }
   }
 
   @override
   void dispose() {
-    _teamAController.dispose();
-    _teamBController.dispose();
+    for (final controller in _teamAControllers.values) {
+      controller.dispose();
+    }
+    for (final controller in _teamBControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return DataRow(
-      cells: [
-        DataCell(Text(widget.game.gameNumber.toString(), style: Constants.standardTextStyle)),
-        DataCell(Text(DateFormat.Hm().format(widget.game.startTime), style: Constants.standardTextStyle)),
-        DataCell(Text(widget.game.pitch, style: Constants.standardTextStyle)),
-        DataCell(Text(widget.game.ageGroupName, style: Constants.standardTextStyle)),
-        DataCell(Text(widget.game.leagueName, style: Constants.standardTextStyle)),
-        DataCell(Text(widget.game.teamA, style: Constants.standardTextStyle)),
-        DataCell(TextField(controller: _teamAController)),
-        const DataCell(Text(':', style: Constants.standardTextStyle)),
-        DataCell(TextField(controller: _teamBController)),
-        DataCell(Text(widget.game.teamB, style: Constants.standardTextStyle)),
-        DataCell(
-          IconButton(
-            onPressed: () async {
-              final teamAScore = int.tryParse(_teamAController.text);
-              final teamBScore = int.tryParse(_teamBController.text);
+    return DataTable(
+      columns: widget.columns,
+      rows: widget.games.map((game) {
+        final teamAController = _teamAControllers[game.gameNumber]!;
+        final teamBController = _teamBControllers[game.gameNumber]!;
 
-              if (teamAScore == null || teamBScore == null) {
-                if (context.mounted) {
-                  showError(
-                    context,
-                    "Spiel #${widget.game.gameNumber} konnte nicht gespeichert werden! Falsches Zahlenformat!",
-                  );
-                }
-                return;
-              }
+        return DataRow(
+          cells: [
+            DataCell(Text(game.gameNumber.toString(),
+                style: Constants.standardTextStyle)),
+            DataCell(Text(DateFormat.Hm().format(game.startTime),
+                style: Constants.standardTextStyle)),
+            DataCell(Text(game.pitch, style: Constants.standardTextStyle)),
+            DataCell(
+                Text(game.ageGroupName, style: Constants.standardTextStyle)),
+            DataCell(Text(game.leagueName, style: Constants.standardTextStyle)),
+            DataCell(Text(game.teamA, style: Constants.standardTextStyle)),
+            DataCell(TextField(controller: teamAController)),
+            const DataCell(Text(':', style: Constants.standardTextStyle)),
+            DataCell(TextField(controller: teamBController)),
+            DataCell(Text(game.teamB, style: Constants.standardTextStyle)),
+            DataCell(
+              IconButton(
+                onPressed: () async {
+                  final teamAScore = int.tryParse(teamAController.text);
+                  final teamBScore = int.tryParse(teamBController.text);
 
-              final result = await widget.gameManager.saveGameCommand.executeWithFuture((
-                widget.game.gameNumber,
-                teamAScore,
-                teamBScore,
-              ));
+                  if (teamAScore == null || teamBScore == null) {
+                    if (context.mounted) {
+                      showError(
+                        context,
+                        "Spiel #${game.gameNumber} konnte nicht gespeichert werden! Falsches Zahlenformat!",
+                      );
+                    }
+                    return;
+                  }
 
-              if (!context.mounted) {
-                return;
-              }
+                  final result = await widget.gameManager.saveGameCommand
+                      .executeWithFuture((
+                    game.gameNumber,
+                    teamAScore,
+                    teamBScore,
+                  ));
 
-              if (!result) {
-                showError(
-                  context,
-                  "Spiel #${widget.game.gameNumber} konnte nicht gespeichert werden! Server-Fehler / Exception!",
-                );
-              }
-            },
-            icon: const Icon(Icons.save),
-          ),
-        ),
-      ],
+                  if (!context.mounted) {
+                    return;
+                  }
+
+                  if (!result) {
+                    showError(
+                      context,
+                      "Spiel #${game.gameNumber} konnte nicht gespeichert werden! Server-Fehler / Exception!",
+                    );
+                  }
+                },
+                icon: const Icon(Icons.save),
+              ),
+            ),
+          ],
+        );
+      }).toList(),
     );
   }
 }
-
