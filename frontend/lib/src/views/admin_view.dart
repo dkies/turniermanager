@@ -218,11 +218,55 @@ class _GameDataTableState extends State<_GameDataTable> {
   @override
   void initState() {
     super.initState();
+    _initializeControllers();
+  }
+
+  @override
+  void didUpdateWidget(_GameDataTable oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update controllers when games list changes
+    if (oldWidget.games != widget.games) {
+      // Dispose controllers for games that are no longer in the list
+      final currentGameNumbers = widget.games.map((g) => g.gameNumber).toSet();
+      final oldGameNumbers = oldWidget.games.map((g) => g.gameNumber).toSet();
+
+      for (final gameNumber in oldGameNumbers) {
+        if (!currentGameNumbers.contains(gameNumber)) {
+          _teamAControllers[gameNumber]?.dispose();
+          _teamBControllers[gameNumber]?.dispose();
+          _teamAControllers.remove(gameNumber);
+          _teamBControllers.remove(gameNumber);
+        }
+      }
+
+      // Create controllers for new games or update existing ones
+      _initializeControllers();
+    }
+  }
+
+  void _initializeControllers() {
     for (final game in widget.games) {
-      _teamAControllers[game.gameNumber] =
-          TextEditingController(text: game.pointsTeamA.toString());
-      _teamBControllers[game.gameNumber] =
-          TextEditingController(text: game.pointsTeamB.toString());
+      if (!_teamAControllers.containsKey(game.gameNumber)) {
+        _teamAControllers[game.gameNumber] =
+            TextEditingController(text: game.pointsTeamA.toString());
+      } else {
+        // Update existing controller if value changed
+        final controller = _teamAControllers[game.gameNumber]!;
+        if (controller.text != game.pointsTeamA.toString()) {
+          controller.text = game.pointsTeamA.toString();
+        }
+      }
+
+      if (!_teamBControllers.containsKey(game.gameNumber)) {
+        _teamBControllers[game.gameNumber] =
+            TextEditingController(text: game.pointsTeamB.toString());
+      } else {
+        // Update existing controller if value changed
+        final controller = _teamBControllers[game.gameNumber]!;
+        if (controller.text != game.pointsTeamB.toString()) {
+          controller.text = game.pointsTeamB.toString();
+        }
+      }
     }
   }
 
@@ -242,8 +286,11 @@ class _GameDataTableState extends State<_GameDataTable> {
     return DataTable(
       columns: widget.columns,
       rows: widget.games.map((game) {
-        final teamAController = _teamAControllers[game.gameNumber]!;
-        final teamBController = _teamBControllers[game.gameNumber]!;
+        // Ensure controllers exist (safety check)
+        final teamAController = _teamAControllers[game.gameNumber] ??=
+            TextEditingController(text: game.pointsTeamA.toString());
+        final teamBController = _teamBControllers[game.gameNumber] ??=
+            TextEditingController(text: game.pointsTeamB.toString());
 
         return DataRow(
           cells: [
