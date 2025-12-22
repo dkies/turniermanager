@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:download/download.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tournament_manager/src/serialization/admin/extended_game_dto.dart';
 import 'package:tournament_manager/src/serialization/admin/game_score_update_dto.dart';
 import 'package:tournament_manager/src/serialization/age_group_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/break_request_dto.dart';
@@ -8,7 +10,6 @@ import 'package:tournament_manager/src/serialization/referee/game_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/game_group_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/pitch_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/round_settings_dto.dart';
-import 'package:tournament_manager/src/serialization/referee/team_dto.dart';
 import 'package:tournament_manager/src/serialization/results/result_entry_dto.dart';
 import 'package:tournament_manager/src/serialization/results/results_dto.dart';
 import 'package:tournament_manager/src/serialization/schedule/league_dto.dart';
@@ -36,6 +37,8 @@ abstract class GameRestApi {
   Future<List<AgeGroupDto>> getAllAgeGroups();
   Future<AgeGroupDto?> getAgeGroup(String ageGroupName);
 
+  Future<List<GameGroupDto>> getCurrentRound();
+  Future<List<ExtendedGameDto>> getAllGames();
   Future<bool> saveGame(int gameNumber, int teamAScore, int teamBScore);
 
   Future<bool> addBreak(
@@ -56,6 +59,8 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
   late final Uri addBreakUri;
   late final Uri getAllPitchesUri;
   late final String printPitchPath;
+  late final Uri getAllGameGroupsUri;
+  late final Uri getAllGamesUri;
 
   GameRestApiImplementation(String baseUri) {
     _baseUri = baseUri;
@@ -68,6 +73,10 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
     addBreakUri = Uri.parse('$_baseUri/breaks/createBreak');
     getAllPitchesUri = Uri.parse('$_baseUri/pitches');
     printPitchPath = '$_baseUri/pitches/result-card/';
+    getAllGameGroupsUri =
+        Uri.parse('$_baseUri/gameplan/activeGamesSortedDateTimeList');
+    getAllGamesUri =
+        Uri.parse('$_baseUri/gameplan/get-all-games-listed-extended');
   }
 
   @override
@@ -154,8 +163,35 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
     return ageGroup;
   }
 
-  // Removed getCurrentRound() - endpoint no longer exists in backend
-  // Removed getAllGames() - endpoint no longer exists in backend
+  @override
+  Future<List<GameGroupDto>> getCurrentRound() async {
+    final response = await client.get(getAllGameGroupsUri, headers: headers);
+
+    if (response.statusCode == 200) {
+      var json = jsonDecode(response.body);
+
+      if (json is List) {
+        return json.map((e) => GameGroupDto.fromJson(e)).toList();
+      }
+    }
+
+    return [];
+  }
+
+  @override
+  Future<List<ExtendedGameDto>> getAllGames() async {
+    final response = await client.get(getAllGamesUri, headers: headers);
+
+    if (response.statusCode == 200) {
+      var json = jsonDecode(response.body);
+
+      if (json is List) {
+        return json.map((e) => ExtendedGameDto.fromJson(e)).toList();
+      }
+    }
+
+    return [];
+  }
 
   @override
   Future<bool> saveGame(int gameNumber, int teamAScore, int teamBScore) async {
@@ -286,36 +322,52 @@ class GameTestRestApi extends GameRestApi {
       2,
     )..games = [
         GameDto(
+          'test-id-1',
+          DateTime(2025, 4, 1, 15, 30, 0),
           1,
-          PitchDto('1', "Feld 1", null),
-          TeamDto("Team A"),
-          TeamDto("Team B"),
+          "Team A",
+          "Team B",
+          "Feld 1",
           'Liga 1',
           'Altersklasse 1',
+          'PENDING',
+          'GAME',
         ),
         GameDto(
+          'test-id-2',
+          DateTime(2025, 4, 1, 15, 30, 0),
           1,
-          PitchDto('2', "Feld 2", null),
-          TeamDto("Team A"),
-          TeamDto("Team B"),
+          "Team A",
+          "Team B",
+          "Feld 2",
           'Liga 1',
           'Altersklasse 2',
+          'PENDING',
+          'GAME',
         ),
         GameDto(
+          'test-id-3',
+          DateTime(2025, 4, 1, 15, 30, 0),
           2,
-          PitchDto('1', "Feld 1", null),
-          TeamDto("Team A"),
-          TeamDto("Team B"),
+          "Team A",
+          "Team B",
+          "Feld 1",
           'Liga 2',
           'Altersklasse 1',
+          'PENDING',
+          'GAME',
         ),
         GameDto(
+          'test-id-4',
+          DateTime(2025, 4, 1, 15, 30, 0),
           2,
-          PitchDto('2', "Feld 2", null),
-          TeamDto("Team A"),
-          TeamDto("Team B"),
+          "Team A",
+          "Team B",
+          "Feld 2",
           'Liga 2',
           'Altersklasse 2',
+          'PENDING',
+          'GAME',
         ),
       ],
     GameGroupDto(
@@ -323,56 +375,71 @@ class GameTestRestApi extends GameRestApi {
       12,
     )..games = [
         GameDto(
+          'test-id-5',
+          DateTime(2025, 4, 1, 15, 45, 0),
           1,
-          PitchDto('1', "Feld 1", null),
-          TeamDto("Team A"),
-          TeamDto("Team B"),
+          "Team A",
+          "Team B",
+          "Feld 1",
           'Liga 1',
           'Altersklasse 1',
+          'PENDING',
+          'GAME',
         ),
         GameDto(
+          'test-id-6',
+          DateTime(2025, 4, 1, 15, 45, 0),
           1,
-          PitchDto('2', "Feld 2", null),
-          TeamDto("Team A"),
-          TeamDto("Team B"),
+          "Team A",
+          "Team B",
+          "Feld 2",
           'Liga 3',
           'Altersklasse 1',
+          'PENDING',
+          'GAME',
         ),
         GameDto(
+          'test-id-7',
+          DateTime(2025, 4, 1, 15, 45, 0),
           2,
-          PitchDto('1', "Feld 1", null),
-          TeamDto("Team A"),
-          TeamDto("Team B"),
+          "Team A",
+          "Team B",
+          "Feld 1",
           'Liga 1',
           'Altersklasse 4',
+          'PENDING',
+          'GAME',
         ),
         GameDto(
+          'test-id-8',
+          DateTime(2025, 4, 1, 15, 45, 0),
           2,
-          PitchDto('2', "Feld 2", null),
-          TeamDto("Team A"),
-          TeamDto("Team B"),
+          "Team A",
+          "Team B",
+          "Feld 2",
           'Liga 5',
           'Altersklasse 1',
+          'PENDING',
+          'GAME',
         ),
       ],
   ];
 
-  // Removed - endpoint no longer exists in backend
-  // @override
-  // Future<List<GameGroupDto>> getCurrentRound() async {
-  //   var prefs = await SharedPreferences.getInstance();
-  //   var result = prefs.getString('currentlyRunningGames');
-  //
-  //   if (result != null) {
-  //     var converted = DateTime.tryParse(result);
-  //
-  //     if (converted != null) {
-  //       gameGroups[0].startTime = converted;
-  //     }
-  //   }
-  //
-  //   return gameGroups;
-  // }
+  @override
+  Future<List<GameGroupDto>> getCurrentRound() async {
+    var prefs = await SharedPreferences.getInstance();
+    var result = prefs.getString('currentlyRunningGames');
+
+    if (result != null) {
+      var converted = DateTime.tryParse(result);
+
+      if (converted != null) {
+        gameGroups[0].startTime = converted;
+      }
+    }
+
+    return gameGroups;
+  }
 
   @override
   Future<ResultsDto?> getResults(String ageGroupId) async {
@@ -457,34 +524,37 @@ class GameTestRestApi extends GameRestApi {
     return true;
   }
 
-  // Removed - endpoint no longer exists in backend
-  // @override
-  // Future<List<ExtendedGameDto>> getAllGames() async {
-  //   return [
-  //     ExtendedGameDto(
-  //       1,
-  //       'Platz 1',
-  //       'Team 1',
-  //       'Team 2',
-  //       'Liga 1',
-  //       'Altersklasse 1',
-  //       2,
-  //       3,
-  //       DateTime.now().add(const Duration(minutes: 10)),
-  //     ),
-  //     ExtendedGameDto(
-  //       2,
-  //       'Platz 2',
-  //       'Team 3',
-  //       'Team 4',
-  //       'Liga 2',
-  //       'Altersklasse 2',
-  //       5,
-  //       6,
-  //       DateTime.now(),
-  //     ),
-  //   ];
-  // }
+  @override
+  Future<List<ExtendedGameDto>> getAllGames() async {
+    return [
+      ExtendedGameDto(
+        'test-extended-id-1',
+        DateTime.now().add(const Duration(minutes: 10)),
+        1,
+        'Team 1',
+        'Team 2',
+        'Platz 1',
+        'Liga 1',
+        'Altersklasse 1',
+        2,
+        3,
+        'PENDING',
+      ),
+      ExtendedGameDto(
+        'test-extended-id-2',
+        DateTime.now(),
+        2,
+        'Team 3',
+        'Team 4',
+        'Platz 2',
+        'Liga 2',
+        'Altersklasse 2',
+        5,
+        6,
+        'PENDING',
+      ),
+    ];
+  }
 
   @override
   Future<bool> saveGame(int gameNumber, int teamAScore, int teamBScore) async {

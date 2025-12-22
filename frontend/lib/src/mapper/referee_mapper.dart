@@ -22,7 +22,7 @@ class RefereeMapper {
   GameGroup mapGameGroup(GameGroupDto dto) {
     return GameGroup(
       dto.startTime,
-      dto.gameDurationInMinutes,
+      dto.gameDurationInMinutes ?? 20, // Default to 20 minutes if not provided
     )..games = dto.games.map((game) => mapGame(game)).toList();
   }
 
@@ -33,11 +33,12 @@ class RefereeMapper {
   }
 
   Game mapGame(GameDto dto) {
+    // New structure: all fields are Strings
     return Game(
       dto.gameNumber,
-      mapPitch(dto.pitch),
-      mapTeam(dto.teamA),
-      mapTeam(dto.teamB),
+      Pitch('', dto.pitch), // Create Pitch with empty id and name from string
+      Team(dto.teamA), // Create Team from string
+      Team(dto.teamB), // Create Team from string
       dto.leagueName,
       dto.ageGroupName,
     );

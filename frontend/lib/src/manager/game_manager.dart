@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_command/flutter_command.dart';
+import 'package:tournament_manager/src/mapper/admin_mapper.dart';
 import 'package:tournament_manager/src/mapper/match_schedule_mapper.dart';
 import 'package:tournament_manager/src/mapper/referee_mapper.dart';
 import 'package:tournament_manager/src/mapper/results_mapper.dart';
 import 'package:tournament_manager/src/mapper/age_group_mapper.dart';
 import 'package:tournament_manager/src/model/admin/extended_game.dart';
+import 'package:tournament_manager/src/serialization/admin/extended_game_dto.dart';
 import 'package:tournament_manager/src/model/age_group.dart';
 import 'package:tournament_manager/src/model/referee/game_group.dart';
 import 'package:tournament_manager/src/model/referee/pitch.dart';
@@ -58,6 +60,7 @@ class GameManagerImplementation extends ChangeNotifier implements GameManager {
   late final ResultsMapper _resultsMapper;
   late final RefereeMapper _refereeMapper;
   late final AgeGroupMapper _ageGroupMapper;
+  late final AdminMapper _adminMapper;
 
   @override
   late Command<String, void> getScheduleCommand;
@@ -150,6 +153,7 @@ class GameManagerImplementation extends ChangeNotifier implements GameManager {
     _resultsMapper = ResultsMapper();
     _refereeMapper = RefereeMapper();
     _ageGroupMapper = AgeGroupMapper();
+    _adminMapper = AdminMapper();
 
     getScheduleCommand = Command.createAsyncNoResult(
       (input) async {
@@ -223,8 +227,11 @@ class GameManagerImplementation extends ChangeNotifier implements GameManager {
     );
 
     getCurrentRoundCommand = Command.createAsyncNoParamNoResult(() async {
-      // Endpoint removed from backend - keeping as no-op for backward compatibility
-      // gameGroups = [];
+      var result = await _gameRestApi.getCurrentRound();
+
+      gameGroups = result
+          .map((gameGroup) => _refereeMapper.mapGameGroup(gameGroup))
+          .toList();
     });
 
     getAgeGroupsCommand = Command.createAsyncNoParamNoResult(
@@ -237,8 +244,8 @@ class GameManagerImplementation extends ChangeNotifier implements GameManager {
 
     getAllGamesCommand = Command.createAsyncNoParamNoResult(
       () async {
-        // Endpoint removed from backend - keeping as no-op for backward compatibility
-        // games = [];
+        List<ExtendedGameDto> result = await _gameRestApi.getAllGames();
+        games = result.map((e) => _adminMapper.map(e)).toList();
       },
     );
 

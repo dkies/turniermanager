@@ -8,7 +8,9 @@ part of 'game_group_dto.dart';
 
 GameGroupDto _$GameGroupDtoFromJson(Map<String, dynamic> json) => GameGroupDto(
       DateTime.parse(json['startTime'] as String),
-      (json['gameDurationInMinutes'] as num).toInt(),
+      json['gameDurationInMinutes'] != null
+          ? (json['gameDurationInMinutes'] as num).toInt()
+          : null,
     )..games = (json['games'] as List<dynamic>)
         .map((e) => GameDto.fromJson(e as Map<String, dynamic>))
         .toList();

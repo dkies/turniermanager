@@ -6,26 +6,30 @@ part 'extended_game_dto.g.dart';
 @JsonSerializable()
 class ExtendedGameDto {
   ExtendedGameDto(
+    this.id,
+    this.startTime,
     this.gameNumber,
-    this.pitch,
     this.teamA,
     this.teamB,
+    this.pitch,
     this.leagueName,
     this.ageGroupName,
     this.pointsTeamA,
     this.pointsTeamB,
-    this.startTime,
+    this.status,
   );
 
+  String id; // UUID as String
+  DateTime startTime;
   int gameNumber;
-  String pitch;
   String teamA;
   String teamB;
+  String pitch;
   String leagueName;
   String ageGroupName;
   int pointsTeamA;
   int pointsTeamB;
-  DateTime startTime;
+  String status;
 
   factory ExtendedGameDto.fromJson(Map<String, dynamic> json) =>
       _$ExtendedGameDtoFromJson(json);

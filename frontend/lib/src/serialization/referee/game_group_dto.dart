@@ -12,7 +12,8 @@ class GameGroupDto {
   );
 
   DateTime startTime;
-  int gameDurationInMinutes;
+  int?
+      gameDurationInMinutes; // Optional, not present in GameScheduleDateTimeDTO
   List<GameDto> games = [];
 
   factory GameGroupDto.fromJson(Map<String, dynamic> json) =>
