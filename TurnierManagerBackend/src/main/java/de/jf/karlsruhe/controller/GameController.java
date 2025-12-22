@@ -2,6 +2,7 @@ package de.jf.karlsruhe.controller;
 
 import de.jf.karlsruhe.model.base.ScheduledGame;
 import de.jf.karlsruhe.model.dto.EmergencyGameInsertationDTO;
+import de.jf.karlsruhe.model.dto.ExtendedGameDTO;
 import de.jf.karlsruhe.model.dto.GameScoreUUIDUpdateDTO;
 import de.jf.karlsruhe.model.dto.GameScoreUpdateDTO;
 import de.jf.karlsruhe.service.GamePlanGeneratorService;
@@ -11,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -57,49 +60,6 @@ public class GameController {
         }
     }
 
-
-
-
-//
-//    private final GameRepository gameRepository;
-//    private final PitchScheduler pitchScheduler;
-//    private final GameSettingsRepository gameSettingsRepository;
-//
-//    /**
-//     * Spielergebnisse eintragen/aktualisieren
-//     *
-//     * @param gameId     ID des Spiels
-//     * @param teamAScore Punktzahl von Team A
-//     * @param teamBScore Punktzahl von Team B
-//     * @return Das aktualisierte Spiel
-//     */
-//    @PostMapping("/updatebyid/{gameId}")
-//    public ResponseEntity<Game> updateGameScores(@PathVariable UUID gameId, @RequestParam int teamAScore, @RequestParam int teamBScore) {
-//        // Spiel aus der Datenbank abrufen
-//        Game game = gameRepository.findById(gameId).orElseThrow(() -> new IllegalArgumentException("Spiel mit ID " + gameId + " nicht gefunden"));
-//
-//        // Ergebnisse setzen
-//        game.setTeamAScore(teamAScore);
-//        game.setTeamBScore(teamBScore);
-//
-//        // Aktualisiertes Spiel speichern
-//        Game updatedGame = gameRepository.save(game);
-//        return ResponseEntity.ok(updatedGame);
-//    }
-//
-//    @PostMapping("/update/{gameNumber}")
-//    public ResponseEntity<Game> updateGameScoresByNumber(@PathVariable int gameNumber, @RequestParam int teamAScore, @RequestParam int teamBScore) {
-//        // Spiel anhand der gameNumber abrufen
-//        Game game = gameRepository.findByGameNumber(gameNumber).orElseThrow(() -> new IllegalArgumentException("Spiel mit Nummer " + gameNumber + " nicht gefunden"));
-//
-//        // Ergebnisse setzen
-//        game.setTeamAScore(teamAScore);
-//        game.setTeamBScore(teamBScore);
-//
-//        // Spiel aktualisieren
-//        Game updatedGame = gameRepository.save(game);
-//        return ResponseEntity.ok(updatedGame);
-//    }
 //
 //
 //    /**
@@ -135,6 +95,7 @@ public class GameController {
 //        return ResponseEntity.ok(games);
 //    }
 //
+
 //    @GetMapping("/getAll")
 //    public ResponseEntity<List<ExtendedGameDTO>> getAllGames() {
 //        List<Game> games = gameRepository.findAll();
@@ -238,21 +199,6 @@ public class GameController {
 //    }
 //
 //
-//    @Data
-//    @NoArgsConstructor
-//    @AllArgsConstructor
-//    public class ExtendedGameDTO {
-//        private UUID id;
-//        private LocalDateTime startTime;
-//        private long gameNumber;
-//        private String teamA;
-//        private String teamB;
-//        private String pitch;
-//        private String leagueName;
-//        private String ageGroupName;
-//        private int pointsTeamA;
-//        private int pointsTeamB;
-//    }
 //
 //    @Data
 //    @NoArgsConstructor
@@ -263,26 +209,7 @@ public class GameController {
 //        private List<GameDTO> games;
 //    }
 //
-//    @Data
-//    @NoArgsConstructor
-//    @AllArgsConstructor
-//    public class GameDTO {
-//        private UUID id;
-//        private long gameNumber;
-//        private TeamDTO teamA;
-//        private TeamDTO teamB;
-//        private PitchDTO pitch;
-//        private String leagueName;
-//        private String ageGroupName;
-//    }
-//
-//    @Data
-//    @NoArgsConstructor
-//    @AllArgsConstructor
-//    public class PitchDTO {
-//        private UUID id;
-//        private String name;
-//    }
+
 //
 //    @Data
 //    @NoArgsConstructor

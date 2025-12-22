@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class BreakScheduleService {
 
     private final AgeGroupRepository ageGroupRepository;
-    private final ScheduleItemRepository scheduleItemRepository;
+    private final ScheduledItemRepository scheduledItemRepository;
     private final ScheduledBreakRepository scheduledBreakRepository;
     private final PitchRepository pitchRepository;
     private final TournamentRepository tournamentRepository;
@@ -43,7 +43,7 @@ public class BreakScheduleService {
         scheduledBreakRepository.delete(scheduledBreak);
 
         if (scheduleItem != null) {
-            scheduleItemRepository.delete(scheduleItem);
+            scheduledItemRepository.delete(scheduleItem);
         }
     }
 
@@ -100,7 +100,7 @@ public class BreakScheduleService {
                 .map(ScheduledBreak::getScheduleItem)
                 .collect(Collectors.toList());
 
-        scheduleItemRepository.saveAll(itemsToSave);
+        scheduledItemRepository.saveAll(itemsToSave);
         for (ScheduleItem item : itemsToSave) {
             shiftScheduleDueToBreak(item,tournamentRepository.findAll().getFirst());
         }
@@ -170,7 +170,7 @@ public class BreakScheduleService {
         List<ScheduleItem> affectedGameItems;
 
         if (pitch != null) {
-            affectedGameItems = scheduleItemRepository.findByScheduledPitchAndStartTimeIsAfterOrderByStartTimeAsc(pitch, newBreakStart.minus(Duration.ofSeconds(tournament.getPlayTimeInSeconds())));
+            affectedGameItems = scheduledItemRepository.findByScheduledPitchAndStartTimeIsAfterOrderByStartTimeAsc(pitch, newBreakStart.minus(Duration.ofSeconds(tournament.getPlayTimeInSeconds())));
         } else if (ageGroup != null) {
             throw new UnsupportedOperationException("Die Verschiebung globaler Pausen in bereits geplanter Zeit ist derzeit nicht unterstützt. Bitte verwenden Sie Pitch-spezifische Pausen.");
         } else {
@@ -214,7 +214,7 @@ public class BreakScheduleService {
                     gameItem.setStartTime(gameStart.plus(cumulativeShiftDuration));
                     gameItem.setEndTime(gameEnd.plus(cumulativeShiftDuration));
 
-                    scheduleItemRepository.save(gameItem);
+                    scheduledItemRepository.save(gameItem);
                 }
             }
         }

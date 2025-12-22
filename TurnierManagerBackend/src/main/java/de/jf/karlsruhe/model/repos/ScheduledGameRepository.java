@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -44,5 +43,7 @@ public interface ScheduledGameRepository extends JpaRepository<ScheduledGame, UU
             Pitch pitch
     );
     List<ScheduledGame> findByScheduleItemIn(List<ScheduleItem> items);
+
+    Optional<ScheduledGame> findByScheduleItem(ScheduleItem item);
 }
 

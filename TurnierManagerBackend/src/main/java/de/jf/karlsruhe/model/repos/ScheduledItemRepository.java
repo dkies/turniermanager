@@ -3,7 +3,6 @@ package de.jf.karlsruhe.model.repos;
 import de.jf.karlsruhe.model.base.AgeGroup;
 import de.jf.karlsruhe.model.base.Pitch;
 import de.jf.karlsruhe.model.base.ScheduleItem;
-import de.jf.karlsruhe.model.base.ScheduledBreak;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -12,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface ScheduleItemRepository extends JpaRepository<ScheduleItem, UUID> {
+public interface ScheduledItemRepository extends JpaRepository<ScheduleItem, UUID> {
 
     @Query("SELECT MAX(si.endTime) FROM ScheduleItem si WHERE si.ageGroup = :ageGroup")
     Optional<LocalDateTime> findLatestEndTimeByAgeGroup(AgeGroup ageGroup);

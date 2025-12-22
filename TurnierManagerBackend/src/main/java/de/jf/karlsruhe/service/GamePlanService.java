@@ -9,7 +9,7 @@ import de.jf.karlsruhe.model.enums.ScheduledItemType;
 import de.jf.karlsruhe.model.repos.AgeGroupRepository;
 import de.jf.karlsruhe.model.repos.RoundRepository;
 import de.jf.karlsruhe.model.repos.ScheduledGameRepository;
-import de.jf.karlsruhe.model.repos.ScheduleItemRepository;
+import de.jf.karlsruhe.model.repos.ScheduledItemRepository;
 import de.jf.karlsruhe.model.repos.LeagueRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ public class GamePlanService {
 
     private final AgeGroupRepository ageGroupRepository;
     private final RoundRepository roundRepository;
-    private final ScheduleItemRepository scheduleItemRepository;
+    private final ScheduledItemRepository scheduledItemRepository;
     private final ScheduledGameRepository scheduledGameRepository;
     private final LeagueRepository leagueRepository;
 
@@ -47,7 +47,7 @@ public class GamePlanService {
             throw new IllegalArgumentException("Keine Ligen für diese Altersgruppe in der aktuellen Runde gefunden.");
         }
 
-        List<ScheduleItem> allScheduleItems = scheduleItemRepository
+        List<ScheduleItem> allScheduleItems = scheduledItemRepository
                 .findByAgeGroupAndStartTimeIsAfterOrderByStartTimeAsc(
                         ageGroup,
                         LocalDateTime.now().minusHours(1)

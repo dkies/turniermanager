@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GamePlanGeneratorService {
 
-    private final ScheduleItemRepository scheduleItemRepository;
+    private final ScheduledItemRepository scheduledItemRepository;
     private final ScheduledGameRepository scheduledGameRepository;
     private final PitchRepository pitchRepository;
     private final LeagueRepository leagueRepository;
@@ -41,7 +41,7 @@ public class GamePlanGeneratorService {
         Map<Pitch, LocalDateTime> pitchNextAvailableTimes = new HashMap<>();
 
         for (Pitch pitch : pitches) {
-            Optional<LocalDateTime> latestEndTime = scheduleItemRepository.findLatestEndTimeByPitchId(pitch.getId());
+            Optional<LocalDateTime> latestEndTime = scheduledItemRepository.findLatestEndTimeByPitchId(pitch.getId());
 
             LocalDateTime nextAvailableTime = latestEndTime
                     // Fügt die Standard-Pause in Sekunden hinzu
@@ -102,7 +102,7 @@ public class GamePlanGeneratorService {
                     .endTime(actualEndTime)
                     .scheduledPitch(bestPitch)
                     .build();
-            gameItem = scheduleItemRepository.save(gameItem);
+            gameItem = scheduledItemRepository.save(gameItem);
 
             ScheduledGame game = ScheduledGame.builder()
                     .teamA(pairing.teamA())
@@ -281,7 +281,7 @@ public class GamePlanGeneratorService {
                 .scheduledPitch(pitch)
                 .itemType(ScheduledItemType.GAME)
                 .build();
-        scheduleItem = scheduleItemRepository.save(scheduleItem);
+        scheduleItem = scheduledItemRepository.save(scheduleItem);
 
         // 5. ScheduledGame erstellen (Detail)
         ScheduledGame scheduledGame = ScheduledGame.builder()
