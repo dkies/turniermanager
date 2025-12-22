@@ -130,10 +130,6 @@ class GameScoreView extends StatelessWidget with WatchItMixin {
                 style: Constants.standardTextStyle
                     .copyWith(fontWeight: FontWeight.bold))),
         DataColumn(
-            label: Text('Platz',
-                style: Constants.standardTextStyle
-                    .copyWith(fontWeight: FontWeight.bold))),
-        DataColumn(
             label: Text('Altersklasse',
                 style: Constants.standardTextStyle
                     .copyWith(fontWeight: FontWeight.bold))),
@@ -357,7 +353,6 @@ class _GameDataTableState extends State<_GameDataTable> {
                 style: Constants.standardTextStyle)),
             DataCell(Text(DateFormat.Hm().format(game.startTime),
                 style: Constants.standardTextStyle)),
-            DataCell(Text(game.pitch, style: Constants.standardTextStyle)),
             DataCell(
                 Text(game.ageGroupName, style: Constants.standardTextStyle)),
             DataCell(Text(game.leagueName, style: Constants.standardTextStyle)),
