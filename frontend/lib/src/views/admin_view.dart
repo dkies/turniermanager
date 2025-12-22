@@ -214,6 +214,7 @@ class _GameDataTable extends StatefulWidget {
 class _GameDataTableState extends State<_GameDataTable> {
   final Map<int, TextEditingController> _teamAControllers = {};
   final Map<int, TextEditingController> _teamBControllers = {};
+  final Set<int> _savedGameNumbers = {}; // Track successfully saved games
 
   @override
   void initState() {
@@ -241,6 +242,12 @@ class _GameDataTableState extends State<_GameDataTable> {
 
       // Create controllers for new games or update existing ones
       _initializeControllers();
+
+      // Clear saved status for games that are no longer in the list
+      final currentGameNumbersSet =
+          widget.games.map((g) => g.gameNumber).toSet();
+      _savedGameNumbers.removeWhere(
+          (gameNumber) => !currentGameNumbersSet.contains(gameNumber));
     }
   }
 
@@ -292,7 +299,12 @@ class _GameDataTableState extends State<_GameDataTable> {
         final teamBController = _teamBControllers[game.gameNumber] ??=
             TextEditingController(text: game.pointsTeamB.toString());
 
+        final isSaved = _savedGameNumbers.contains(game.gameNumber);
+
         return DataRow(
+          color: isSaved
+              ? WidgetStateProperty.all(Colors.green.withOpacity(0.3))
+              : null,
           cells: [
             DataCell(Text(game.gameNumber.toString(),
                 style: Constants.standardTextStyle)),
@@ -303,9 +315,29 @@ class _GameDataTableState extends State<_GameDataTable> {
                 Text(game.ageGroupName, style: Constants.standardTextStyle)),
             DataCell(Text(game.leagueName, style: Constants.standardTextStyle)),
             DataCell(Text(game.teamA, style: Constants.standardTextStyle)),
-            DataCell(TextField(controller: teamAController)),
+            DataCell(TextField(
+              controller: teamAController,
+              onChanged: (_) {
+                // Remove saved status when score is changed
+                if (_savedGameNumbers.contains(game.gameNumber)) {
+                  setState(() {
+                    _savedGameNumbers.remove(game.gameNumber);
+                  });
+                }
+              },
+            )),
             const DataCell(Text(':', style: Constants.standardTextStyle)),
-            DataCell(TextField(controller: teamBController)),
+            DataCell(TextField(
+              controller: teamBController,
+              onChanged: (_) {
+                // Remove saved status when score is changed
+                if (_savedGameNumbers.contains(game.gameNumber)) {
+                  setState(() {
+                    _savedGameNumbers.remove(game.gameNumber);
+                  });
+                }
+              },
+            )),
             DataCell(Text(game.teamB, style: Constants.standardTextStyle)),
             DataCell(
               IconButton(
@@ -334,7 +366,12 @@ class _GameDataTableState extends State<_GameDataTable> {
                     return;
                   }
 
-                  if (!result) {
+                  if (result) {
+                    // Mark game as successfully saved
+                    setState(() {
+                      _savedGameNumbers.add(game.gameNumber);
+                    });
+                  } else {
                     showError(
                       context,
                       "Spiel #${game.gameNumber} konnte nicht gespeichert werden! Server-Fehler / Exception!",
