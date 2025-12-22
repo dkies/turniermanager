@@ -9,7 +9,7 @@ part of 'match_schedule_entry_dto.dart';
 MatchScheduleEntryDto _$MatchScheduleEntryDtoFromJson(
         Map<String, dynamic> json) =>
     MatchScheduleEntryDto(
-      json['itemType'] as String,
+      MatchScheduleEntryDto._itemTypeFromJson(json['itemType'] as String),
       json['pitchName'] as String,
       MatchScheduleEntryDto._dateTimeFromJson(json['startTime']),
       MatchScheduleEntryDto._dateTimeFromJson(json['endTime']),
@@ -21,7 +21,7 @@ MatchScheduleEntryDto _$MatchScheduleEntryDtoFromJson(
 Map<String, dynamic> _$MatchScheduleEntryDtoToJson(
         MatchScheduleEntryDto instance) =>
     <String, dynamic>{
-      'itemType': instance.itemType,
+      'itemType': MatchScheduleEntryDto._itemTypeToJson(instance.itemType),
       'pitchName': instance.pitchName,
       'startTime': MatchScheduleEntryDto._dateTimeToJson(instance.startTime),
       'endTime': MatchScheduleEntryDto._dateTimeToJson(instance.endTime),

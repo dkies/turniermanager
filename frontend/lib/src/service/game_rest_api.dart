@@ -14,6 +14,7 @@ import 'package:tournament_manager/src/serialization/results/results_dto.dart';
 import 'package:tournament_manager/src/serialization/schedule/league_dto.dart';
 import 'package:tournament_manager/src/serialization/results/league_dto.dart'
     as resultleague;
+import 'package:tournament_manager/src/serialization/schedule/item_type.dart';
 import 'package:tournament_manager/src/serialization/schedule/match_schedule_dto.dart';
 import 'package:tournament_manager/src/serialization/schedule/match_schedule_entry_dto.dart';
 import 'package:tournament_manager/src/service/rest_client.dart';
@@ -420,7 +421,7 @@ class GameTestRestApi extends GameRestApi {
       (innerIndex) {
         var startTime = DateTime.now();
         var result = MatchScheduleEntryDto(
-          "GAME", // itemType
+          ItemType.game, // itemType
           "Platz $fieldCount", // pitchName
           startTime, // startTime
           startTime.add(const Duration(minutes: 20)), // endTime
