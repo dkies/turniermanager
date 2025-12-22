@@ -215,6 +215,8 @@ class _GameDataTableState extends State<_GameDataTable> {
   final Map<int, TextEditingController> _teamAControllers = {};
   final Map<int, TextEditingController> _teamBControllers = {};
   final Set<int> _savedGameNumbers = {}; // Track successfully saved games
+  final Map<int, (int teamAScore, int teamBScore)> _savedScores =
+      {}; // Track saved scores
 
   @override
   void initState() {
@@ -248,6 +250,8 @@ class _GameDataTableState extends State<_GameDataTable> {
           widget.games.map((g) => g.gameNumber).toSet();
       _savedGameNumbers.removeWhere(
           (gameNumber) => !currentGameNumbersSet.contains(gameNumber));
+      _savedScores.removeWhere(
+          (gameNumber, _) => !currentGameNumbersSet.contains(gameNumber));
     }
   }
 
@@ -273,6 +277,49 @@ class _GameDataTableState extends State<_GameDataTable> {
         if (controller.text != game.pointsTeamB.toString()) {
           controller.text = game.pointsTeamB.toString();
         }
+      }
+    }
+  }
+
+  void _updateSavedStatus(
+    int gameNumber,
+    TextEditingController teamAController,
+    TextEditingController teamBController,
+  ) {
+    final savedScore = _savedScores[gameNumber];
+
+    if (savedScore == null) {
+      // No saved score, nothing to do
+      return;
+    }
+
+    final newTeamAScore = int.tryParse(teamAController.text);
+    final newTeamBScore = int.tryParse(teamBController.text);
+
+    if (newTeamAScore != null && newTeamBScore != null) {
+      // Both values are valid numbers
+      final matchesSaved =
+          newTeamAScore == savedScore.$1 && newTeamBScore == savedScore.$2;
+
+      final isCurrentlySaved = _savedGameNumbers.contains(gameNumber);
+
+      if (matchesSaved && !isCurrentlySaved) {
+        // Values match saved values but not marked as saved - mark as saved
+        setState(() {
+          _savedGameNumbers.add(gameNumber);
+        });
+      } else if (!matchesSaved && isCurrentlySaved) {
+        // Values don't match saved values but marked as saved - remove saved status
+        setState(() {
+          _savedGameNumbers.remove(gameNumber);
+        });
+      }
+    } else {
+      // Invalid input - remove saved status if currently saved
+      if (_savedGameNumbers.contains(gameNumber)) {
+        setState(() {
+          _savedGameNumbers.remove(gameNumber);
+        });
       }
     }
   }
@@ -318,24 +365,16 @@ class _GameDataTableState extends State<_GameDataTable> {
             DataCell(TextField(
               controller: teamAController,
               onChanged: (_) {
-                // Remove saved status when score is changed
-                if (_savedGameNumbers.contains(game.gameNumber)) {
-                  setState(() {
-                    _savedGameNumbers.remove(game.gameNumber);
-                  });
-                }
+                _updateSavedStatus(
+                    game.gameNumber, teamAController, teamBController);
               },
             )),
             const DataCell(Text(':', style: Constants.standardTextStyle)),
             DataCell(TextField(
               controller: teamBController,
               onChanged: (_) {
-                // Remove saved status when score is changed
-                if (_savedGameNumbers.contains(game.gameNumber)) {
-                  setState(() {
-                    _savedGameNumbers.remove(game.gameNumber);
-                  });
-                }
+                _updateSavedStatus(
+                    game.gameNumber, teamAController, teamBController);
               },
             )),
             DataCell(Text(game.teamB, style: Constants.standardTextStyle)),
@@ -367,9 +406,10 @@ class _GameDataTableState extends State<_GameDataTable> {
                   }
 
                   if (result) {
-                    // Mark game as successfully saved
+                    // Mark game as successfully saved and store the saved scores
                     setState(() {
                       _savedGameNumbers.add(game.gameNumber);
+                      _savedScores[game.gameNumber] = (teamAScore, teamBScore);
                     });
                   } else {
                     showError(
