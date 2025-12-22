@@ -18,7 +18,7 @@ ExtendedGameDto _$ExtendedGameDtoFromJson(Map<String, dynamic> json) =>
       json['ageGroupName'] as String,
       (json['pointsTeamA'] as num).toInt(),
       (json['pointsTeamB'] as num).toInt(),
-      json['status'] as String,
+      ExtendedGameDto._statusFromJson(json['status'] as String),
     );
 
 Map<String, dynamic> _$ExtendedGameDtoToJson(ExtendedGameDto instance) =>
@@ -33,5 +33,5 @@ Map<String, dynamic> _$ExtendedGameDtoToJson(ExtendedGameDto instance) =>
       'ageGroupName': instance.ageGroupName,
       'pointsTeamA': instance.pointsTeamA,
       'pointsTeamB': instance.pointsTeamB,
-      'status': instance.status,
+      'status': ExtendedGameDto._statusToJson(instance.status),
     };

@@ -15,6 +15,7 @@ import 'package:tournament_manager/src/serialization/results/results_dto.dart';
 import 'package:tournament_manager/src/serialization/schedule/league_dto.dart';
 import 'package:tournament_manager/src/serialization/results/league_dto.dart'
     as resultleague;
+import 'package:tournament_manager/src/serialization/game_status.dart';
 import 'package:tournament_manager/src/serialization/schedule/item_type.dart';
 import 'package:tournament_manager/src/serialization/schedule/match_schedule_dto.dart';
 import 'package:tournament_manager/src/serialization/schedule/match_schedule_entry_dto.dart';
@@ -330,8 +331,8 @@ class GameTestRestApi extends GameRestApi {
           "Feld 1",
           'Liga 1',
           'Altersklasse 1',
-          'PENDING',
-          'GAME',
+          GameStatus.scheduled,
+          ItemType.game,
         ),
         GameDto(
           'test-id-2',
@@ -342,8 +343,8 @@ class GameTestRestApi extends GameRestApi {
           "Feld 2",
           'Liga 1',
           'Altersklasse 2',
-          'PENDING',
-          'GAME',
+          GameStatus.scheduled,
+          ItemType.game,
         ),
         GameDto(
           'test-id-3',
@@ -354,8 +355,8 @@ class GameTestRestApi extends GameRestApi {
           "Feld 1",
           'Liga 2',
           'Altersklasse 1',
-          'PENDING',
-          'GAME',
+          GameStatus.scheduled,
+          ItemType.game,
         ),
         GameDto(
           'test-id-4',
@@ -366,8 +367,8 @@ class GameTestRestApi extends GameRestApi {
           "Feld 2",
           'Liga 2',
           'Altersklasse 2',
-          'PENDING',
-          'GAME',
+          GameStatus.scheduled,
+          ItemType.game,
         ),
       ],
     GameGroupDto(
@@ -383,8 +384,8 @@ class GameTestRestApi extends GameRestApi {
           "Feld 1",
           'Liga 1',
           'Altersklasse 1',
-          'PENDING',
-          'GAME',
+          GameStatus.scheduled,
+          ItemType.game,
         ),
         GameDto(
           'test-id-6',
@@ -395,8 +396,8 @@ class GameTestRestApi extends GameRestApi {
           "Feld 2",
           'Liga 3',
           'Altersklasse 1',
-          'PENDING',
-          'GAME',
+          GameStatus.scheduled,
+          ItemType.game,
         ),
         GameDto(
           'test-id-7',
@@ -407,8 +408,8 @@ class GameTestRestApi extends GameRestApi {
           "Feld 1",
           'Liga 1',
           'Altersklasse 4',
-          'PENDING',
-          'GAME',
+          GameStatus.scheduled,
+          ItemType.game,
         ),
         GameDto(
           'test-id-8',
@@ -419,8 +420,8 @@ class GameTestRestApi extends GameRestApi {
           "Feld 2",
           'Liga 5',
           'Altersklasse 1',
-          'PENDING',
-          'GAME',
+          GameStatus.scheduled,
+          ItemType.game,
         ),
       ],
   ];
@@ -538,7 +539,7 @@ class GameTestRestApi extends GameRestApi {
         'Altersklasse 1',
         2,
         3,
-        'PENDING',
+        GameStatus.scheduled,
       ),
       ExtendedGameDto(
         'test-extended-id-2',
@@ -551,7 +552,7 @@ class GameTestRestApi extends GameRestApi {
         'Altersklasse 2',
         5,
         6,
-        'PENDING',
+        GameStatus.scheduled,
       ),
     ];
   }

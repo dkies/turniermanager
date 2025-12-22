@@ -15,8 +15,8 @@ GameDto _$GameDtoFromJson(Map<String, dynamic> json) => GameDto(
       json['pitch'] as String,
       json['leagueName'] as String,
       json['ageGroupName'] as String,
-      json['status'] as String,
-      json['type'] as String,
+      GameDto._statusFromJson(json['status'] as String),
+      GameDto._typeFromJson(json['type'] as String),
     );
 
 Map<String, dynamic> _$GameDtoToJson(GameDto instance) => <String, dynamic>{
@@ -28,6 +28,6 @@ Map<String, dynamic> _$GameDtoToJson(GameDto instance) => <String, dynamic>{
       'pitch': instance.pitch,
       'leagueName': instance.leagueName,
       'ageGroupName': instance.ageGroupName,
-      'status': instance.status,
-      'type': instance.type,
+      'status': GameDto._statusToJson(instance.status),
+      'type': GameDto._typeToJson(instance.type),
     };
