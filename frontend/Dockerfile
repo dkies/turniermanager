@@ -17,7 +17,8 @@ COPY . .
 
 # Enable web support and build the Flutter web application
 RUN flutter config --enable-web
-RUN flutter build web --release --source-maps
+# Build without service worker to ensure app works offline without PWA caching
+RUN flutter build web --release --source-maps --pwa-strategy=none
 
 # Use an Nginx image to serve the Flutter web application
 FROM nginx:stable-alpine
