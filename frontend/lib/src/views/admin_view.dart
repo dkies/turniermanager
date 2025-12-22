@@ -173,7 +173,7 @@ class GameScoreView extends StatelessWidget with WatchItMixin {
 
     // Create a sorted copy instead of mutating the original list
     final sortedGames = List<ExtendedGame>.from(games)
-      ..sort((a, b) => a.startTime.compareTo(b.startTime));
+      ..sort((a, b) => a.gameNumber.compareTo(b.gameNumber));
 
     return SeparatedColumn(
       crossAxisAlignment: CrossAxisAlignment.start,
