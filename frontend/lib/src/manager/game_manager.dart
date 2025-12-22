@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_command/flutter_command.dart';
-import 'package:tournament_manager/src/mapper/admin_mapper.dart';
 import 'package:tournament_manager/src/mapper/match_schedule_mapper.dart';
 import 'package:tournament_manager/src/mapper/referee_mapper.dart';
 import 'package:tournament_manager/src/mapper/results_mapper.dart';
@@ -33,7 +32,9 @@ abstract class GameManager extends ChangeNotifier {
   late Command<(int gameNumber, int teamAScore, int teamBScore), bool>
       saveGameCommand;
 
-  late Command<(DateTime start, int durationInMinutes), bool> addBreakCommand;
+  late Command<
+      (DateTime start, DateTime end, String ageGroupId, String message),
+      bool> addBreakCommand;
 
   late Command<void, void> getAllPitchesCommand;
   late Command<String, bool> printPitchCommand;
@@ -57,7 +58,6 @@ class GameManagerImplementation extends ChangeNotifier implements GameManager {
   late final ResultsMapper _resultsMapper;
   late final RefereeMapper _refereeMapper;
   late final AgeGroupMapper _ageGroupMapper;
-  late final AdminMapper _adminMapper;
 
   @override
   late Command<String, void> getScheduleCommand;
@@ -86,7 +86,7 @@ class GameManagerImplementation extends ChangeNotifier implements GameManager {
   late Command<(int, int, int), bool> saveGameCommand;
 
   @override
-  late Command<(DateTime, int), bool> addBreakCommand;
+  late Command<(DateTime, DateTime, String, String), bool> addBreakCommand;
 
   @override
   late Command<void, void> getAllPitchesCommand;
@@ -150,7 +150,6 @@ class GameManagerImplementation extends ChangeNotifier implements GameManager {
     _resultsMapper = ResultsMapper();
     _refereeMapper = RefereeMapper();
     _ageGroupMapper = AgeGroupMapper();
-    _adminMapper = AdminMapper();
 
     getScheduleCommand = Command.createAsyncNoResult(
       (input) async {
@@ -224,11 +223,8 @@ class GameManagerImplementation extends ChangeNotifier implements GameManager {
     );
 
     getCurrentRoundCommand = Command.createAsyncNoParamNoResult(() async {
-      var result = await _gameRestApi.getCurrentRound();
-
-      gameGroups = result
-          .map((gameGroup) => _refereeMapper.mapGameGroup(gameGroup))
-          .toList();
+      // Endpoint removed from backend - keeping as no-op for backward compatibility
+      // gameGroups = [];
     });
 
     getAgeGroupsCommand = Command.createAsyncNoParamNoResult(
@@ -241,8 +237,8 @@ class GameManagerImplementation extends ChangeNotifier implements GameManager {
 
     getAllGamesCommand = Command.createAsyncNoParamNoResult(
       () async {
-        var result = await _gameRestApi.getAllGames();
-        games = result.map((e) => _adminMapper.map(e)).toList();
+        // Endpoint removed from backend - keeping as no-op for backward compatibility
+        // games = [];
       },
     );
 
@@ -259,6 +255,8 @@ class GameManagerImplementation extends ChangeNotifier implements GameManager {
         return await _gameRestApi.addBreak(
           breakRequest.$1,
           breakRequest.$2,
+          breakRequest.$3,
+          breakRequest.$4,
         );
       },
       initialValue: false,

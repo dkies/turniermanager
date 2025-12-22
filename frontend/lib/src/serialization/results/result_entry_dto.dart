@@ -7,21 +7,25 @@ part 'result_entry_dto.g.dart';
 class ResultEntryDto {
   ResultEntryDto(
     this.teamName,
-    this.totalPoints,
     this.victories,
-    this.draws,
     this.defeats,
+    this.draws,
+    this.pointsDifference,
+    this.totalPoints,
     this.ownScoredGoals,
     this.enemyScoredGoals,
+    this.avgScore,
   );
 
   String teamName;
-  int totalPoints;
   int victories;
-  int draws;
   int defeats;
+  int draws;
+  int pointsDifference;
+  int totalPoints;
   int ownScoredGoals;
   int enemyScoredGoals;
+  double? avgScore; // Optional
 
   factory ResultEntryDto.fromJson(Map<String, dynamic> json) =>
       _$ResultEntryDtoFromJson(json);

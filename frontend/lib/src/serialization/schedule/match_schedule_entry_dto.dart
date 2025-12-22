@@ -6,16 +6,35 @@ part 'match_schedule_entry_dto.g.dart';
 @JsonSerializable()
 class MatchScheduleEntryDto {
   MatchScheduleEntryDto(
+    this.itemType,
     this.pitchName,
+    this.startTime,
+    this.endTime,
     this.teamAName,
     this.teamBName,
-    this.startTime,
+    this.gameNumber,
   );
 
+  String itemType; // "GAME" or "BREAK"
   String pitchName;
-  String teamAName;
-  String teamBName;
+  @JsonKey(fromJson: _dateTimeFromJson, toJson: _dateTimeToJson)
   DateTime startTime;
+  @JsonKey(fromJson: _dateTimeFromJson, toJson: _dateTimeToJson)
+  DateTime endTime;
+  String? teamAName; // Optional, only for GAME
+  String? teamBName; // Optional, only for GAME
+  int? gameNumber; // Optional, only for GAME
+
+  static DateTime _dateTimeFromJson(dynamic value) {
+    if (value is String) {
+      return DateTime.parse(value);
+    }
+    throw ArgumentError('Invalid DateTime format');
+  }
+
+  static String _dateTimeToJson(DateTime dateTime) {
+    return dateTime.toIso8601String();
+  }
 
   factory MatchScheduleEntryDto.fromJson(Map<String, dynamic> json) =>
       _$MatchScheduleEntryDtoFromJson(json);

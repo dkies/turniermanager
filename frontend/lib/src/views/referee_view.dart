@@ -704,12 +704,32 @@ class _BreakTextField extends StatelessWidget {
           return;
         }
 
+        // Get ageGroupId from the first game in the group
+        String? ageGroupId;
+        if (gameGroup.games.isNotEmpty) {
+          final ageGroupName = gameGroup.games.first.ageGroupName;
+          final ageGroup = gameManager.getAgeGroupByName(ageGroupName);
+          ageGroupId = ageGroup?.id;
+        }
+
+        if (ageGroupId == null) {
+          if (context.mounted) {
+            showError(context, 'Altersgruppe konnte nicht gefunden werden!');
+          }
+          return;
+        }
+
+        final startTime = gameGroup.startTime.subtract(
+          const Duration(minutes: 1),
+        );
+        final endTime = startTime.add(Duration(minutes: parsed));
+
         final result = await gameManager.addBreakCommand.executeWithFuture(
           (
-            gameGroup.startTime.subtract(
-              const Duration(minutes: 1),
-            ),
-            parsed,
+            startTime,
+            endTime,
+            ageGroupId,
+            'Pause', // Default message
           ),
         );
 
