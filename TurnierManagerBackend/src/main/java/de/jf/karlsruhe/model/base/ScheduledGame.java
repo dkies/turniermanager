@@ -30,12 +30,13 @@ public class ScheduledGame {
     @JoinColumn(name = "team_b_id")
     private Team teamB;
 
-    @Enumerated(EnumType.STRING) // Speichert den Enum-Namen als String in der DB
-    @Builder.Default // Wird beim Bauen automatisch gesetzt, falls nicht explizit angegeben
-    private GameStatus status = GameStatus.SCHEDULED;
+
 
     // --- Verknüpfung zum Planungs-Header ---
-    @OneToOne // EINE Spiel-Instanz gehört zu EINEM Planungs-Eintrag
+    @OneToOne
     @JoinColumn(name = "schedule_item_id")
     private ScheduleItem scheduleItem;
+
+
+
 }

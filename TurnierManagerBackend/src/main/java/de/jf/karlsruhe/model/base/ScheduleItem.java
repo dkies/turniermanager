@@ -1,5 +1,6 @@
 package de.jf.karlsruhe.model.base;
 
+import de.jf.karlsruhe.model.enums.GameStatus;
 import de.jf.karlsruhe.model.enums.ScheduledItemType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -34,4 +35,12 @@ public class ScheduleItem {
     @Enumerated(EnumType.STRING) // Speichert den Enum-Namen als String in der DB
     @Builder.Default
     private ScheduledItemType itemType = ScheduledItemType.GAME; // 'GAME' oder 'BREAK'
+
+    @Enumerated(EnumType.STRING) // Speichert den Enum-Namen als String in der DB
+    @Builder.Default // Wird beim Bauen automatisch gesetzt, falls nicht explizit angegeben
+    private GameStatus status = GameStatus.SCHEDULED;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "league_id")
+    private League league;
 }

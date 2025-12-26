@@ -10,11 +10,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order; // WICHTIG: Stellt sicher, dass dieses Setup zuerst läuft
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 @Configuration
 @Order(1) // Sorgt dafür, dass dieses Setup vor der Ranglisten-Evaluierung läuft
@@ -28,17 +26,20 @@ public class CreateTestDataConfiguration {
     // ***************************************************************
     @Bean
     @Transactional
-    public DataCompletionService dataCompletionService(ScheduledGameRepository scheduledGameRepository) {
-        return new DataCompletionService(scheduledGameRepository);
+    public DataCompletionService dataCompletionService(ScheduledGameRepository scheduledGameRepository, ScheduledItemRepository scheduledItemRepository) {
+        return new DataCompletionService(scheduledGameRepository, scheduledItemRepository);
     }
 
     // Innere Klasse/Record für den Service (oder als eigene Datei)
     // Wir verwenden hier eine innere Klasse für die Einfachheit
-    public record DataCompletionService(ScheduledGameRepository scheduledGameRepository) {
+    public record DataCompletionService(ScheduledGameRepository scheduledGameRepository,
+                                        ScheduledItemRepository scheduledItemRepository) {
         public void completeGamesRandomly(League league) {
 
-            List<ScheduledGame> plannedGames = scheduledGameRepository.findGamesByLeagueIdAndStatus(
-                    league.getId(), GameStatus.SCHEDULED);
+            List<ScheduledGame> plannedGames = scheduledGameRepository.findAll().stream()
+                    .filter(g -> g.getScheduleItem().getLeague() != null &&
+                            g.getScheduleItem().getLeague().getId().equals(league.getId()))
+                    .toList();
 
             System.out.printf("    -> Schließe %d Spiele in %s mit Zufallsergebnissen ab...\n", plannedGames.size(), league.getName());
 
@@ -49,10 +50,12 @@ public class CreateTestDataConfiguration {
 
                 game.setTeamAScore(scoreA);
                 game.setTeamBScore(scoreB);
-                game.setStatus(GameStatus.COMPLETED);
+                ScheduleItem scheduleItem = game.getScheduleItem();
+                scheduleItem.setStatus(GameStatus.COMPLETED);
 
                 // Speichert die geänderten Spiele
                 scheduledGameRepository.save(game);
+                scheduledItemRepository.save(scheduleItem);
             }
             // Transaktion wird hier committed, die Daten sind in der DB
             System.out.printf("    -> Alle Spiele für %s wurden erfolgreich committed.\n", league.getName());
@@ -82,36 +85,64 @@ public class CreateTestDataConfiguration {
             Tournament sommerCup = tournamentRepository.save(Tournament.builder().name("Sommer Cup 2026").startTime(tournamentStart).playTimeInSeconds(600).breakTimeInSeconds(300).build());
             Round gruppenphase = roundRepository.save(Round.builder().name("Gruppenphase").orderIndex(1).roundType(RoundType.QUALIFICATION).tournament(sommerCup).build());
 
-            // A) SETUP FÜR U17
+// --- SETUP FÜR U17 ---
             AgeGroup u17 = ageGroupRepository.save(AgeGroup.builder().name("U17").build());
             Pitch platzA = pitchRepository.save(Pitch.builder().name("Platz A").ageGroup(u17).build());
             Pitch platzB = pitchRepository.save(Pitch.builder().name("Platz B").ageGroup(u17).build());
-            Team team1 = teamRepository.save(Team.builder().name("Adler Karlsruhe").ageGroup(u17).build());
-            Team team2 = teamRepository.save(Team.builder().name("Tiger Stuttgart").ageGroup(u17).build());
-            Team team3 = teamRepository.save(Team.builder().name("Bären Berlin").ageGroup(u17).build());
-            Team team4 = teamRepository.save(Team.builder().name("Löwen München").ageGroup(u17).build());
-            Team team5 = teamRepository.save(Team.builder().name("Fuchs Hamburg").ageGroup(u17).build());
-            League gruppeA = leagueRepository.save(League.builder().name("Gruppe A (U17)").isQualification(true).tournament(sommerCup).ageGroup(u17).round(gruppenphase).teams(Arrays.asList(team1, team2, team3, team4, team5)).build());
 
-            // B) SETUP FÜR U13
+            List<String> u17Names = Arrays.asList(
+                    "Adler Karlsruhe", "Tiger Stuttgart", "Bären Berlin", "Löwen München",
+                    "Fuchs Hamburg", "Wölfe Wolfsburg", "Haie Köln", "Eisbären Regensburg",
+                    "Panther Augsburg", "Wildcats Mannheim", "Bussarde Ettlingen", "Luchse Bruchsal"
+            );
+
+            List<Team> u17Teams = new ArrayList<>();
+            for (String name : u17Names) {
+                u17Teams.add(teamRepository.save(Team.builder().name(name).ageGroup(u17).build()));
+            }
+
+            // Aufteilung auf zwei Gruppen à 6 Teams
+            League gruppeA_U17 = leagueRepository.save(League.builder()
+                    .name("Gruppe A (U17)").tournament(sommerCup).ageGroup(u17).round(gruppenphase)
+                    .teams(new ArrayList<>(u17Teams.subList(0, 12))).build());
+
+
+
+
+// --- SETUP FÜR U13 ---
             AgeGroup u13 = ageGroupRepository.save(AgeGroup.builder().name("U13").build());
             Pitch platzC = pitchRepository.save(Pitch.builder().name("Platz C").ageGroup(u13).build());
             Pitch platzD = pitchRepository.save(Pitch.builder().name("Platz D").ageGroup(u13).build());
-            Team team6 = teamRepository.save(Team.builder().name("Mäuse Offenburg").ageGroup(u13).build());
-            Team team7 = teamRepository.save(Team.builder().name("Eulen Freiburg").ageGroup(u13).build());
-            Team team8 = teamRepository.save(Team.builder().name("Rehe Pforzheim").ageGroup(u13).build());
-            Team team9 = teamRepository.save(Team.builder().name("Katz Karlsruhe").ageGroup(u13).build());
-            Team team10 = teamRepository.save(Team.builder().name("Hund Baden-Baden").ageGroup(u13).build());
-            League gruppeB_U13 = leagueRepository.save(League.builder().name("Gruppe B (U13)").isQualification(true).tournament(sommerCup).ageGroup(u13).round(gruppenphase).teams(Arrays.asList(team6, team7, team8, team9, team10)).build());
+
+            List<String> u13Names = Arrays.asList(
+                    "Mäuse Offenburg", "Eulen Freiburg", "Rehe Pforzheim", "Katz Karlsruhe",
+                    "Hund Baden-Baden", "Igel Rastatt", "Eichhörnchen Landau", "Dachse Speyer",
+                    "Hasen Kehl", "Marder Durlach", "Hamster Grötzingen", "Biber Eggenstein"
+            );
+
+            List<Team> u13Teams = new ArrayList<>();
+            for (String name : u13Names) {
+                u13Teams.add(teamRepository.save(Team.builder().name(name).ageGroup(u13).build()));
+            }
+
+            // Aufteilung auf zwei Gruppen à 6 Teams
+            League gruppeA_U13 = leagueRepository.save(League.builder()
+                    .name("Gruppe A (U13)").tournament(sommerCup).ageGroup(u13).round(gruppenphase)
+                    .teams(new ArrayList<>(u13Teams.subList(0, 12))).build());
+
+
 
             // 4. Ausführung der Spielplan-Generierung
-            gamePlanGeneratorService.generateScheduleForLeague(gruppeA, sommerCup);
-            gamePlanGeneratorService.generateScheduleForLeague(gruppeB_U13, sommerCup);
+            gamePlanGeneratorService.generateScheduleForLeague(gruppeA_U13, sommerCup);
 
             // 5. TEST DATEN ERSTELLEN: ZUFÄLLIGE ERGEBNISSE EINTRAGEN (WIRD ÜBER DEN TRANSAKTIONALEN SERVICE GEMACHT)
             System.out.println("\n--- Zufallsergebnisse werden eingetragen (Transaktion Phase) ---");
-            dataCompletionService.completeGamesRandomly(gruppeA);
-            dataCompletionService.completeGamesRandomly(gruppeB_U13);
+            dataCompletionService.completeGamesRandomly(gruppeA_U13);
+
+            // Ergänze für U17:
+            gamePlanGeneratorService.generateScheduleForLeague(gruppeA_U17, sommerCup);
+
+            dataCompletionService.completeGamesRandomly(gruppeA_U17);
         };
     }
 

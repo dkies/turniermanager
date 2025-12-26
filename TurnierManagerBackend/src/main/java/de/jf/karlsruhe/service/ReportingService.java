@@ -48,7 +48,7 @@ public class ReportingService {
 
         List<ScheduledGame> games = new ArrayList<>();
         if (printAll) {
-            games = scheduledGameRepository.findByScheduleItem_ScheduledPitchOrderByScheduleItem_StartTimeAsc(pitch);
+            games = scheduledGameRepository.findByPitchOrderByStartTime(pitch);
         } else {
             games = getPendingGamesByPitch(pitch);
 
@@ -78,7 +78,7 @@ public class ReportingService {
 
     private List<ScheduledGame> getPendingGamesByPitch(Pitch pitch) {
 
-        return scheduledGameRepository.findByScheduleItem_ScheduledPitchAndStatusIsNotOrderByScheduleItem_StartTimeAsc(
+        return scheduledGameRepository.findByPitchAndItemStatusNot(
                 pitch,
                 GameStatus.COMPLETED
         );

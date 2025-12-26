@@ -91,6 +91,8 @@ public class GamePlanGeneratorService {
             Pitch bestPitch = findBestAvailablePitch(pitchNextAvailableTimes);
             LocalDateTime desiredStartTime = pitchNextAvailableTimes.get(bestPitch);
 
+            System.out.println(desiredStartTime);
+
             LocalDateTime actualStartTime = desiredStartTime;
 
             LocalDateTime actualEndTime = actualStartTime.plus(gameDuration);
@@ -101,6 +103,8 @@ public class GamePlanGeneratorService {
                     .startTime(actualStartTime)
                     .endTime(actualEndTime)
                     .scheduledPitch(bestPitch)
+                    .status(GameStatus.SCHEDULED)
+                    .league(league)
                     .build();
             gameItem = scheduledItemRepository.save(gameItem);
 
@@ -109,7 +113,7 @@ public class GamePlanGeneratorService {
                     .teamB(pairing.teamB())
                     .gameNumber(nextNumber++)
                     .scheduleItem(gameItem)
-                    .status(GameStatus.SCHEDULED)
+                    //.status(GameStatus.SCHEDULED)
                     .build();
             scheduledGameRepository.save(game);
 
@@ -119,12 +123,11 @@ public class GamePlanGeneratorService {
 
     /**
      * Auswertung der einzelnen Games
-     *
      */
     public List<TeamStatsDTO> getTeamStatisticsForLeague(League league) {
 
         List<Team> teams = league.getTeams();
-        List<ScheduledGame> finishedGames = scheduledGameRepository.findGamesByLeagueIdAndStatus(
+        List<ScheduledGame> finishedGames = scheduledGameRepository.findFinishedGamesByLeague(
                 league.getId(),
                 GameStatus.COMPLETED
         );
@@ -195,21 +198,22 @@ public class GamePlanGeneratorService {
                 .collect(Collectors.toList());
     }
 
-    private void createEqualLeagues(AgeGroup ageGroup, int maxTeamsPerLeague, Tournament tournament, Round round, List<Team> teamsToDivide) {
+
+    private List<League> createEqualLeagues(AgeGroup ageGroup, int maxTeamsPerLeague, Tournament tournament, Round round, List<Team> teamsToDivide) {
         int totalTeams = teamsToDivide.size();
         int numberOfLeagues = (int) Math.ceil((double) totalTeams / maxTeamsPerLeague);
 
-        List<League> leagues = new java.util.ArrayList<>();
+        List<League> leagues = new ArrayList<>();
         for (int i = 0; i < numberOfLeagues; i++) {
-            // Generieren Sie Gruppennamen A, B, C, ...
-            leagues.add(League.builder()
+            League league = League.builder()
                     .name(String.format("Gruppe %s (%s)", (char) ('A' + i), ageGroup.getName()))
-                    .isQualification(false)
                     .tournament(tournament)
                     .ageGroup(ageGroup)
                     .round(round)
-                    .teams(new java.util.ArrayList<>()) // Wichtig: Leere, manipulierbare Liste initialisieren
-                    .build());
+                    .teams(new ArrayList<>())
+                    .build();
+            // Speichern, damit die ID für die ScheduleItems vorhanden ist
+            leagues.add(league);
         }
 
         int leagueIndex = 0;
@@ -235,8 +239,10 @@ public class GamePlanGeneratorService {
             }
         }
 
-        round.setLeagues(leagues);
+        List<League> returnLeagues = leagueRepository.saveAll(numberOfTeamsPerLeague.keySet());
+        round.setLeagues(returnLeagues);
         tournament.getRounds().add(round);
+        return returnLeagues;
     }
 
     @Transactional
@@ -247,8 +253,8 @@ public class GamePlanGeneratorService {
         List<League> leagues = leagueRepository.findAll();
         for (League league : leagues) {
             List<Team> rankedTeams = rankTeamsByPerformance(league);
-            createEqualLeagues(league.getAgeGroup(), maxTeamsPerLeague, tournament, finalPhase, rankedTeams);
-            generateScheduleForLeague(league, tournament);
+            List<League> equalLeagues = createEqualLeagues(league.getAgeGroup(), maxTeamsPerLeague, tournament, finalPhase, rankedTeams);
+            equalLeagues.forEach(item -> generateScheduleForLeague(item, tournament));
         }
 
     }
@@ -265,6 +271,7 @@ public class GamePlanGeneratorService {
                 .orElseThrow(() -> new IllegalArgumentException("Altersgruppe nicht gefunden: " + dto.ageGroupId()));
         Pitch pitch = pitchRepository.findById(dto.pitchId())
                 .orElseThrow(() -> new IllegalArgumentException("Spielfeld nicht gefunden: " + dto.pitchId()));
+        League league = leagueRepository.findById(dto.leagueId()).orElseThrow(() -> new IllegalArgumentException("League nicht gefunden: " + dto.leagueId()));
 
         // 2. Spielzeit ermitteln
         Duration playTime = Duration.ofSeconds(tournament.getPlayTimeInSeconds());
@@ -279,7 +286,9 @@ public class GamePlanGeneratorService {
                 .endTime(endTime)
                 .ageGroup(ageGroup)
                 .scheduledPitch(pitch)
+                .status(GameStatus.SCHEDULED)
                 .itemType(ScheduledItemType.GAME)
+                .league(league)
                 .build();
         scheduleItem = scheduledItemRepository.save(scheduleItem);
 
@@ -290,7 +299,7 @@ public class GamePlanGeneratorService {
                 .teamB(teamB)
                 .teamAScore(0)
                 .teamBScore(0)
-                .status(GameStatus.SCHEDULED)
+                //.status(GameStatus.SCHEDULED)
                 .scheduleItem(scheduleItem)
                 .build();
 

@@ -8,6 +8,7 @@ public record EmergencyGameInsertationDTO(
         UUID teamBId,
         UUID ageGroupId,
         UUID pitchId,
-        LocalDateTime startTime
+        LocalDateTime startTime,
+        UUID leagueId
 ) {
 }

@@ -15,15 +15,15 @@ public class TournamentManagementService {
 
     /**
      * Erstellt eine Tournament-Entität aus dem DTO und speichert diese in der Datenbank.
+     *
      * @param dto Das TournamentCreationDTO vom Controller.
-     * @return Die gespeicherte Tournament-Entität.
      */
     @Transactional
-    public Tournament createTournament(TournamentCreationDTO dto) {
+    public void createTournament(TournamentCreationDTO dto) {
         long amount = tournamentRepository.count();
 
         if(amount != 0) {
-            return null;
+            return;
         }
 
         Tournament newTournament = Tournament.builder()
@@ -32,6 +32,6 @@ public class TournamentManagementService {
                 .breakTimeInSeconds(dto.breakTimeInSeconds())
                 .playTimeInSeconds(dto.playTimeInSeconds())
                 .build();
-        return tournamentRepository.save(newTournament);
+        tournamentRepository.save(newTournament);
     }
 }

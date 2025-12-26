@@ -84,10 +84,7 @@ public class RoundStatsService {
     private LeagueTableDTO calculateLeagueTable(League league, RoundType roundType) {
         List<Team> teams = league.getTeams();
 
-        List<ScheduledGame> leagueGames = scheduledGameRepository.findAll().stream()
-                .filter(g -> g.getStatus() == GameStatus.COMPLETED)
-                .filter(g -> teams.contains(g.getTeamA()) && teams.contains(g.getTeamB()))
-                .toList();
+        List<ScheduledGame> leagueGames = scheduledGameRepository.findFinishedGamesByLeague(league.getId(),GameStatus.COMPLETED);
 
         List<TeamScoreStatsDTO> teamStats = teams.stream()
                 .map(team -> computeTeamStats(team, leagueGames, roundType))

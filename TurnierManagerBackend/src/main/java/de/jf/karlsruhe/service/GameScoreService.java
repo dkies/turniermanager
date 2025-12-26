@@ -50,7 +50,6 @@ public class GameScoreService {
     private ScheduledGame applyScoreUpdate(ScheduledGame game, int teamAScore, int teamBScore) {
         game.setTeamAScore(teamAScore);
         game.setTeamBScore(teamBScore);
-        //game.setStatus(GameStatus.COMPLETED);
 
         return scheduledGameRepository.save(game);
     }
@@ -81,7 +80,7 @@ public class GameScoreService {
                             item.getAgeGroup().getName(),
                             game.getTeamAScore(),
                             game.getTeamBScore(),
-                            game.getStatus().toString()
+                            item.getStatus().toString()
                     );
                 })
                 .sorted(Comparator.comparingInt(ExtendedGameDTO::gameNumber))
@@ -115,7 +114,7 @@ public class GameScoreService {
                 ScheduledGame game = scheduledGameRepository.findByScheduleItem(item)
                         .orElse(null);
                 if (game == null) continue;
-                if (game.getStatus() == GameStatus.COMPLETED) continue;
+                if (item.getStatus() == GameStatus.COMPLETED) continue;
 
                 String leagueName = activeRound.getLeagues().stream()
                         .filter(l -> l.getTeams().contains(game.getTeamA()))
@@ -132,7 +131,7 @@ public class GameScoreService {
                         item.getScheduledPitch() != null ? item.getScheduledPitch().getName() : "Kein Feld",
                         leagueName,
                         item.getAgeGroup().getName(),
-                        game.getStatus().toString(),
+                        item.getStatus().toString(),
                         "GAME"
                 );
             } else {
@@ -147,10 +146,10 @@ public class GameScoreService {
                         0,                 // Keine Spielnummer bei Pausen
                         "PAUSE",
                         "PAUSE",
-                        "-",
+                        item.getScheduledPitch() != null ? item.getScheduledPitch().getName() : "Kein Feld",
                         "-",
                         item.getAgeGroup().getName(),
-                        "COMPLETED",       // Pausen sind im Plan quasi immer "bereit"
+                        item.getStatus().toString(),       // Pausen sind im Plan quasi immer "bereit"
                         "BREAK"            // Der Typ, den du im Record ergänzt hast
                 );
             }

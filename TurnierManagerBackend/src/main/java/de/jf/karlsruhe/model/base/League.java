@@ -21,9 +21,6 @@ public class League {
 
     private String name;
 
-    boolean isQualification;
-
-
     @ManyToOne
     @JoinColumn(name = "tournament_id", nullable = false)
     @ToString.Exclude // Verhindert rekursive Schleifen in toString()

@@ -67,7 +67,7 @@ public class GamePlanService {
         List<ScheduledGame> games = scheduledGameRepository.findByScheduleItemIn(gameItems);
 
         return games.stream()
-                .filter(game -> game.getStatus() != GameStatus.COMPLETED)
+                .filter(game -> game.getScheduleItem().getStatus() != GameStatus.COMPLETED)
                 .collect(Collectors.toMap(
                         ScheduledGame::getScheduleItem,
                         game -> game

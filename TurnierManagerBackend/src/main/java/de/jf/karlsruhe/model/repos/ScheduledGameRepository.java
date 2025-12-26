@@ -15,33 +15,29 @@ import java.util.UUID;
 
 public interface ScheduledGameRepository extends JpaRepository<ScheduledGame, UUID> {
 
-    List<ScheduledGame> findByStatus(GameStatus status);
-
     @Query("SELECT MAX(g.gameNumber) FROM ScheduledGame g")
     Optional<Integer> findMaxGameNumber();
 
-    @Query("""
-        SELECT sg 
-        FROM ScheduledGame sg
-        JOIN sg.scheduleItem si
-        JOIN si.ageGroup ag
-        JOIN League l ON l.ageGroup = ag AND l.id = :leagueId
-        WHERE sg.status = :status
-    """)
-    List<ScheduledGame> findGamesByLeagueIdAndStatus(
-            @Param("leagueId") UUID leagueId,
-            @Param("status") GameStatus status
-    );
+
+    @Query("SELECT g FROM ScheduledGame g " +
+            "WHERE g.scheduleItem.league.id = :leagueId " +
+            "AND g.scheduleItem.status = :status")
+    List<ScheduledGame> findFinishedGamesByLeague(@Param("leagueId") UUID leagueId, @Param("status") GameStatus status);
 
     Optional<ScheduledGame> findByGameNumber(int number);
-    List<ScheduledGame> findByScheduleItem_ScheduledPitchAndStatusIsNotOrderByScheduleItem_StartTimeAsc(
-            Pitch pitch,
-            GameStatus status
-    );
+    @Query("SELECT g FROM ScheduledGame g " +
+            "JOIN g.scheduleItem si " +
+            "WHERE si.scheduledPitch = :pitch " +
+            "AND si.status <> :status " +
+            "ORDER BY si.startTime ASC")
+    List<ScheduledGame> findByPitchAndItemStatusNot(@Param("pitch") Pitch pitch, @Param("status") GameStatus status);
 
-    List<ScheduledGame> findByScheduleItem_ScheduledPitchOrderByScheduleItem_StartTimeAsc(
-            Pitch pitch
-    );
+    @Query("SELECT g FROM ScheduledGame g " +
+            "JOIN g.scheduleItem si " +
+            "WHERE si.scheduledPitch = :pitch " +
+            "ORDER BY si.startTime ASC")
+    List<ScheduledGame> findByPitchOrderByStartTime(@Param("pitch") Pitch pitch);
+
     List<ScheduledGame> findByScheduleItemIn(List<ScheduleItem> items);
 
     Optional<ScheduledGame> findByScheduleItem(ScheduleItem item);
