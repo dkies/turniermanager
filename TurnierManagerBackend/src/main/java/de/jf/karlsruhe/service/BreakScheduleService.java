@@ -57,7 +57,7 @@ public class BreakScheduleService {
 
         List<ScheduledBreak> breaksToSave = createBreakEntries(
                 breakCreationDTO.startTime(),
-                breakCreationDTO.endTime(),
+                breakCreationDTO.amountOfBreaks(),
                 ageGroup,
                 breakCreationDTO.message()
         );
@@ -79,7 +79,7 @@ public class BreakScheduleService {
         allAgeGroups.forEach(ageGroup -> {
             List<ScheduledBreak> agBreaks = createBreakEntries(
                     breakGlobalCreationDTO.startTime(),
-                    breakGlobalCreationDTO.endTime(),
+                    breakGlobalCreationDTO.amountOfBreaks(),
                     ageGroup,
                     breakGlobalCreationDTO.message()
             );
@@ -110,25 +110,39 @@ public class BreakScheduleService {
 
     private List<ScheduledBreak> createBreakEntries(
             LocalDateTime startTime,
-            LocalDateTime endTime,
+            int amountOfBreaks,
             AgeGroup ageGroup,
             String message) {
 
+        Tournament tournament = tournamentRepository.findAll().getFirst();
         List<Pitch> pitches = pitchRepository.findByAgeGroup(ageGroup);
+        List<ScheduledBreak> allBreaks = new ArrayList<>();
 
-        if (pitches.isEmpty()) {
-            ScheduleItem item = createBreakScheduleItem(startTime, endTime, ageGroup, null);
-            ScheduledBreak breakDetail = createScheduledBreakDetail(message, item);
-            return List.of(breakDetail);
+        // Zeit berechnen: Ein Block ist Spielzeit + Puffer
+        long gameDurationSeconds = tournament.getPlayTimeInSeconds();
+        long transitionSeconds = tournament.getBreakTimeInSeconds();
+        long totalBlockSeconds = gameDurationSeconds + transitionSeconds;
 
-        } else {
-            return pitches.stream()
-                    .map(pitch -> {
-                        ScheduleItem item = createBreakScheduleItem(startTime, endTime, ageGroup, pitch);
-                        return createScheduledBreakDetail(message, item);
-                    })
-                    .collect(Collectors.toList());
+        // Wir loopen über die Anzahl der gewünschten Pausen-Slots
+        for (int i = 0; i < amountOfBreaks; i++) {
+            // Berechne Start und Ende für DIESEN spezifischen Slot
+            LocalDateTime currentStart = startTime.plusSeconds(i * totalBlockSeconds);
+            LocalDateTime currentEnd = currentStart.plusSeconds(gameDurationSeconds);
+
+            if (pitches.isEmpty()) {
+                // Falls keine Plätze definiert sind (global für die Altersgruppe)
+                ScheduleItem item = createBreakScheduleItem(currentStart, currentEnd, ageGroup, null);
+                allBreaks.add(createScheduledBreakDetail(message + " (Slot " + (i + 1) + ")", item));
+            } else {
+                // Erzeuge den Slot für jeden Pitch
+                for (Pitch pitch : pitches) {
+                    ScheduleItem item = createBreakScheduleItem(currentStart, currentEnd, ageGroup, pitch);
+                    allBreaks.add(createScheduledBreakDetail(message + " (Slot " + (i + 1) + ")", item));
+                }
+            }
         }
+
+        return allBreaks;
     }
 
 
@@ -158,64 +172,46 @@ public class BreakScheduleService {
      */
     @Transactional
     public void shiftScheduleDueToBreak(ScheduleItem newBreakItem, Tournament tournament) {
-
-        // 1. Parameter aus dem neuen Pausen-Item
         Pitch pitch = newBreakItem.getScheduledPitch();
-        AgeGroup ageGroup = newBreakItem.getAgeGroup();
         LocalDateTime newBreakStart = newBreakItem.getStartTime();
         LocalDateTime newBreakEnd = newBreakItem.getEndTime();
 
+        // Pufferzeit zwischen Spielen/Pausen
         Duration transitionTime = Duration.ofSeconds(tournament.getBreakTimeInSeconds());
+        // Wie lange ein Spiel dauert
+        Duration gameDuration = Duration.ofSeconds(tournament.getPlayTimeInSeconds());
 
-        List<ScheduleItem> affectedGameItems;
+        if (pitch == null) return;
 
-        if (pitch != null) {
-            affectedGameItems = scheduledItemRepository.findByScheduledPitchAndStartTimeIsAfterOrderByStartTimeAsc(pitch, newBreakStart.minus(Duration.ofSeconds(tournament.getPlayTimeInSeconds())));
-        } else if (ageGroup != null) {
-            throw new UnsupportedOperationException("Die Verschiebung globaler Pausen in bereits geplanter Zeit ist derzeit nicht unterstützt. Bitte verwenden Sie Pitch-spezifische Pausen.");
-        } else {
-            return;
-        }
+        // Lade alle Spiele auf diesem Platz ab dem Zeitpunkt der Pause
+        List<ScheduleItem> affectedGameItems = scheduledItemRepository
+                .findByScheduledPitchAndStartTimeIsAfterOrderByStartTimeAsc(
+                        pitch,
+                        newBreakStart.minus(gameDuration)
+                );
 
-        Duration cumulativeShiftDuration = Duration.ZERO;
-        boolean shiftStarted = false;
+        // Wir merken uns, wann der Platz frühestens wieder frei ist
+        LocalDateTime earliestPossibleStart = newBreakEnd.plus(transitionTime);
 
         for (ScheduleItem gameItem : affectedGameItems) {
+            if (!ScheduledItemType.GAME.equals(gameItem.getItemType())) continue;
 
-            if (!"GAME".equals(gameItem.getItemType())) {
-                continue;
-            }
+            LocalDateTime currentStart = gameItem.getStartTime();
+            LocalDateTime currentEnd = gameItem.getEndTime();
 
-            LocalDateTime gameStart = gameItem.getStartTime();
-            LocalDateTime gameEnd = gameItem.getEndTime();
+            // FALL 1: Das Spiel überschneidet sich mit der Pause oder startet davor/währenddessen
+            // ODER FALL 2: Das Spiel würde vor dem Ende des vorherigen (verschobenen) Spiels starten
+            if (currentStart.isBefore(earliestPossibleStart) && currentEnd.isAfter(newBreakStart)) {
 
-            if (shiftStarted || gameStart.isBefore(newBreakEnd) && gameEnd.isAfter(newBreakStart)) {
+                // Verschiebe dieses Spiel hinter die Sperrzeit
+                gameItem.setStartTime(earliestPossibleStart);
+                gameItem.setEndTime(earliestPossibleStart.plus(gameDuration));
 
-                shiftStarted = true;
+                scheduledItemRepository.save(gameItem);
 
-                Duration requiredShift = Duration.ZERO;
-
-                if (gameStart.isBefore(newBreakEnd)) {
-                    LocalDateTime requiredNewStart = newBreakEnd.plus(transitionTime);
-                    requiredShift = Duration.between(gameStart, requiredNewStart);
-
-                    if (requiredShift.isNegative() || requiredShift.isZero()) {
-                        requiredShift = Duration.ZERO;
-                    }
-
-                    if (cumulativeShiftDuration.isZero()) {
-                        cumulativeShiftDuration = requiredShift;
-                    }
-                }
-
-
-                if (!cumulativeShiftDuration.isZero()) {
-
-                    gameItem.setStartTime(gameStart.plus(cumulativeShiftDuration));
-                    gameItem.setEndTime(gameEnd.plus(cumulativeShiftDuration));
-
-                    scheduledItemRepository.save(gameItem);
-                }
+                // Aktualisiere earliestPossibleStart für das NÄCHSTE Spiel
+                // Das nächste Spiel darf erst nach diesem Spiel + Puffer starten
+                earliestPossibleStart = gameItem.getEndTime().plus(transitionTime);
             }
         }
     }

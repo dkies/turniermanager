@@ -5,6 +5,6 @@ import java.util.UUID;
 
 public record BreakGlobalCreationDTO(
         LocalDateTime startTime,
-        LocalDateTime endTime,
+        int amountOfBreaks,
         String message
 ) {}

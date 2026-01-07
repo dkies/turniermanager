@@ -1,18 +1,17 @@
 package de.jf.karlsruhe.controller;
 
 import de.jf.karlsruhe.model.base.ScheduledGame;
-import de.jf.karlsruhe.model.dto.EmergencyGameInsertationDTO;
-import de.jf.karlsruhe.model.dto.ExtendedGameDTO;
-import de.jf.karlsruhe.model.dto.GameScoreUUIDUpdateDTO;
-import de.jf.karlsruhe.model.dto.GameScoreUpdateDTO;
+import de.jf.karlsruhe.model.dto.*;
 import de.jf.karlsruhe.service.GamePlanGeneratorService;
 import de.jf.karlsruhe.service.GameScoreService;
+import de.jf.karlsruhe.service.GameTimingService;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @CrossOrigin(origins = "*")
@@ -23,6 +22,7 @@ public class GameController {
 
     private GamePlanGeneratorService gamePlanGeneratorService;
     private GameScoreService gameScoreService;
+    private GameTimingService gameTimingService;
 
 
     @PostMapping("/score")
@@ -60,6 +60,29 @@ public class GameController {
         }
     }
 
+
+    @PostMapping("/refresh-timings")
+    public ResponseEntity<String> finishSlot(@RequestBody TimingRefreshRequestDTO request) {
+        try {
+            if (request.plannedStartTime() == null) {
+                return ResponseEntity.badRequest().body("Geplante Startzeit darf nicht leer sein.");
+            }
+
+            // Wir nutzen die aktuelle Zeit als Referenz für den Abschluss
+            LocalDateTime now = LocalDateTime.now();
+
+            gameTimingService.finishAllItemsAtTime(request.plannedStartTime(), now);
+
+            return ResponseEntity.ok(String.format(
+                    "Slot %s wurde erfolgreich beendet. Folgetermine wurden basierend auf %s aktualisiert.",
+                    request.plannedStartTime().toLocalTime(),
+                    now.toLocalTime()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Fehler beim Aktualisieren: " + e.getMessage());
+        }
+    }
 //
 //
 //    /**

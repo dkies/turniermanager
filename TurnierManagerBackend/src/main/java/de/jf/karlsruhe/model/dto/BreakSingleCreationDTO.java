@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public record BreakSingleCreationDTO(
         LocalDateTime startTime,
-        LocalDateTime endTime,
+        int amountOfBreaks,
         UUID ageGroupName,
         String message
 ) {}
