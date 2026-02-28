@@ -1,6 +1,7 @@
 package de.jf.karlsruhe.controller;
 
 import de.jf.karlsruhe.model.dto.EndQualificationRoundDTO;
+import de.jf.karlsruhe.model.dto.EndQualificationRoundDetailedDTO;
 import de.jf.karlsruhe.model.dto.TournamentCreationDTO;
 import de.jf.karlsruhe.service.GamePlanGeneratorService;
 import de.jf.karlsruhe.service.TournamentManagementService;
@@ -22,10 +23,16 @@ public class TournamentController {
     }
 
 
-    @PostMapping("/endQualification")
+    @PostMapping("/end-qualification")
     private void endQualificationRound(@RequestBody EndQualificationRoundDTO endQualificationRoundDTO) {
         gamePlanGeneratorService.endQualification(endQualificationRoundDTO.maxTeamsPerLeague(), endQualificationRoundDTO.roundName());
     }
+
+    @PostMapping("/end-qualification-detailed")
+    private void endQualificationRoundDetailed(@RequestBody EndQualificationRoundDetailedDTO endQualificationRoundDetailedDTO) {
+        gamePlanGeneratorService.endQualificationDetailed(endQualificationRoundDetailedDTO.maxTeamsPerLeaguePerAgeGroup(), endQualificationRoundDetailedDTO.roundName());
+    }
+
 
 
 }

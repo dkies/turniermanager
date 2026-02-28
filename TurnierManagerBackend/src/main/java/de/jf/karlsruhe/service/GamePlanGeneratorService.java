@@ -258,6 +258,22 @@ public class GamePlanGeneratorService {
         }
 
     }
+    @Transactional
+    public void endQualificationDetailed(HashMap<UUID,Integer> maxTeamsPerLeaguePerAgeGroup, String roundName) {
+        Tournament tournament = tournamentRepository.findAll().getFirst();
+        if (tournament == null) return;
+        Round finalPhase = roundRepository.save(Round.builder().name(roundName).orderIndex(2).roundType(RoundType.FINAL_STAGE).tournament(tournament).build());
+        List<League> leagues = leagueRepository.findAll();
+        for (League league : leagues) {
+            List<Team> rankedTeams = rankTeamsByPerformance(league);
+            List<League> equalLeagues = createEqualLeagues(league.getAgeGroup(), maxTeamsPerLeaguePerAgeGroup.get(league.getAgeGroup().getId()), tournament, finalPhase, rankedTeams);
+            equalLeagues.forEach(item -> generateScheduleForLeague(item, tournament));
+        }
+
+    }
+
+
+
 
     @Transactional
     public ScheduledGame insertEmergencyGame(EmergencyGameInsertationDTO dto) {
