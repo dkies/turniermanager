@@ -4,6 +4,7 @@ import de.jf.karlsruhe.model.base.ScheduledBreak;
 import de.jf.karlsruhe.model.dto.BreakGlobalCreationDTO;
 import de.jf.karlsruhe.model.dto.BreakSingleCreationDTO;
 import de.jf.karlsruhe.service.BreakScheduleService;
+import de.jf.karlsruhe.service.BreakScheduleServiceOLD;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
