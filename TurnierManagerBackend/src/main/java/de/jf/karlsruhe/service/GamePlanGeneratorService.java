@@ -327,4 +327,36 @@ public class GamePlanGeneratorService {
         return scheduledGameRepository.findMaxGameNumber().orElse(0) + 1;
     }
 
+    @Transactional
+    public void startQualification() {
+        Tournament tournament = tournamentRepository.findAll().getFirst();
+
+        // 1. Die Runde erstellen
+        Round round = roundRepository.save(Round.builder()
+                .name("Gruppenphase")
+                .orderIndex(1)
+                .roundType(RoundType.QUALIFICATION)
+                .tournament(tournament)
+                .build());
+
+        List<AgeGroup> ageGroups = ageGroupRepository.findAll();
+
+        for (AgeGroup ageGroup : ageGroups) {
+
+            List<Team> teamsInGroup = teamRepository.findByAgeGroup(ageGroup);
+
+            League league = leagueRepository.save(League.builder()
+                    .name("Liga: " + ageGroup.getName())
+                    .tournament(tournament)
+                    .ageGroup(ageGroup)
+                    .round(round)
+                    .teams(teamsInGroup)
+                    .build());
+
+            leagueRepository.save(league);
+
+            // Den Schedule generieren
+            generateScheduleForLeague(league, tournament);
+        }
+    }
 }

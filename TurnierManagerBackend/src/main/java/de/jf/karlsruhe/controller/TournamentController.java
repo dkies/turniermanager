@@ -22,6 +22,11 @@ public class TournamentController {
         tournamentManagementService.createTournament(tournamentCreationDTO);
     }
 
+    @PostMapping("/start-qualification")
+    private void createTournament() {
+        gamePlanGeneratorService.startQualification();
+    }
+
 
     @PostMapping("/end-qualification")
     private void endQualificationRound(@RequestBody EndQualificationRoundDTO endQualificationRoundDTO) {

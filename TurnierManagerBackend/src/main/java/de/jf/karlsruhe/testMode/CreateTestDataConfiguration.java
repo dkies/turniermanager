@@ -83,7 +83,7 @@ public class CreateTestDataConfiguration {
             // --- SETUP CODE ---
             LocalDateTime tournamentStart = LocalDateTime.of(2026, 4, 18, 9, 0);
             Tournament sommerCup = tournamentRepository.save(Tournament.builder().name("Sommer Cup 2026").startTime(tournamentStart).playTimeInSeconds(600).breakTimeInSeconds(300).build());
-            Round gruppenphase = roundRepository.save(Round.builder().name("Gruppenphase").orderIndex(1).roundType(RoundType.QUALIFICATION).tournament(sommerCup).build());
+            //Round gruppenphase = roundRepository.save(Round.builder().name("Gruppenphase").orderIndex(1).roundType(RoundType.QUALIFICATION).tournament(sommerCup).build());
 
 // --- SETUP FÜR U17 ---
             AgeGroup u17 = ageGroupRepository.save(AgeGroup.builder().name("U17").build());
@@ -102,9 +102,9 @@ public class CreateTestDataConfiguration {
             }
 
             // Aufteilung auf zwei Gruppen à 6 Teams
-            League gruppeA_U17 = leagueRepository.save(League.builder()
-                    .name("Gruppe A (U17)").tournament(sommerCup).ageGroup(u17).round(gruppenphase)
-                    .teams(new ArrayList<>(u17Teams.subList(0, 12))).build());
+            //League gruppeA_U17 = leagueRepository.save(League.builder()
+             //       .name("Gruppe A (U17)").tournament(sommerCup).ageGroup(u17).round(gruppenphase)
+             //       .teams(new ArrayList<>(u17Teams.subList(0, 12))).build());
 
 
 
@@ -126,23 +126,23 @@ public class CreateTestDataConfiguration {
             }
 
             // Aufteilung auf zwei Gruppen à 6 Teams
-            League gruppeA_U13 = leagueRepository.save(League.builder()
-                    .name("Gruppe A (U13)").tournament(sommerCup).ageGroup(u13).round(gruppenphase)
-                    .teams(new ArrayList<>(u13Teams.subList(0, 12))).build());
+            //League gruppeA_U13 = leagueRepository.save(League.builder()
+            //        .name("Gruppe A (U13)").tournament(sommerCup).ageGroup(u13).round(gruppenphase)
+            //        .teams(new ArrayList<>(u13Teams.subList(0, 12))).build());
 
 
 
             // 4. Ausführung der Spielplan-Generierung
-            gamePlanGeneratorService.generateScheduleForLeague(gruppeA_U13, sommerCup);
+            //gamePlanGeneratorService.generateScheduleForLeague(gruppeA_U13, sommerCup);
 
             // 5. TEST DATEN ERSTELLEN: ZUFÄLLIGE ERGEBNISSE EINTRAGEN (WIRD ÜBER DEN TRANSAKTIONALEN SERVICE GEMACHT)
-            System.out.println("\n--- Zufallsergebnisse werden eingetragen (Transaktion Phase) ---");
-            dataCompletionService.completeGamesRandomly(gruppeA_U13);
+            //System.out.println("\n--- Zufallsergebnisse werden eingetragen (Transaktion Phase) ---");
+            //dataCompletionService.completeGamesRandomly(gruppeA_U13);
 
             // Ergänze für U17:
-            gamePlanGeneratorService.generateScheduleForLeague(gruppeA_U17, sommerCup);
+            //gamePlanGeneratorService.generateScheduleForLeague(gruppeA_U17, sommerCup);
 
-            dataCompletionService.completeGamesRandomly(gruppeA_U17);
+            //dataCompletionService.completeGamesRandomly(gruppeA_U17);
         };
     }
 }
