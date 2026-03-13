@@ -5,5 +5,6 @@ import java.util.List;
 
 public record GameScheduleDateTimeDTO(
         LocalDateTime startTime,
-        List<GameDTO> games
+        List<GameDTO> games,
+        int playTimeInSeconds
 ) {}

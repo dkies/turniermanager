@@ -7,10 +7,7 @@ import de.jf.karlsruhe.model.dto.GameScheduleDateTimeDTO;
 import de.jf.karlsruhe.model.dto.GameScoreUpdateDTO;
 import de.jf.karlsruhe.model.enums.GameStatus;
 import de.jf.karlsruhe.model.enums.ScheduledItemType;
-import de.jf.karlsruhe.model.repos.RoundRepository;
-import de.jf.karlsruhe.model.repos.ScheduledBreakRepository;
-import de.jf.karlsruhe.model.repos.ScheduledItemRepository;
-import de.jf.karlsruhe.model.repos.ScheduledGameRepository;
+import de.jf.karlsruhe.model.repos.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +25,7 @@ public class GameScoreService {
 
     private final RoundRepository roundRepository;
     private final ScheduledItemRepository scheduledItemRepository;
+    private final TournamentRepository tournamentRepository;
 
     @Transactional
     public ScheduledGame updateGameScore(GameScoreUpdateDTO dto) {
@@ -98,6 +96,7 @@ public class GameScoreService {
 
     @Transactional(readOnly = true)
     public List<GameScheduleDateTimeDTO> getActiveGamesSortedDateTimeList() {
+        int playTimeInSeconds = tournamentRepository.findAll().getFirst().getPlayTimeInSeconds();
         Round activeRound = getActiveRound();
 
         // 1. Alle ScheduleItems laden
@@ -159,7 +158,7 @@ public class GameScoreService {
 
         // 3. Mapping in die finale Liste der Zeit-Slots
         return groupedGames.entrySet().stream()
-                .map(entry -> new GameScheduleDateTimeDTO(entry.getKey(), entry.getValue()))
+                .map(entry -> new GameScheduleDateTimeDTO(entry.getKey(), entry.getValue(), playTimeInSeconds))
                 .collect(Collectors.toList());
     }
 
