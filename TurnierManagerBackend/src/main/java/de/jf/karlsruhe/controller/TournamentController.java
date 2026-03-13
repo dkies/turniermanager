@@ -35,9 +35,7 @@ public class TournamentController {
 
     @PostMapping("/end-qualification-detailed")
     private void endQualificationRoundDetailed(@RequestBody EndQualificationRoundDetailedDTO endQualificationRoundDetailedDTO) {
+        tournamentManagementService.updateTimeSettings(endQualificationRoundDetailedDTO.playTimeInSeconds(), endQualificationRoundDetailedDTO.breakTimeInSeconds());
         gamePlanGeneratorService.endQualificationDetailed(endQualificationRoundDetailedDTO.maxTeamsPerLeaguePerAgeGroup(), endQualificationRoundDetailedDTO.roundName());
     }
-
-
-
 }

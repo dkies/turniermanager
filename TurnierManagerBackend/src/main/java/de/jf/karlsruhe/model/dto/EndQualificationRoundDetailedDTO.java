@@ -5,5 +5,7 @@ import java.util.UUID;
 
 public record EndQualificationRoundDetailedDTO(
         HashMap<UUID, Integer> maxTeamsPerLeaguePerAgeGroup,
+        int playTimeInSeconds,
+        int breakTimeInSeconds,
         String roundName
 ) {}

@@ -1,14 +1,13 @@
 package de.jf.karlsruhe.controller;
 
 import de.jf.karlsruhe.model.base.AgeGroup;
-import de.jf.karlsruhe.model.dto.AgeGroupCreationDTO; // NEU
-import de.jf.karlsruhe.model.dto.AgeGroupBulkCreationDTO; // NEU
-import de.jf.karlsruhe.service.AgeGroupService; // NEU
+import de.jf.karlsruhe.model.dto.AgeGroupCreationDTO;
+import de.jf.karlsruhe.model.dto.AgeGroupBulkCreationDTO;
+import de.jf.karlsruhe.service.AgeGroupService;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import lombok.RequiredArgsConstructor; // Besser als @Autowired für Controller
 
 import java.util.List;
 import java.util.UUID;

@@ -34,4 +34,12 @@ public class TournamentManagementService {
                 .build();
         tournamentRepository.save(newTournament);
     }
+
+    @Transactional
+    public void updateTimeSettings(int playTimeInSeconds, int breakTimeInSeconds) {
+        Tournament tournament = tournamentRepository.findAll().getFirst();
+        tournament.setPlayTimeInSeconds(playTimeInSeconds);
+        tournament.setBreakTimeInSeconds(breakTimeInSeconds);
+        tournamentRepository.save(tournament);
+    }
 }
