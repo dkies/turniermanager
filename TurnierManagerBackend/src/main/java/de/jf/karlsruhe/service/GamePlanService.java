@@ -10,7 +10,6 @@ import de.jf.karlsruhe.model.repos.AgeGroupRepository;
 import de.jf.karlsruhe.model.repos.RoundRepository;
 import de.jf.karlsruhe.model.repos.ScheduledGameRepository;
 import de.jf.karlsruhe.model.repos.ScheduledItemRepository;
-import de.jf.karlsruhe.model.repos.LeagueRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +26,6 @@ public class GamePlanService {
     private final RoundRepository roundRepository;
     private final ScheduledItemRepository scheduledItemRepository;
     private final ScheduledGameRepository scheduledGameRepository;
-    private final LeagueRepository leagueRepository;
 
     @Transactional(readOnly = true)
     public GamePlanDTO getGamePlanByAgeGroup(UUID ageGroupId) {
@@ -61,7 +59,8 @@ public class GamePlanService {
     private Map<ScheduleItem, ScheduledGame> getGameMap(List<ScheduleItem> allScheduleItems) {
 
         List<ScheduleItem> gameItems = allScheduleItems.stream()
-                .filter(item -> ScheduledItemType.BREAK.equals(item.getItemType()))
+                // Removed Filtering Breaks from the Schedule.
+                //.filter(item -> ScheduledItemType.BREAK.equals(item.getItemType()))
                 .toList();
 
         List<ScheduledGame> games = scheduledGameRepository.findByScheduleItemIn(gameItems);
