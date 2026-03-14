@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Constants {
-  //style related
+  // Style related
   static const double largeHeaderTextSize = 26;
   static const double mediumHeaderTextSize = 22;
   static const double standardTextSize = 16;
@@ -22,7 +22,7 @@ class Constants {
     color: textColor,
   );
 
-  // miscellaneaous
+  // miscellaneous
   static const int maxNumberOfTeamsDefault = 6;
   static const int refreshDurationInSeconds = 20;
 }

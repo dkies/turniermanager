@@ -495,7 +495,7 @@ class GameTestRestApi extends GameRestApi {
       var startTime = baseTime.add(Duration(minutes: i * 25));
       var endTime = startTime.add(const Duration(minutes: 20));
 
-      // Jeder 4. Eintrag ist eine Pause
+      // Every 4th entry is a break
       if ((i + 1) % 4 == 0) {
         scheduleList.add(MatchScheduleEntryDto(
           ItemType.break_,

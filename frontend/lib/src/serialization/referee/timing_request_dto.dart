@@ -7,7 +7,7 @@ part 'timing_request_dto.g.dart';
 class TimingRequestDto {
   TimingRequestDto(this.plannedStartTime);
 
-  /// Geplante Startzeit des Slots (Backend: plannedStartTime).
+  /// Planned start time of the slot (backend: plannedStartTime).
   DateTime plannedStartTime;
 
   factory TimingRequestDto.fromJson(Map<String, dynamic> json) =>
