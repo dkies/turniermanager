@@ -35,6 +35,7 @@ class RefereeMapper {
   Game mapGame(GameDto dto) {
     // New structure: all fields are Strings
     return Game(
+      dto.id,
       dto.gameNumber,
       Pitch('', dto.pitch), // Create Pitch with empty id and name from string
       Team(dto.teamA), // Create Team from string

@@ -4,6 +4,7 @@ import 'package:tournament_manager/src/serialization/schedule/item_type.dart';
 
 class Game {
   Game(
+    this.id,
     this.gameNumber,
     this.pitch,
     this.teamA,
@@ -13,6 +14,7 @@ class Game {
     this.type,
   );
 
+  String id;
   int gameNumber;
   Pitch pitch;
   Team teamA;

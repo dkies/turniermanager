@@ -42,6 +42,7 @@ abstract class GameRestApi {
 
   Future<bool> createBreakForAgeGroup(BreakSingleCreationDto dto);
   Future<bool> createGlobalBreak(BreakGlobalCreationDto dto);
+  Future<bool> deleteBreak(String breakId);
 
   Future<List<PitchDto>> getAllPitches();
   Future<bool> printPitch(String pitchId);
@@ -57,6 +58,7 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
   late final Uri saveGameUri;
   late final Uri createBreakUri;
   late final Uri createGlobalBreakUri;
+  late final Uri deleteBreakUri;
   late final Uri getAllPitchesUri;
   late final String printPitchPath;
   late final Uri getAllGameGroupsUri;
@@ -73,6 +75,7 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
     saveGameUri = Uri.parse('$_baseUri/games/score');
     createBreakUri = Uri.parse('$_baseUri/breaks/createBreak');
     createGlobalBreakUri = Uri.parse('$_baseUri/breaks/createGlobalBreak');
+    deleteBreakUri = Uri.parse('$_baseUri/breaks/delete');
     getAllPitchesUri = Uri.parse('$_baseUri/pitches');
     printPitchPath = '$_baseUri/pitches/result-card/';
     getAllGameGroupsUri =
@@ -249,6 +252,17 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
         headers: headers,
       );
       return response.statusCode == 200 || response.statusCode == 201;
+    } on Exception {
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> deleteBreak(String breakId) async {
+    try {
+      final uri = Uri.parse('$_baseUri/breaks/delete/$breakId');
+      final response = await client.delete(uri, headers: headers);
+      return response.statusCode == 200 || response.statusCode == 204;
     } on Exception {
       return false;
     }
@@ -616,6 +630,11 @@ class GameTestRestApi extends GameRestApi {
 
   @override
   Future<bool> createGlobalBreak(BreakGlobalCreationDto dto) async {
+    return true;
+  }
+
+  @override
+  Future<bool> deleteBreak(String breakId) async {
     return true;
   }
 

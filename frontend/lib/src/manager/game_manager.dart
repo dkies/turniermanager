@@ -41,6 +41,8 @@ abstract class GameManager extends ChangeNotifier {
           String? ageGroupId),
       bool> addBreakCommand;
 
+  late Command<String, bool> deleteBreakCommand;
+
   late Command<void, void> getAllPitchesCommand;
   late Command<String, bool> printPitchCommand;
   late Command<void, bool> printAllPitchesCommand;
@@ -93,6 +95,9 @@ class GameManagerImplementation extends ChangeNotifier implements GameManager {
   @override
   late Command<
       (bool, DateTime, int, String, String?), bool> addBreakCommand;
+
+  @override
+  late Command<String, bool> deleteBreakCommand;
 
   @override
   late Command<void, void> getAllPitchesCommand;
@@ -284,6 +289,11 @@ class GameManagerImplementation extends ChangeNotifier implements GameManager {
           ),
         );
       },
+      initialValue: false,
+    );
+
+    deleteBreakCommand = Command.createAsync(
+      (breakId) async => await _gameRestApi.deleteBreak(breakId),
       initialValue: false,
     );
 

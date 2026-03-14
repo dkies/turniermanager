@@ -660,10 +660,23 @@ class _GameViewState extends State<GameView> {
     final gameWidgets = <Widget>[];
 
     for (var i = 0; i < games.length; i++) {
+      final game = games[i];
       gameWidgets.add(
         GameEntryView(
-          gameRoundEntry: games[i],
+          gameRoundEntry: game,
           textColor: textColor,
+          onDeleteBreak: game.type == ItemType.break_
+              ? (breakId) async {
+                  final result = await _gameManager.deleteBreakCommand
+                      .executeWithFuture(breakId);
+                  if (!mounted) return;
+                  if (result) {
+                    _gameManager.getCurrentRoundCommand();
+                  } else {
+                    showError(context, 'Pause konnte nicht entfernt werden.');
+                  }
+                }
+              : null,
         ),
       );
       if (i < games.length - 1) {
@@ -995,10 +1008,12 @@ class GameEntryView extends StatelessWidget {
     super.key,
     required this.gameRoundEntry,
     required this.textColor,
+    this.onDeleteBreak,
   });
 
   final Game gameRoundEntry;
   final Color textColor;
+  final void Function(String breakId)? onDeleteBreak;
 
   @override
   Widget build(BuildContext context) {
@@ -1067,6 +1082,13 @@ class GameEntryView extends StatelessWidget {
                   ],
                 ),
         ),
+        if (isBreak && onDeleteBreak != null)
+          IconButton(
+            onPressed: () => onDeleteBreak!(gameRoundEntry.id),
+            icon: const Icon(Icons.delete),
+            tooltip: 'Pause entfernen',
+            color: effectiveColor,
+          ),
       ],
     );
 
