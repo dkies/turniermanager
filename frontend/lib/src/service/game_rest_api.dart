@@ -136,7 +136,8 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
         headers: headers,
       );
 
-      if (response.statusCode == 200) {
+      // Backend returns 201 CREATED on success
+      if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       }
 
