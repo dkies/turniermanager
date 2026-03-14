@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'package:tournament_manager/src/manager/game_manager.dart';
 import 'package:tournament_manager/src/manager/settings_manager.dart';
 import 'package:tournament_manager/src/service/config_service.dart';
@@ -39,9 +41,12 @@ setup() {
 }
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('de_DE', null);
+  Intl.defaultLocale = 'de_DE';
+
   setup();
 
   usePathUrlStrategy();
-  // Run the app.
   runApp(MainWidget());
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tournament_manager/src/manager/game_manager.dart';
 import 'package:tournament_manager/src/manager/settings_manager.dart';
@@ -108,14 +109,20 @@ class MainWidget extends StatelessWidget {
         }
 
         return MaterialApp.router(
-          // Providing a restorationScopeId allows the Navigator built by the
-          // MaterialApp to restore the navigation stack when a user leaves and
-          // returns to the app after it has been killed while running in the
-          // background.
           restorationScopeId: 'app',
           title: "Turniermanager",
           theme: ThemeData.dark(),
           routerConfig: _router,
+          locale: const Locale('de', 'DE'),
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('de', 'DE'),
+            Locale('en'),
+          ],
         );
       },
     );
