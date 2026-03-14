@@ -13,6 +13,8 @@ import 'package:tournament_manager/src/model/referee/pitch.dart';
 import 'package:tournament_manager/src/model/referee/round_settings.dart';
 import 'package:tournament_manager/src/model/results/results.dart';
 import 'package:tournament_manager/src/model/schedule/match_schedule.dart';
+import 'package:tournament_manager/src/serialization/referee/break_global_creation_dto.dart';
+import 'package:tournament_manager/src/serialization/referee/break_single_creation_dto.dart';
 import 'package:tournament_manager/src/service/game_rest_api.dart';
 import 'package:watch_it/watch_it.dart';
 
@@ -33,8 +35,10 @@ abstract class GameManager extends ChangeNotifier {
   late Command<(int gameNumber, int teamAScore, int teamBScore), bool>
       saveGameCommand;
 
+  /// (isGlobal, startTime, amountOfBreaks, message, ageGroupId when !isGlobal)
   late Command<
-      (DateTime start, DateTime end, String ageGroupId, String message),
+      (bool isGlobal, DateTime startTime, int amountOfBreaks, String message,
+          String? ageGroupId),
       bool> addBreakCommand;
 
   late Command<void, void> getAllPitchesCommand;
@@ -87,7 +91,8 @@ class GameManagerImplementation extends ChangeNotifier implements GameManager {
   late Command<(int, int, int), bool> saveGameCommand;
 
   @override
-  late Command<(DateTime, DateTime, String, String), bool> addBreakCommand;
+  late Command<
+      (bool, DateTime, int, String, String?), bool> addBreakCommand;
 
   @override
   late Command<void, void> getAllPitchesCommand;
@@ -256,12 +261,27 @@ class GameManagerImplementation extends ChangeNotifier implements GameManager {
     );
 
     addBreakCommand = Command.createAsync(
-      (breakRequest) async {
-        return await _gameRestApi.addBreak(
-          breakRequest.$1,
-          breakRequest.$2,
-          breakRequest.$3,
-          breakRequest.$4,
+      (req) async {
+        if (req.$1) {
+          return await _gameRestApi.createGlobalBreak(
+            BreakGlobalCreationDto(
+              startTime: req.$2,
+              amountOfBreaks: req.$3,
+              message: req.$4,
+            ),
+          );
+        }
+        final ageGroupId = req.$5;
+        if (ageGroupId == null || ageGroupId.isEmpty) {
+          return false;
+        }
+        return await _gameRestApi.createBreakForAgeGroup(
+          BreakSingleCreationDto(
+            startTime: req.$2,
+            amountOfBreaks: req.$3,
+            ageGroupId: ageGroupId,
+            message: req.$4,
+          ),
         );
       },
       initialValue: false,

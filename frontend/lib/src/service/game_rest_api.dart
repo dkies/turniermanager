@@ -5,7 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tournament_manager/src/serialization/admin/extended_game_dto.dart';
 import 'package:tournament_manager/src/serialization/admin/game_score_update_dto.dart';
 import 'package:tournament_manager/src/serialization/age_group_dto.dart';
-import 'package:tournament_manager/src/serialization/referee/break_request_dto.dart';
+import 'package:tournament_manager/src/serialization/referee/break_global_creation_dto.dart';
+import 'package:tournament_manager/src/serialization/referee/break_single_creation_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/game_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/game_group_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/pitch_dto.dart';
@@ -39,8 +40,8 @@ abstract class GameRestApi {
   Future<List<ExtendedGameDto>> getAllGames();
   Future<bool> saveGame(int gameNumber, int teamAScore, int teamBScore);
 
-  Future<bool> addBreak(
-      DateTime start, DateTime end, String ageGroupId, String message);
+  Future<bool> createBreakForAgeGroup(BreakSingleCreationDto dto);
+  Future<bool> createGlobalBreak(BreakGlobalCreationDto dto);
 
   Future<List<PitchDto>> getAllPitches();
   Future<bool> printPitch(String pitchId);
@@ -54,7 +55,8 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
   late final Uri getAllAgeGroupsUri;
   late final Uri createRoundUri;
   late final Uri saveGameUri;
-  late final Uri addBreakUri;
+  late final Uri createBreakUri;
+  late final Uri createGlobalBreakUri;
   late final Uri getAllPitchesUri;
   late final String printPitchPath;
   late final Uri getAllGameGroupsUri;
@@ -69,7 +71,8 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
     getAllAgeGroupsUri = Uri.parse('$_baseUri/agegroups/getAll');
     createRoundUri = Uri.parse('$_baseUri/rounds');
     saveGameUri = Uri.parse('$_baseUri/games/score');
-    addBreakUri = Uri.parse('$_baseUri/breaks/createBreak');
+    createBreakUri = Uri.parse('$_baseUri/breaks/createBreak');
+    createGlobalBreakUri = Uri.parse('$_baseUri/breaks/createGlobalBreak');
     getAllPitchesUri = Uri.parse('$_baseUri/pitches');
     printPitchPath = '$_baseUri/pitches/result-card/';
     getAllGameGroupsUri =
@@ -224,23 +227,28 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
   }
 
   @override
-  Future<bool> addBreak(
-      DateTime start, DateTime end, String ageGroupId, String message) async {
+  Future<bool> createBreakForAgeGroup(BreakSingleCreationDto dto) async {
     try {
-      var dto = BreakRequestDto(start, end, ageGroupId, message);
-      var serialized = jsonEncode(dto);
-
       final response = await client.post(
-        addBreakUri,
-        body: serialized,
+        createBreakUri,
+        body: jsonEncode(dto.toJson()),
         headers: headers,
       );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return true;
-      }
-
+      return response.statusCode == 200 || response.statusCode == 201;
+    } on Exception {
       return false;
+    }
+  }
+
+  @override
+  Future<bool> createGlobalBreak(BreakGlobalCreationDto dto) async {
+    try {
+      final response = await client.post(
+        createGlobalBreakUri,
+        body: jsonEncode(dto.toJson()),
+        headers: headers,
+      );
+      return response.statusCode == 200 || response.statusCode == 201;
     } on Exception {
       return false;
     }
@@ -578,8 +586,12 @@ class GameTestRestApi extends GameRestApi {
   }
 
   @override
-  Future<bool> addBreak(
-      DateTime start, DateTime end, String ageGroupId, String message) async {
+  Future<bool> createBreakForAgeGroup(BreakSingleCreationDto dto) async {
+    return true;
+  }
+
+  @override
+  Future<bool> createGlobalBreak(BreakGlobalCreationDto dto) async {
     return true;
   }
 

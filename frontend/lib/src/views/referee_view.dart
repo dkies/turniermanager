@@ -104,6 +104,20 @@ class _RefereeViewState extends State<RefereeView> {
             ),
           ),
           const SizedBox(width: 10),
+          ElevatedButton.icon(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (dialogContext) => _InsertBreakDialog(
+                  gameManager: _gameManager,
+                  ageGroups: ageGroups,
+                ),
+              );
+            },
+            icon: const Icon(Icons.add_circle_outline),
+            label: const Text('Pause einfügen'),
+          ),
+          const SizedBox(width: 10),
           IconButton(
             onPressed: () {
               showDialog(
@@ -383,6 +397,167 @@ class _SettingsDialogState extends State<_SettingsDialog> {
         TextButton(
           onPressed: () => GoRouter.of(context).pop(),
           child: const Text('OK'),
+        ),
+      ],
+    );
+  }
+}
+
+class _InsertBreakDialog extends StatefulWidget {
+  const _InsertBreakDialog({
+    required this.gameManager,
+    required this.ageGroups,
+  });
+
+  final GameManager gameManager;
+  final List<AgeGroup> ageGroups;
+
+  @override
+  State<_InsertBreakDialog> createState() => _InsertBreakDialogState();
+}
+
+class _InsertBreakDialogState extends State<_InsertBreakDialog> {
+  final _timeController = TextEditingController();
+  final _amountController = TextEditingController(text: '1');
+  final _nameController = TextEditingController(text: 'Pause');
+  bool _isGlobal = true;
+  String? _selectedAgeGroupId;
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _timeController.text =
+        '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    if (widget.ageGroups.isNotEmpty) {
+      _selectedAgeGroupId = widget.ageGroups.first.id;
+    }
+  }
+
+  @override
+  void dispose() {
+    _timeController.dispose();
+    _amountController.dispose();
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final timeStr = _timeController.text.trim();
+    final amount = int.tryParse(_amountController.text.trim());
+    final message = _nameController.text.trim();
+
+    if (timeStr.isEmpty) {
+      showError(context, 'Uhrzeit eingeben.');
+      return;
+    }
+    final timeParts = timeStr.split(RegExp(r'[:\s]+'));
+    if (timeParts.length < 2) {
+      showError(context, 'Uhrzeit im Format HH:MM eingeben.');
+      return;
+    }
+    final hour = int.tryParse(timeParts[0]);
+    final minute = int.tryParse(timeParts[1]);
+    if (hour == null ||
+        minute == null ||
+        hour < 0 ||
+        hour > 23 ||
+        minute < 0 ||
+        minute > 59) {
+      showError(context, 'Ungültige Uhrzeit.');
+      return;
+    }
+    if (amount == null || amount < 1) {
+      showError(context, 'Anzahl Spieleinheiten muss mindestens 1 sein.');
+      return;
+    }
+    if (message.isEmpty) {
+      showError(context, 'Name eingeben.');
+      return;
+    }
+    if (!_isGlobal && (_selectedAgeGroupId == null || _selectedAgeGroupId!.isEmpty)) {
+      showError(context, 'Altersgruppe auswählen.');
+      return;
+    }
+
+    final now = DateTime.now();
+    final startTime = DateTime(now.year, now.month, now.day, hour, minute);
+
+    final result = await widget.gameManager.addBreakCommand.executeWithFuture(
+      (_isGlobal, startTime, amount, message, _isGlobal ? null : _selectedAgeGroupId),
+    );
+
+    if (!mounted) return;
+    GoRouter.of(context).pop();
+    if (result) {
+      widget.gameManager.getCurrentRoundCommand();
+    } else {
+      showError(context, 'Pause konnte nicht eingefügt werden.');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Pause einfügen'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _timeController,
+              decoration: const InputDecoration(
+                label: Text('Uhrzeit (HH:MM)'),
+              ),
+              keyboardType: TextInputType.datetime,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _amountController,
+              decoration: const InputDecoration(
+                label: Text('Anzahl Spieleinheiten (geblockt)'),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                label: Text('Name'),
+              ),
+            ),
+            const SizedBox(height: 16),
+            CheckboxListTile(
+              value: _isGlobal,
+              onChanged: (v) => setState(() => _isGlobal = v ?? true),
+              title: const Text('Global (alle Altersgruppen)'),
+              controlAffinity: ListTileControlAffinity.leading,
+            ),
+            if (!_isGlobal) ...[
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                value: _selectedAgeGroupId,
+                decoration: const InputDecoration(
+                  label: Text('Altersgruppe'),
+                ),
+                items: widget.ageGroups
+                    .map((g) => DropdownMenuItem(value: g.id, child: Text(g.name)))
+                    .toList(),
+                onChanged: (v) => setState(() => _selectedAgeGroupId = v),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => GoRouter.of(context).pop(),
+          child: const Text('Abbrechen'),
+        ),
+        ElevatedButton(
+          onPressed: _submit,
+          child: const Text('Einfügen'),
         ),
       ],
     );
@@ -717,15 +892,9 @@ class _BreakTextField extends StatelessWidget {
         final startTime = gameGroup.startTime.subtract(
           const Duration(minutes: 1),
         );
-        final endTime = startTime.add(Duration(minutes: parsed));
 
         final result = await gameManager.addBreakCommand.executeWithFuture(
-          (
-            startTime,
-            endTime,
-            ageGroupId,
-            'Pause', // Default message
-          ),
+          (false, startTime, parsed, 'Pause', ageGroupId),
         );
 
         if (result) {
