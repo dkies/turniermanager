@@ -7,6 +7,7 @@ class ResultEntry {
     this.defeats,
     this.ownScoredGoals,
     this.enemyScoredGoals,
+    this.pointsDifference,
     this.avgScore,
   );
 
@@ -17,5 +18,6 @@ class ResultEntry {
   int defeats;
   int ownScoredGoals;
   int enemyScoredGoals;
+  int pointsDifference;
   double? avgScore;
 }

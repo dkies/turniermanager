@@ -417,7 +417,7 @@ class _LeagueViewState extends State<LeagueView> {
         cells.add(
           DataCell(
             Text(
-              (result.ownScoredGoals - result.enemyScoredGoals).toString(),
+              result.pointsDifference.toString(),
               style: columnEntryTextStyle,
             ),
           ),
