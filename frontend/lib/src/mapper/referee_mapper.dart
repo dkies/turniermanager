@@ -8,7 +8,6 @@ import 'package:tournament_manager/src/serialization/referee/game_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/game_group_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/game_settings_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/pitch_dto.dart';
-import 'package:tournament_manager/src/serialization/referee/end_qualification_round_detailed_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/round_settings_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/team_dto.dart';
 
@@ -48,20 +47,14 @@ class RefereeMapper {
   }
 
   RoundSettings mapRoundSettings(RoundSettingsDto dto) {
-    return RoundSettings(mapGameSettings(dto.gameSettings),
-        roundName: dto.roundName)
-      ..numberPerRounds = dto.numberPerRounds;
-  }
-
-  /// Erstellt das DTO für POST /turnier/end-qualification-detailed
-  EndQualificationRoundDetailedDto toEndQualificationRoundDetailedDto(
-      RoundSettings model) {
-    return EndQualificationRoundDetailedDto(
-      Map<String, int>.from(model.numberPerRounds),
-      model.gameSettings.playTime,
-      model.gameSettings.breakTime,
-      model.roundName,
+    final gameSettings = GameSettings(
+      DateTime.now(),
+      dto.breakTimeInSeconds,
+      dto.playTimeInSeconds,
     );
+    return RoundSettings(gameSettings, roundName: dto.roundName)
+      ..numberPerRounds =
+          Map<String, int>.from(dto.maxTeamsPerLeaguePerAgeGroup);
   }
 
   GameSettings mapGameSettings(GameSettingsDto dto) {
@@ -73,9 +66,12 @@ class RefereeMapper {
   }
 
   RoundSettingsDto reverseMapRoundSettings(RoundSettings model) {
-    return RoundSettingsDto(reverseMapGameSettings(model.gameSettings),
-        roundName: model.roundName)
-      ..numberPerRounds = model.numberPerRounds;
+    return RoundSettingsDto(
+      Map<String, int>.from(model.numberPerRounds),
+      model.gameSettings.playTime,
+      model.gameSettings.breakTime,
+      model.roundName,
+    );
   }
 
   GameSettingsDto reverseMapGameSettings(GameSettings model) {

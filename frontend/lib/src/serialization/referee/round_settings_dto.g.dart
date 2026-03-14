@@ -8,13 +8,16 @@ part of 'round_settings_dto.dart';
 
 RoundSettingsDto _$RoundSettingsDtoFromJson(Map<String, dynamic> json) =>
     RoundSettingsDto(
-      GameSettingsDto.fromJson(json['gameSettings'] as Map<String, dynamic>),
-      roundName: json['roundName'] as String? ?? 'Qualifikation',
-    )..numberPerRounds = Map<String, int>.from(json['numberPerRounds'] as Map);
+      Map<String, int>.from(json['maxTeamsPerLeaguePerAgeGroup'] as Map),
+      (json['playTimeInSeconds'] as num).toInt(),
+      (json['breakTimeInSeconds'] as num).toInt(),
+      json['roundName'] as String,
+    );
 
 Map<String, dynamic> _$RoundSettingsDtoToJson(RoundSettingsDto instance) =>
     <String, dynamic>{
-      'numberPerRounds': instance.numberPerRounds,
-      'gameSettings': instance.gameSettings.toJson(),
+      'maxTeamsPerLeaguePerAgeGroup': instance.maxTeamsPerLeaguePerAgeGroup,
+      'playTimeInSeconds': instance.playTimeInSeconds,
+      'breakTimeInSeconds': instance.breakTimeInSeconds,
       'roundName': instance.roundName,
     };

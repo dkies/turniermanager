@@ -10,7 +10,6 @@ import 'package:tournament_manager/src/serialization/referee/break_single_creati
 import 'package:tournament_manager/src/serialization/referee/game_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/game_group_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/pitch_dto.dart';
-import 'package:tournament_manager/src/serialization/referee/end_qualification_round_detailed_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/round_settings_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/timing_request_dto.dart';
 import 'package:tournament_manager/src/serialization/results/result_entry_dto.dart';
@@ -136,13 +135,7 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
   @override
   Future<bool> startNextRound(RoundSettingsDto settings) async {
     try {
-      final dto = EndQualificationRoundDetailedDto(
-        Map<String, int>.from(settings.numberPerRounds),
-        settings.gameSettings.playTime,
-        settings.gameSettings.breakTime,
-        settings.roundName,
-      );
-      final json = jsonEncode(dto.toJson());
+      final json = jsonEncode(settings.toJson());
 
       final response = await client.post(
         endQualificationDetailedUri,
