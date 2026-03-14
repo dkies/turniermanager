@@ -7,6 +7,7 @@ import 'package:tournament_manager/src/manager/game_manager.dart';
 import 'package:tournament_manager/src/model/age_group.dart';
 import 'package:tournament_manager/src/model/schedule/league.dart';
 import 'package:tournament_manager/src/model/schedule/match_schedule_entry.dart';
+import 'package:tournament_manager/src/serialization/schedule/item_type.dart';
 import 'package:watch_it/watch_it.dart';
 
 class ScheduleView extends StatefulWidget with WatchItStatefulWidgetMixin {
@@ -289,17 +290,9 @@ class ScheduleEntryView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                matchScheduleEntry.teamAName,
-                style: Constants.standardTextStyle,
-              ),
-              const SizedBox(width: 5),
-              const Text(
-                ':',
-                style: Constants.standardTextStyle,
-              ),
-              const SizedBox(width: 5),
-              Text(
-                matchScheduleEntry.teamBName,
+                matchScheduleEntry.itemType == ItemType.break_
+                    ? 'PAUSE'
+                    : '${matchScheduleEntry.teamAName} : ${matchScheduleEntry.teamBName}',
                 style: Constants.standardTextStyle,
               ),
             ],

@@ -485,33 +485,43 @@ class GameTestRestApi extends GameRestApi {
   Future<MatchScheduleDto?> getSchedule(String ageGroupId) async {
     int fieldCount = 1;
     int teamCount = 1;
+    int gameNumber = 0;
+    var baseTime = DateTime.now();
 
-    var scheduleList = List.generate(
-      10,
-      (innerIndex) {
-        var startTime = DateTime.now();
-        var result = MatchScheduleEntryDto(
-          ItemType.game, // itemType
-          "Platz $fieldCount", // pitchName
-          startTime, // startTime
-          startTime.add(const Duration(minutes: 20)), // endTime
-          "team${teamCount++}", // teamAName
-          "team${teamCount++}", // teamBName
-          innerIndex + 1, // gameNumber
-        );
+    var scheduleList = <MatchScheduleEntryDto>[];
+    for (var i = 0; i < 14; i++) {
+      var startTime = baseTime.add(Duration(minutes: i * 25));
+      var endTime = startTime.add(const Duration(minutes: 20));
 
-        fieldCount++;
-        if (fieldCount > 3) {
-          fieldCount = 1;
-        }
+      // Jeder 4. Eintrag ist eine Pause
+      if ((i + 1) % 4 == 0) {
+        scheduleList.add(MatchScheduleEntryDto(
+          ItemType.break_,
+          "Platz $fieldCount",
+          startTime,
+          endTime,
+          null, // teamAName
+          null, // teamBName
+          null, // gameNumber
+        ));
+      } else {
+        gameNumber++;
+        scheduleList.add(MatchScheduleEntryDto(
+          ItemType.game,
+          "Platz $fieldCount",
+          startTime,
+          endTime,
+          "team$teamCount",
+          "team${teamCount + 1}",
+          gameNumber,
+        ));
+        teamCount += 2;
+        if (teamCount > 4) teamCount = 1;
+      }
 
-        if (teamCount > 4) {
-          teamCount = 1;
-        }
-
-        return result;
-      },
-    );
+      fieldCount++;
+      if (fieldCount > 3) fieldCount = 1;
+    }
 
     return MatchScheduleDto('Runde 1', 'Altersklasse 1')
       ..leagues = List.generate(
