@@ -257,50 +257,58 @@ class ScheduleEntryView extends StatelessWidget {
   });
 
   final MatchScheduleEntry matchScheduleEntry;
-  final Color textColor = Colors.white;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 240,
-          child: Row(
-            children: [
-              if (matchScheduleEntry.itemType != ItemType.break_) ...[
+    final isBreak = matchScheduleEntry.itemType == ItemType.break_;
+    final textStyle = isBreak
+        ? Constants.standardTextStyle.copyWith(color: Colors.black)
+        : Constants.standardTextStyle;
+
+    return Container(
+      color: isBreak ? Colors.yellow.shade100 : null,
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 240,
+            child: Row(
+              children: [
+                if (!isBreak) ...[
+                  Text(
+                    matchScheduleEntry.pitchName,
+                    style: textStyle,
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    '|',
+                    style: textStyle,
+                  ),
+                  const SizedBox(width: 5),
+                ],
                 Text(
-                  matchScheduleEntry.pitchName,
-                  style: Constants.standardTextStyle,
+                  '${DateFormat.Hm().format(matchScheduleEntry.startTime)} - ${DateFormat.Hm().format(matchScheduleEntry.endTime)}',
+                  style: textStyle,
                 ),
-                const SizedBox(width: 5),
-                const Text(
-                  '|',
-                  style: Constants.standardTextStyle,
-                ),
-                const SizedBox(width: 5),
               ],
-              Text(
-                '${DateFormat.Hm().format(matchScheduleEntry.startTime)} - ${DateFormat.Hm().format(matchScheduleEntry.endTime)}',
-                style: Constants.standardTextStyle,
-              ),
-            ],
+            ),
           ),
-        ),
-        const SizedBox(width: 5),
-        Expanded(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                matchScheduleEntry.itemType == ItemType.break_
-                    ? 'PAUSE'
-                    : '${matchScheduleEntry.teamAName} : ${matchScheduleEntry.teamBName}',
-                style: Constants.standardTextStyle,
-              ),
-            ],
+          const SizedBox(width: 5),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  isBreak
+                      ? 'PAUSE'
+                      : '${matchScheduleEntry.teamAName} : ${matchScheduleEntry.teamBName}',
+                  style: textStyle,
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
