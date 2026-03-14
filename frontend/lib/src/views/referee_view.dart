@@ -417,18 +417,15 @@ class _InsertBreakDialog extends StatefulWidget {
 }
 
 class _InsertBreakDialogState extends State<_InsertBreakDialog> {
-  final _timeController = TextEditingController();
   final _amountController = TextEditingController(text: '1');
   final _nameController = TextEditingController(text: 'Pause');
   bool _isGlobal = true;
   String? _selectedAgeGroupId;
+  TimeOfDay _selectedTime = TimeOfDay.now();
 
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
-    _timeController.text =
-        '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
     if (widget.ageGroups.isNotEmpty) {
       _selectedAgeGroupId = widget.ageGroups.first.id;
     }
@@ -436,37 +433,24 @@ class _InsertBreakDialogState extends State<_InsertBreakDialog> {
 
   @override
   void dispose() {
-    _timeController.dispose();
     _amountController.dispose();
     _nameController.dispose();
     super.dispose();
   }
 
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime,
+    );
+    if (picked != null && mounted) {
+      setState(() => _selectedTime = picked);
+    }
+  }
+
   Future<void> _submit() async {
-    final timeStr = _timeController.text.trim();
     final amount = int.tryParse(_amountController.text.trim());
     final message = _nameController.text.trim();
-
-    if (timeStr.isEmpty) {
-      showError(context, 'Uhrzeit eingeben.');
-      return;
-    }
-    final timeParts = timeStr.split(RegExp(r'[:\s]+'));
-    if (timeParts.length < 2) {
-      showError(context, 'Uhrzeit im Format HH:MM eingeben.');
-      return;
-    }
-    final hour = int.tryParse(timeParts[0]);
-    final minute = int.tryParse(timeParts[1]);
-    if (hour == null ||
-        minute == null ||
-        hour < 0 ||
-        hour > 23 ||
-        minute < 0 ||
-        minute > 59) {
-      showError(context, 'Ungültige Uhrzeit.');
-      return;
-    }
     if (amount == null || amount < 1) {
       showError(context, 'Anzahl Spieleinheiten muss mindestens 1 sein.');
       return;
@@ -481,7 +465,13 @@ class _InsertBreakDialogState extends State<_InsertBreakDialog> {
     }
 
     final now = DateTime.now();
-    final startTime = DateTime(now.year, now.month, now.day, hour, minute);
+    final startTime = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      _selectedTime.hour,
+      _selectedTime.minute,
+    );
 
     final result = await widget.gameManager.addBreakCommand.executeWithFuture(
       (_isGlobal, startTime, amount, message, _isGlobal ? null : _selectedAgeGroupId),
@@ -505,12 +495,18 @@ class _InsertBreakDialogState extends State<_InsertBreakDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              controller: _timeController,
-              decoration: const InputDecoration(
-                label: Text('Uhrzeit (HH:MM)'),
+            InkWell(
+              onTap: _pickTime,
+              child: InputDecorator(
+                decoration: const InputDecoration(
+                  label: Text('Uhrzeit'),
+                  suffixIcon: Icon(Icons.schedule),
+                ),
+                child: Text(
+                  _selectedTime.format(context),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
               ),
-              keyboardType: TextInputType.datetime,
             ),
             const SizedBox(height: 12),
             TextField(
@@ -745,17 +741,6 @@ class _GameViewState extends State<GameView> {
                         ),
                     ],
                   ),
-                  if (!widget.first)
-                    SizedBox(
-                      width: 100,
-                      child: Tooltip(
-                        message: 'Pause einfügen (vorher)',
-                        child: _BreakTextField(
-                          gameGroup: widget.gameGroup,
-                          gameManager: _gameManager,
-                        ),
-                      ),
-                    ),
                   if (widget.first)
                     IconButton(
                       onPressed: () => _handleEndGames(context),
@@ -847,66 +832,6 @@ class _GameViewState extends State<GameView> {
     if (context.mounted) {
       showError(context, 'Spiele konnten nicht beendet werden');
     }
-  }
-}
-
-class _BreakTextField extends StatelessWidget {
-  const _BreakTextField({
-    required this.gameGroup,
-    required this.gameManager,
-  });
-
-  final GameGroup gameGroup;
-  final GameManager gameManager;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      decoration: const InputDecoration(
-        suffixIcon: Icon(Icons.more_time),
-      ),
-      onSubmitted: (value) async {
-        final parsed = int.tryParse(value);
-        if (parsed == null) {
-          if (context.mounted) {
-            showError(context, 'Falsches Zahlenformat!');
-          }
-          return;
-        }
-
-        // Get ageGroupId from the first game in the group
-        String? ageGroupId;
-        if (gameGroup.games.isNotEmpty) {
-          final ageGroupName = gameGroup.games.first.ageGroupName;
-          final ageGroup = gameManager.getAgeGroupByName(ageGroupName);
-          ageGroupId = ageGroup?.id;
-        }
-
-        if (ageGroupId == null) {
-          if (context.mounted) {
-            showError(context, 'Altersgruppe konnte nicht gefunden werden!');
-          }
-          return;
-        }
-
-        final startTime = gameGroup.startTime.subtract(
-          const Duration(minutes: 1),
-        );
-
-        final result = await gameManager.addBreakCommand.executeWithFuture(
-          (false, startTime, parsed, 'Pause', ageGroupId),
-        );
-
-        if (result) {
-          gameManager.getCurrentRoundCommand();
-          return;
-        }
-
-        if (context.mounted) {
-          showError(context, 'Pause konnte nicht eingefügt werden!');
-        }
-      },
-    );
   }
 }
 
