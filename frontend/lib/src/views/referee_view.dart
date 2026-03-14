@@ -417,11 +417,11 @@ class _InsertBreakDialog extends StatefulWidget {
 }
 
 class _InsertBreakDialogState extends State<_InsertBreakDialog> {
-  final _amountController = TextEditingController(text: '1');
   final _nameController = TextEditingController(text: 'Pause');
   bool _isGlobal = true;
   String? _selectedAgeGroupId;
   TimeOfDay _selectedTime = TimeOfDay.now();
+  int _amount = 1;
 
   @override
   void initState() {
@@ -433,7 +433,6 @@ class _InsertBreakDialogState extends State<_InsertBreakDialog> {
 
   @override
   void dispose() {
-    _amountController.dispose();
     _nameController.dispose();
     super.dispose();
   }
@@ -449,12 +448,7 @@ class _InsertBreakDialogState extends State<_InsertBreakDialog> {
   }
 
   Future<void> _submit() async {
-    final amount = int.tryParse(_amountController.text.trim());
     final message = _nameController.text.trim();
-    if (amount == null || amount < 1) {
-      showError(context, 'Anzahl Spieleinheiten muss mindestens 1 sein.');
-      return;
-    }
     if (message.isEmpty) {
       showError(context, 'Name eingeben.');
       return;
@@ -479,7 +473,7 @@ class _InsertBreakDialogState extends State<_InsertBreakDialog> {
     }
 
     final result = await widget.gameManager.addBreakCommand.executeWithFuture(
-      (_isGlobal, startTime, amount, message, _isGlobal ? null : _selectedAgeGroupId),
+      (_isGlobal, startTime, _amount, message, _isGlobal ? null : _selectedAgeGroupId),
     );
 
     if (!mounted) return;
@@ -514,12 +508,32 @@ class _InsertBreakDialogState extends State<_InsertBreakDialog> {
               ),
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: _amountController,
+            InputDecorator(
               decoration: const InputDecoration(
-                label: Text('Anzahl Spieleinheiten (geblockt)'),
+                label: Text('Anzahl geblockte Spieleinheiten'),
               ),
-              keyboardType: TextInputType.number,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: _amount <= 1
+                        ? null
+                        : () => setState(() => _amount--),
+                    icon: const Icon(Icons.remove),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      '$_amount',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => setState(() => _amount++),
+                    icon: const Icon(Icons.add),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 12),
             TextField(
