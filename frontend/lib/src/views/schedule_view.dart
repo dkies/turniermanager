@@ -264,7 +264,7 @@ class ScheduleEntryView extends StatelessWidget {
     return Row(
       children: [
         SizedBox(
-          width: 150,
+          width: 240,
           child: Row(
             children: [
               Text(
@@ -278,7 +278,7 @@ class ScheduleEntryView extends StatelessWidget {
               ),
               const SizedBox(width: 5),
               Text(
-                DateFormat.Hm().format(matchScheduleEntry.startTime),
+                '${DateFormat.Hm().format(matchScheduleEntry.startTime)} - ${DateFormat.Hm().format(matchScheduleEntry.endTime)}',
                 style: Constants.standardTextStyle,
               ),
             ],

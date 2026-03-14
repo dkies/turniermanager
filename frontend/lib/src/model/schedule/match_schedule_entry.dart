@@ -7,6 +7,7 @@ class MatchScheduleEntry {
     this.teamAName,
     this.teamBName,
     this.startTime,
+    this.endTime,
   );
 
   ItemType itemType;
@@ -14,4 +15,5 @@ class MatchScheduleEntry {
   String teamAName;
   String teamBName;
   DateTime startTime;
+  DateTime endTime;
 }

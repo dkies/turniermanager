@@ -23,6 +23,7 @@ class MatchScheduleMapper {
       dto.teamAName ?? '',
       dto.teamBName ?? '',
       dto.startTime,
+      dto.endTime,
     );
   }
 }
