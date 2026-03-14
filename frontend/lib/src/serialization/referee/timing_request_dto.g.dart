@@ -8,14 +8,10 @@ part of 'timing_request_dto.dart';
 
 TimingRequestDto _$TimingRequestDtoFromJson(Map<String, dynamic> json) =>
     TimingRequestDto(
-      DateTime.parse(json['startTime'] as String),
-      DateTime.parse(json['actualStartTime'] as String),
-      DateTime.parse(json['endTime'] as String),
+      DateTime.parse(json['plannedStartTime'] as String),
     );
 
 Map<String, dynamic> _$TimingRequestDtoToJson(TimingRequestDto instance) =>
     <String, dynamic>{
-      'startTime': instance.startTime.toIso8601String(),
-      'actualStartTime': instance.actualStartTime.toIso8601String(),
-      'endTime': instance.endTime.toIso8601String(),
+      'plannedStartTime': instance.plannedStartTime.toIso8601String(),
     };

@@ -654,11 +654,7 @@ class _GameViewState extends State<GameView> {
     }
 
     final result = await _gameManager.endCurrentGamesCommand.executeWithFuture(
-      (
-        widget.gameGroup.startTime,
-        currentGamesActualStart!,
-        DateTime.now(),
-      ),
+      widget.gameGroup.startTime,
     );
 
     setState(() {

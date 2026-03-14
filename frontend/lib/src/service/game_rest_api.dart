@@ -10,6 +10,7 @@ import 'package:tournament_manager/src/serialization/referee/game_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/game_group_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/pitch_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/round_settings_dto.dart';
+import 'package:tournament_manager/src/serialization/referee/timing_request_dto.dart';
 import 'package:tournament_manager/src/serialization/results/result_entry_dto.dart';
 import 'package:tournament_manager/src/serialization/results/results_dto.dart';
 import 'package:tournament_manager/src/serialization/schedule/league_dto.dart';
@@ -27,11 +28,7 @@ abstract class GameRestApi {
 
   Future<ResultsDto?> getResults(String ageGroupId);
 
-  Future<bool> endCurrentGames(
-    DateTime originalStart,
-    DateTime actualStart,
-    DateTime end,
-  );
+  Future<bool> endCurrentGames(DateTime originalStart);
 
   Future<bool> startNextRound(RoundSettingsDto settings);
 
@@ -62,6 +59,7 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
   late final String printPitchPath;
   late final Uri getAllGameGroupsUri;
   late final Uri getAllGamesUri;
+  late final Uri refreshTimingsUri;
 
   GameRestApiImplementation(String baseUri) {
     _baseUri = baseUri;
@@ -78,6 +76,7 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
         Uri.parse('$_baseUri/gameplan/activeGamesSortedDateTimeList');
     getAllGamesUri =
         Uri.parse('$_baseUri/gameplan/get-all-games-listed-extended');
+    refreshTimingsUri = Uri.parse('$_baseUri/games/refresh-timings');
   }
 
   @override
@@ -109,14 +108,21 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
   }
 
   @override
-  Future<bool> endCurrentGames(
-    DateTime originalStart,
-    DateTime actualStart,
-    DateTime end,
-  ) async {
-    // This endpoint has been removed from the backend
-    // Keeping the method for backward compatibility but it will always return false
-    return false;
+  Future<bool> endCurrentGames(DateTime originalStart) async {
+    try {
+      final dto = TimingRequestDto(originalStart);
+      final json = jsonEncode(dto.toJson());
+
+      final response = await client.post(
+        refreshTimingsUri,
+        body: json,
+        headers: headers,
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
   }
 
   @override
@@ -284,11 +290,7 @@ class GameTestRestApi extends GameRestApi {
   ];
 
   @override
-  Future<bool> endCurrentGames(
-    DateTime originalStart,
-    DateTime actualStart,
-    DateTime end,
-  ) async {
+  Future<bool> endCurrentGames(DateTime originalStart) async {
     var seedBase = DateTime.now();
     var random = Random(seedBase.second + seedBase.millisecond);
 
