@@ -267,16 +267,18 @@ class ScheduleEntryView extends StatelessWidget {
           width: 240,
           child: Row(
             children: [
-              Text(
-                matchScheduleEntry.pitchName,
-                style: Constants.standardTextStyle,
-              ),
-              const SizedBox(width: 5),
-              const Text(
-                '|',
-                style: Constants.standardTextStyle,
-              ),
-              const SizedBox(width: 5),
+              if (matchScheduleEntry.itemType != ItemType.break_) ...[
+                Text(
+                  matchScheduleEntry.pitchName,
+                  style: Constants.standardTextStyle,
+                ),
+                const SizedBox(width: 5),
+                const Text(
+                  '|',
+                  style: Constants.standardTextStyle,
+                ),
+                const SizedBox(width: 5),
+              ],
               Text(
                 '${DateFormat.Hm().format(matchScheduleEntry.startTime)} - ${DateFormat.Hm().format(matchScheduleEntry.endTime)}',
                 style: Constants.standardTextStyle,
