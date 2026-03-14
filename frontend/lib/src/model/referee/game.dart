@@ -1,5 +1,6 @@
 import 'package:tournament_manager/src/model/referee/pitch.dart';
 import 'package:tournament_manager/src/model/referee/team.dart';
+import 'package:tournament_manager/src/serialization/schedule/item_type.dart';
 
 class Game {
   Game(
@@ -9,6 +10,7 @@ class Game {
     this.teamB,
     this.leagueName,
     this.ageGroupName,
+    this.type,
   );
 
   int gameNumber;
@@ -17,4 +19,5 @@ class Game {
   Team teamB;
   String leagueName;
   String ageGroupName;
+  ItemType type;
 }

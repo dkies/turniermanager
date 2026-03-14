@@ -41,6 +41,7 @@ class RefereeMapper {
       Team(dto.teamB), // Create Team from string
       dto.leagueName,
       dto.ageGroupName,
+      dto.type,
     );
   }
 

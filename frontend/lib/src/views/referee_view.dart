@@ -10,6 +10,7 @@ import 'package:tournament_manager/src/model/referee/game.dart';
 import 'package:tournament_manager/src/model/referee/game_group.dart';
 import 'package:tournament_manager/src/model/referee/game_settings.dart';
 import 'package:tournament_manager/src/model/referee/round_settings.dart';
+import 'package:tournament_manager/src/serialization/schedule/item_type.dart';
 import 'package:tournament_manager/src/service/sound_player_service.dart';
 import 'package:watch_it/watch_it.dart';
 import 'package:intl/intl.dart';
@@ -1035,25 +1036,32 @@ class GameEntryView extends StatelessWidget {
         ),
         const SizedBox(width: 5),
         Expanded(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                gameRoundEntry.teamA.name,
-                style: textStyle,
-              ),
-              const SizedBox(width: 5),
-              Text(
-                ':',
-                style: textStyle,
-              ),
-              const SizedBox(width: 5),
-              Text(
-                gameRoundEntry.teamB.name,
-                style: textStyle,
-              ),
-            ],
-          ),
+          child: gameRoundEntry.type == ItemType.break_
+              ? Center(
+                  child: Text(
+                    'PAUSE',
+                    style: textStyle,
+                  ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      gameRoundEntry.teamA.name,
+                      style: textStyle,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      ':',
+                      style: textStyle,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      gameRoundEntry.teamB.name,
+                      style: textStyle,
+                    ),
+                  ],
+                ),
         ),
       ],
     );
