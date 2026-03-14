@@ -448,15 +448,17 @@ class GameTestRestApi extends GameRestApi {
       10,
       (index) {
         var randomGenerator = Random(index);
+        var ownScoredGoals = randomGenerator.nextInt(100);
+        var enemyScoredGoals = randomGenerator.nextInt(100);
         var result = ResultEntryDto(
           'Team$index',
           randomGenerator.nextInt(100), // victories
           randomGenerator.nextInt(100), // defeats
           randomGenerator.nextInt(100), // draws
-          randomGenerator.nextInt(100), // pointsDifference
+          ownScoredGoals - enemyScoredGoals, // pointsDifference
           randomGenerator.nextInt(100), // totalPoints
-          randomGenerator.nextInt(100), // ownScoredGoals
-          randomGenerator.nextInt(100), // enemyScoredGoals
+          ownScoredGoals,
+          enemyScoredGoals,
           randomGenerator.nextDouble() * 9 + 1, // avgScore (1.0–10.0)
         );
 
