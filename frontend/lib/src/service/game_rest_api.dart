@@ -10,6 +10,7 @@ import 'package:tournament_manager/src/serialization/referee/break_single_creati
 import 'package:tournament_manager/src/serialization/referee/game_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/game_group_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/pitch_dto.dart';
+import 'package:tournament_manager/src/serialization/referee/end_qualification_round_detailed_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/round_settings_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/timing_request_dto.dart';
 import 'package:tournament_manager/src/serialization/results/result_entry_dto.dart';
@@ -54,7 +55,6 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
   late final String getSchedulePath;
   late final String getResultsPath;
   late final Uri getAllAgeGroupsUri;
-  late final Uri createRoundUri;
   late final Uri saveGameUri;
   late final Uri createBreakUri;
   late final Uri createGlobalBreakUri;
@@ -64,6 +64,7 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
   late final Uri getAllGameGroupsUri;
   late final Uri getAllGamesUri;
   late final Uri refreshTimingsUri;
+  late final Uri endQualificationDetailedUri;
 
   GameRestApiImplementation(String baseUri) {
     _baseUri = baseUri;
@@ -71,7 +72,8 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
     getSchedulePath = '$_baseUri/gameplan/agegroup/';
     getResultsPath = '$_baseUri/stats/agegroup/';
     getAllAgeGroupsUri = Uri.parse('$_baseUri/agegroups/getAll');
-    createRoundUri = Uri.parse('$_baseUri/rounds');
+    endQualificationDetailedUri =
+        Uri.parse('$_baseUri/turnier/end-qualification-detailed');
     saveGameUri = Uri.parse('$_baseUri/games/score');
     createBreakUri = Uri.parse('$_baseUri/breaks/createBreak');
     createGlobalBreakUri = Uri.parse('$_baseUri/breaks/createGlobalBreak');
@@ -134,15 +136,20 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
   @override
   Future<bool> startNextRound(RoundSettingsDto settings) async {
     try {
-      var json = jsonEncode(settings);
+      final dto = EndQualificationRoundDetailedDto(
+        Map<String, int>.from(settings.numberPerRounds),
+        settings.gameSettings.playTime,
+        settings.gameSettings.breakTime,
+        settings.roundName,
+      );
+      final json = jsonEncode(dto.toJson());
 
       final response = await client.post(
-        createRoundUri,
+        endQualificationDetailedUri,
         body: json,
         headers: headers,
       );
 
-      // Backend returns 201 CREATED on success
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       }

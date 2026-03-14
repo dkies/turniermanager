@@ -2,6 +2,10 @@
 
 part of 'break_global_creation_dto.dart';
 
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
 BreakGlobalCreationDto _$BreakGlobalCreationDtoFromJson(
         Map<String, dynamic> json) =>
     BreakGlobalCreationDto(
@@ -13,8 +17,7 @@ BreakGlobalCreationDto _$BreakGlobalCreationDtoFromJson(
 Map<String, dynamic> _$BreakGlobalCreationDtoToJson(
         BreakGlobalCreationDto instance) =>
     <String, dynamic>{
-      'startTime':
-          BreakGlobalCreationDto._dateTimeToJson(instance.startTime),
+      'startTime': BreakGlobalCreationDto._dateTimeToJson(instance.startTime),
       'amountOfBreaks': instance.amountOfBreaks,
       'message': instance.message,
     };

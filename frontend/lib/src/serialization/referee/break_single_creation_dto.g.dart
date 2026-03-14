@@ -2,6 +2,10 @@
 
 part of 'break_single_creation_dto.dart';
 
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
 BreakSingleCreationDto _$BreakSingleCreationDtoFromJson(
         Map<String, dynamic> json) =>
     BreakSingleCreationDto(

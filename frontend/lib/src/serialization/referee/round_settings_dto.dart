@@ -6,10 +6,11 @@ part 'round_settings_dto.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class RoundSettingsDto {
-  RoundSettingsDto(this.gameSettings);
+  RoundSettingsDto(this.gameSettings, {this.roundName = 'Qualifikation'});
 
   Map<String, int> numberPerRounds = {};
   GameSettingsDto gameSettings;
+  String roundName;
 
   factory RoundSettingsDto.fromJson(Map<String, dynamic> json) =>
       _$RoundSettingsDtoFromJson(json);
