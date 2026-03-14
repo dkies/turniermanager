@@ -1002,9 +1002,11 @@ class GameEntryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var textStyle = Constants.standardTextStyle.copyWith(color: textColor);
+    final isBreak = gameRoundEntry.type == ItemType.break_;
+    final effectiveColor = isBreak ? Colors.black : textColor;
+    var textStyle = Constants.standardTextStyle.copyWith(color: effectiveColor);
 
-    return Row(
+    final row = Row(
       children: [
         Row(
           children: [
@@ -1022,21 +1024,23 @@ class GameEntryView extends StatelessWidget {
               gameRoundEntry.leagueName,
               style: textStyle,
             ),
-            const SizedBox(width: 5),
-            Text(
-              '|',
-              style: textStyle,
-            ),
-            const SizedBox(width: 5),
-            Text(
-              gameRoundEntry.pitch.name,
-              style: textStyle,
-            ),
+            if (!isBreak) ...[
+              const SizedBox(width: 5),
+              Text(
+                '|',
+                style: textStyle,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                gameRoundEntry.pitch.name,
+                style: textStyle,
+              ),
+            ],
           ],
         ),
         const SizedBox(width: 5),
         Expanded(
-          child: gameRoundEntry.type == ItemType.break_
+          child: isBreak
               ? Center(
                   child: Text(
                     'PAUSE',
@@ -1065,5 +1069,15 @@ class GameEntryView extends StatelessWidget {
         ),
       ],
     );
+
+    if (isBreak) {
+      return Container(
+        width: double.infinity,
+        color: Colors.yellow,
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: row,
+      );
+    }
+    return row;
   }
 }
