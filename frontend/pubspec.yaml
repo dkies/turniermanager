@@ -42,7 +42,15 @@ flutter:
   # Enable generation of localized Strings from arb files.
   generate: true
 
+  # Font für deutsche Sonderzeichen (ß, ä, ö, ü) – siehe assets/fonts/README.md
+  # Nur eine Datei nötig; Bold optional.
+  fonts:
+    - family: NotoSans
+      fonts:
+        - asset: assets/fonts/NotoSans-Regular.ttf
+
   assets:
     - assets/images/
     - assets/sounds/
     - assets/textfiles/
+    - assets/fonts/

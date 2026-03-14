@@ -454,7 +454,8 @@ class _InsertBreakDialogState extends State<_InsertBreakDialog> {
       showError(context, 'Name eingeben.');
       return;
     }
-    if (!_isGlobal && (_selectedAgeGroupId == null || _selectedAgeGroupId!.isEmpty)) {
+    if (!_isGlobal &&
+        (_selectedAgeGroupId == null || _selectedAgeGroupId!.isEmpty)) {
       showError(context, 'Altersgruppe auswählen.');
       return;
     }
@@ -474,7 +475,13 @@ class _InsertBreakDialogState extends State<_InsertBreakDialog> {
     }
 
     final result = await widget.gameManager.addBreakCommand.executeWithFuture(
-      (_isGlobal, startTime, _amount, message, _isGlobal ? null : _selectedAgeGroupId),
+      (
+        _isGlobal,
+        startTime,
+        _amount,
+        message,
+        _isGlobal ? null : _selectedAgeGroupId
+      ),
     );
 
     if (!mounted) return;
@@ -517,9 +524,8 @@ class _InsertBreakDialogState extends State<_InsertBreakDialog> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    onPressed: _amount <= 1
-                        ? null
-                        : () => setState(() => _amount--),
+                    onPressed:
+                        _amount <= 1 ? null : () => setState(() => _amount--),
                     icon: const Icon(Icons.remove),
                   ),
                   Padding(
@@ -558,7 +564,8 @@ class _InsertBreakDialogState extends State<_InsertBreakDialog> {
                   label: Text('Altersgruppe'),
                 ),
                 items: widget.ageGroups
-                    .map((g) => DropdownMenuItem(value: g.id, child: Text(g.name)))
+                    .map((g) =>
+                        DropdownMenuItem(value: g.id, child: Text(g.name)))
                     .toList(),
                 onChanged: (v) => setState(() => _selectedAgeGroupId = v),
               ),
@@ -669,7 +676,7 @@ class _GameViewState extends State<GameView> {
               ? (breakId) async {
                   final result = await _gameManager.deleteBreakCommand
                       .executeWithFuture(breakId);
-                  if (!mounted) return;
+                  if (!context.mounted) return;
                   if (result) {
                     _gameManager.getCurrentRoundCommand();
                   } else {
@@ -1095,7 +1102,7 @@ class GameEntryView extends StatelessWidget {
     if (isBreak) {
       return Container(
         width: double.infinity,
-        color: Colors.yellow,
+        color: Colors.yellow.shade100,
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: row,
       );

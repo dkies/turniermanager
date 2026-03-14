@@ -111,7 +111,11 @@ class MainWidget extends StatelessWidget {
         return MaterialApp.router(
           restorationScopeId: 'app',
           title: "Turniermanager",
-          theme: ThemeData.dark(),
+          theme: ThemeData.dark().copyWith(
+            textTheme: ThemeData.dark().textTheme.apply(
+                  fontFamily: 'NotoSans',
+                ),
+          ),
           routerConfig: _router,
           locale: const Locale('de', 'DE'),
           localizationsDelegates: const [

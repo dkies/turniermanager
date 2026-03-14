@@ -351,8 +351,8 @@ class GameTestRestApi extends GameRestApi {
           'test-id-1',
           DateTime(2025, 4, 1, 15, 30, 0),
           1,
-          "Team A",
-          "Team B",
+          "Größenkönige",
+          "Straßenläufer",
           "Feld 1",
           'Liga 1',
           'Altersklasse 1',
@@ -363,8 +363,8 @@ class GameTestRestApi extends GameRestApi {
           'test-id-2',
           DateTime(2025, 4, 1, 15, 30, 0),
           1,
-          "Team A",
-          "Team B",
+          "Müller FC",
+          "Düsseldorf äußerst",
           "Feld 2",
           'Liga 1',
           'Altersklasse 2',
@@ -387,8 +387,8 @@ class GameTestRestApi extends GameRestApi {
           'test-id-3',
           DateTime(2025, 4, 1, 15, 30, 0),
           2,
-          "Team A",
-          "Team B",
+          "Überflieger",
+          "Köln-Schlümpfe",
           "Feld 1",
           'Liga 2',
           'Altersklasse 1',
@@ -416,8 +416,8 @@ class GameTestRestApi extends GameRestApi {
           'test-id-5',
           DateTime(2025, 4, 1, 15, 45, 0),
           1,
-          "Team A",
-          "Team B",
+          "Heiße Füße",
+          "Großstadt-Bären",
           "Feld 1",
           'Liga 1',
           'Altersklasse 1',
@@ -491,6 +491,19 @@ class GameTestRestApi extends GameRestApi {
     return gameGroups;
   }
 
+  static const _resultTeamNames = [
+    'Größenkönige',
+    'Straßenläufer',
+    'Müller FC',
+    'Düsseldorf äußerst',
+    'Überflieger',
+    'Köln-Schlümpfe',
+    'Heiße Füße',
+    'Großstadt-Bären',
+    'Schlüpfer United',
+    'Äußere Neun',
+  ];
+
   @override
   Future<ResultsDto?> getResults(String ageGroupId) async {
     var resultList = List.generate(
@@ -500,7 +513,7 @@ class GameTestRestApi extends GameRestApi {
         var ownScoredGoals = randomGenerator.nextInt(100);
         var enemyScoredGoals = randomGenerator.nextInt(100);
         var result = ResultEntryDto(
-          'Team$index',
+          _resultTeamNames[index],
           randomGenerator.nextInt(100), // victories
           randomGenerator.nextInt(100), // defeats
           randomGenerator.nextInt(100), // draws
@@ -555,13 +568,19 @@ class GameTestRestApi extends GameRestApi {
         ));
       } else {
         gameNumber++;
+        const scheduleTeams = [
+          'Größenkönige',
+          'Straßenläufer',
+          'Müller FC',
+          'Düsseldorf äußerst'
+        ];
         scheduleList.add(MatchScheduleEntryDto(
           ItemType.game,
           "Platz $fieldCount",
           startTime,
           endTime,
-          "team$teamCount",
-          "team${teamCount + 1}",
+          scheduleTeams[teamCount - 1],
+          scheduleTeams[(teamCount % 4)],
           gameNumber,
         ));
         teamCount += 2;
@@ -593,8 +612,8 @@ class GameTestRestApi extends GameRestApi {
         'test-extended-id-1',
         DateTime.now().add(const Duration(minutes: 10)),
         1,
-        'Team 1',
-        'Team 2',
+        'Größenkönige',
+        'Straßenläufer',
         'Platz 1',
         'Liga 1',
         'Altersklasse 1',
@@ -606,8 +625,8 @@ class GameTestRestApi extends GameRestApi {
         'test-extended-id-2',
         DateTime.now(),
         2,
-        'Team 3',
-        'Team 4',
+        'Müller FC',
+        'Düsseldorf äußerst',
         'Platz 2',
         'Liga 2',
         'Altersklasse 2',
