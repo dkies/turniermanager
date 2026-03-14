@@ -457,7 +457,7 @@ class GameTestRestApi extends GameRestApi {
           randomGenerator.nextInt(100), // totalPoints
           randomGenerator.nextInt(100), // ownScoredGoals
           randomGenerator.nextInt(100), // enemyScoredGoals
-          null, // avgScore
+          randomGenerator.nextDouble() * 9 + 1, // avgScore (1.0–10.0)
         );
 
         return result;
