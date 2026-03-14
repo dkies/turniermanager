@@ -18,10 +18,9 @@ class MatchScheduleMapper {
   }
 
   MatchScheduleEntry mapEntry(MatchScheduleEntryDto dto) {
-    // Only map GAME entries, skip BREAK entries
     if (dto.itemType != ItemType.game) {
-      // For breaks, return a placeholder entry
       return MatchScheduleEntry(
+        dto.itemType,
         dto.pitchName,
         'Pause', // teamAName
         '', // teamBName
@@ -30,9 +29,10 @@ class MatchScheduleMapper {
     }
 
     return MatchScheduleEntry(
+      dto.itemType,
       dto.pitchName,
-      dto.teamAName ?? '', // Provide empty string if null
-      dto.teamBName ?? '', // Provide empty string if null
+      dto.teamAName ?? '',
+      dto.teamBName ?? '',
       dto.startTime,
     );
   }
