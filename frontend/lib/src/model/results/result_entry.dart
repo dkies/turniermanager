@@ -7,6 +7,7 @@ class ResultEntry {
     this.defeats,
     this.ownScoredGoals,
     this.enemyScoredGoals,
+    this.avgScore,
   );
 
   String teamName;
@@ -16,4 +17,5 @@ class ResultEntry {
   int defeats;
   int ownScoredGoals;
   int enemyScoredGoals;
+  double? avgScore;
 }

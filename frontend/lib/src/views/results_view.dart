@@ -337,6 +337,13 @@ class _LeagueViewState extends State<LeagueView> {
       ),
     ));
 
+    columns.add(DataColumn(
+      label: Text(
+        'Wertung',
+        style: columnHeaderTextStyle,
+      ),
+    ));
+
     List<DataRow> rows = [];
     for (var result in widget.league.teams) {
       var index = widget.league.teams.indexOf(result) + 1;
@@ -414,6 +421,17 @@ class _LeagueViewState extends State<LeagueView> {
         DataCell(
           Text(
             result.totalPoints.toString(),
+            style: columnEntryTextStyle,
+          ),
+        ),
+      );
+
+      cells.add(
+        DataCell(
+          Text(
+            result.avgScore != null
+                ? result.avgScore!.toStringAsFixed(1)
+                : '-',
             style: columnEntryTextStyle,
           ),
         ),
