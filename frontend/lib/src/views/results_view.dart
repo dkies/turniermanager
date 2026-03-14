@@ -277,6 +277,7 @@ class _LeagueViewState extends State<LeagueView> {
 
     List<DataColumn> columns = [];
     columns.add(DataColumn(
+      numeric: true,
       label: Text(
         '#',
         style: columnHeaderTextStyle,
@@ -293,6 +294,7 @@ class _LeagueViewState extends State<LeagueView> {
     if (leagueWidgetSize == LeagueWidgetSize.large ||
         leagueWidgetSize == LeagueWidgetSize.medium) {
       columns.add(DataColumn(
+        numeric: true,
         label: Text(
           'S',
           style: columnHeaderTextStyle,
@@ -300,6 +302,7 @@ class _LeagueViewState extends State<LeagueView> {
       ));
 
       columns.add(DataColumn(
+        numeric: true,
         label: Text(
           'U',
           style: columnHeaderTextStyle,
@@ -307,6 +310,7 @@ class _LeagueViewState extends State<LeagueView> {
       ));
 
       columns.add(DataColumn(
+        numeric: true,
         label: Text(
           'N',
           style: columnHeaderTextStyle,
@@ -323,6 +327,7 @@ class _LeagueViewState extends State<LeagueView> {
       ));
 
       columns.add(DataColumn(
+        numeric: true,
         label: Text(
           'Diff.',
           style: columnHeaderTextStyle,
@@ -331,6 +336,7 @@ class _LeagueViewState extends State<LeagueView> {
     }
 
     columns.add(DataColumn(
+      numeric: true,
       label: Text(
         'Pkt.',
         style: columnHeaderTextStyle,
@@ -338,6 +344,7 @@ class _LeagueViewState extends State<LeagueView> {
     ));
 
     columns.add(DataColumn(
+      numeric: true,
       label: Text(
         'Wertung',
         style: columnHeaderTextStyle,
@@ -429,9 +436,7 @@ class _LeagueViewState extends State<LeagueView> {
       cells.add(
         DataCell(
           Text(
-            result.avgScore != null
-                ? result.avgScore!.toStringAsFixed(1)
-                : '-',
+            result.avgScore != null ? result.avgScore!.toStringAsFixed(1) : '-',
             style: columnEntryTextStyle,
           ),
         ),
@@ -468,7 +473,11 @@ class _LeagueViewState extends State<LeagueView> {
                 padding: const EdgeInsets.all(10),
                 child: SingleChildScrollView(
                     controller: controller,
-                    child: DataTable(columns: columns, rows: rows)),
+                    child: DataTable(
+                      columnSpacing: 12,
+                      columns: columns,
+                      rows: rows,
+                    )),
               ),
             ),
           )
