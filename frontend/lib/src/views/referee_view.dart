@@ -524,7 +524,7 @@ class _GameViewState extends State<GameView> {
                         ),
                       const SizedBox(width: 5),
                       CountDownView(
-                        timeInMinutes: widget.gameGroup.gameDurationInMinutes,
+                        playTimeInSeconds: widget.gameGroup.playTimeInSeconds,
                         textColor: textColor,
                         start: currentlyRunning,
                         refresh: reset,
@@ -744,7 +744,7 @@ class _BreakTextField extends StatelessWidget {
 class CountDownView extends StatefulWidget {
   const CountDownView({
     super.key,
-    required this.timeInMinutes,
+    required this.playTimeInSeconds,
     required this.textColor,
     required this.start,
     required this.refresh,
@@ -753,7 +753,7 @@ class CountDownView extends StatefulWidget {
     this.startTimeInMilliSeconds,
   });
 
-  final int timeInMinutes;
+  final int playTimeInSeconds;
   final Color textColor;
   final bool start;
   final bool refresh;
@@ -778,10 +778,11 @@ class _CountDownViewState extends State<CountDownView> {
 
   @override
   void initState() {
+    final minutes = widget.playTimeInSeconds ~/ 60;
+    final seconds = widget.playTimeInSeconds % 60;
     currentTime =
-        '00:${widget.timeInMinutes < 10 ? '0' : ''}${widget.timeInMinutes}:00.00';
-    var totalTimeInMilliSeconds =
-        StopWatchTimer.getMilliSecFromMinute(widget.timeInMinutes);
+        '00:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}.00';
+    var totalTimeInMilliSeconds = widget.playTimeInSeconds * 1000;
 
     _stopWatchTimer = StopWatchTimer(
       mode: StopWatchMode.countDown,
@@ -854,6 +855,11 @@ class _CountDownViewState extends State<CountDownView> {
         if (widget.startTimeInMilliSeconds != null) {
           _stopWatchTimer.setPresetTime(
             mSec: widget.startTimeInMilliSeconds!,
+            add: false,
+          );
+        } else {
+          _stopWatchTimer.setPresetTime(
+            mSec: widget.playTimeInSeconds * 1000,
             add: false,
           );
         }

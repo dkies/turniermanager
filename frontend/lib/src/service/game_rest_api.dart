@@ -322,7 +322,7 @@ class GameTestRestApi extends GameRestApi {
   var gameGroups = [
     GameGroupDto(
       DateTime(2025, 4, 1, 15, 30, 0),
-      2,
+      20 * 60, // playTimeInSeconds (20 min)
     )..games = [
         GameDto(
           'test-id-1',
@@ -375,7 +375,7 @@ class GameTestRestApi extends GameRestApi {
       ],
     GameGroupDto(
       DateTime(2025, 4, 1, 15, 45, 0),
-      12,
+      12 * 60, // playTimeInSeconds (12 min)
     )..games = [
         GameDto(
           'test-id-5',

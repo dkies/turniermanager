@@ -8,12 +8,12 @@ part 'game_group_dto.g.dart';
 class GameGroupDto {
   GameGroupDto(
     this.startTime,
-    this.gameDurationInMinutes,
+    this.playTimeInSeconds,
   );
 
   DateTime startTime;
-  int?
-      gameDurationInMinutes; // Optional, not present in GameScheduleDateTimeDTO
+  /// Game duration in seconds (backend: playTimeInSeconds from GameScheduleDateTimeDTO).
+  int playTimeInSeconds;
   List<GameDto> games = [];
 
   factory GameGroupDto.fromJson(Map<String, dynamic> json) =>

@@ -22,7 +22,7 @@ class RefereeMapper {
   GameGroup mapGameGroup(GameGroupDto dto) {
     return GameGroup(
       dto.startTime,
-      dto.gameDurationInMinutes ?? 20, // Default to 20 minutes if not provided
+      dto.playTimeInSeconds,
     )..games = dto.games.map((game) => mapGame(game)).toList();
   }
 
