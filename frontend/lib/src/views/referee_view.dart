@@ -410,7 +410,7 @@ class GameView extends StatefulWidget with WatchItStatefulWidgetMixin {
 class _GameViewState extends State<GameView> {
   bool currentlyRunning = false;
   bool reset = false;
-  DateTime? currentGamesActualStart;
+  bool gamesWereStarted = false;
 
   Color selectedTextColor = Colors.black;
   Color standardTextColor = Colors.white;
@@ -432,8 +432,8 @@ class _GameViewState extends State<GameView> {
   @override
   Widget build(BuildContext context) {
     void startOrPauseGames() {
-      if (!currentlyRunning && currentGamesActualStart == null) {
-        currentGamesActualStart = DateTime.now();
+      if (!currentlyRunning && !gamesWereStarted) {
+        gamesWereStarted = true;
         _settingsManager
             .setCurrentlyRunningGamesCommand(widget.gameGroup.startTime);
       }
@@ -561,9 +561,8 @@ class _GameViewState extends State<GameView> {
                                   setState(() {
                                     currentlyRunning = false;
                                     reset = true;
+                                    gamesWereStarted = false;
                                   });
-
-                                  currentGamesActualStart = null;
                                 },
                           icon: const Icon(Icons.refresh),
                           color: textColor,
@@ -611,7 +610,7 @@ class _GameViewState extends State<GameView> {
   }
 
   Future<void> _handleEndGames(BuildContext context) async {
-    if (currentGamesActualStart == null) {
+    if (!gamesWereStarted) {
       if (context.mounted) {
         showError(context,
             'Spiele wurden nicht gestartet und konnten daher nicht beendet werden');
@@ -660,7 +659,7 @@ class _GameViewState extends State<GameView> {
     setState(() {
       currentlyRunning = false;
       reset = true;
-      currentGamesActualStart = null;
+      gamesWereStarted = false;
     });
 
     if (result) {
