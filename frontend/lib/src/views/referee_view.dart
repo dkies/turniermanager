@@ -473,6 +473,11 @@ class _InsertBreakDialogState extends State<_InsertBreakDialog> {
       _selectedTime.minute,
     );
 
+    if (startTime.isBefore(now)) {
+      showError(context, 'Die Uhrzeit darf nicht in der Vergangenheit liegen.');
+      return;
+    }
+
     final result = await widget.gameManager.addBreakCommand.executeWithFuture(
       (_isGlobal, startTime, amount, message, _isGlobal ? null : _selectedAgeGroupId),
     );
