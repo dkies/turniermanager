@@ -366,7 +366,7 @@ class _SettingsDialogState extends State<_SettingsDialog> {
             TextField(
               controller: _breakTimeController,
               decoration: const InputDecoration(
-                label: Text('Pausenzeit (min)'),
+                label: Text('Pausenzeit (sek)'),
               ),
               onChanged: (userInput) {
                 final result = int.tryParse(userInput);
@@ -380,7 +380,7 @@ class _SettingsDialogState extends State<_SettingsDialog> {
             TextField(
               controller: _playTimeController,
               decoration: const InputDecoration(
-                label: Text('Spielzeit / Spiel (min)'),
+                label: Text('Spielzeit / Spiel (sek)'),
               ),
               onChanged: (userInput) {
                 final result = int.tryParse(userInput);
