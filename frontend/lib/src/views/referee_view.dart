@@ -662,8 +662,11 @@ class _GameViewState extends State<GameView> {
       startOrPauseGames();
     }
 
-    final textColor = currentlyRunning ? selectedTextColor : standardTextColor;
     final games = widget.gameGroup.games;
+    final isBreakGroup =
+        games.isNotEmpty && games.every((g) => g.type == ItemType.break_);
+
+    final textColor = currentlyRunning ? selectedTextColor : standardTextColor;
     final gameWidgets = <Widget>[];
 
     for (var i = 0; i < games.length; i++) {
@@ -714,7 +717,7 @@ class _GameViewState extends State<GameView> {
                         style: headerTextStyle,
                       ),
                       const SizedBox(width: 10),
-                      if (widget.first)
+                      if (widget.first && !isBreakGroup)
                         IconButton(
                           onPressed: !widget.canPauseGames
                               ? currentlyRunning
@@ -734,31 +737,33 @@ class _GameViewState extends State<GameView> {
                           tooltip: "Spiel starten",
                         ),
                       const SizedBox(width: 5),
-                      CountDownView(
-                        playTimeInSeconds: widget.gameGroup.playTimeInSeconds,
-                        textColor: textColor,
-                        start: currentlyRunning,
-                        refresh: reset,
-                        startTimeInMilliSeconds: currentlyRunningGames == null
-                            ? null
-                            : _settingsManager.currentTimeInMilliseconds,
-                        onHalftime: () {
-                          if (!widget.canPauseGames) {
-                            return;
-                          }
+                      if (!isBreakGroup)
+                        CountDownView(
+                          playTimeInSeconds:
+                              widget.gameGroup.playTimeInSeconds,
+                          textColor: textColor,
+                          start: currentlyRunning,
+                          refresh: reset,
+                          startTimeInMilliSeconds: currentlyRunningGames == null
+                              ? null
+                              : _settingsManager.currentTimeInMilliseconds,
+                          onHalftime: () {
+                            if (!widget.canPauseGames) {
+                              return;
+                            }
 
-                          setState(() {
-                            currentlyRunning = false;
-                          });
-                        },
-                        onEnded: () {
-                          setState(() {
-                            gameTimeEnded = true;
-                          });
-                        },
-                      ),
+                            setState(() {
+                              currentlyRunning = false;
+                            });
+                          },
+                          onEnded: () {
+                            setState(() {
+                              gameTimeEnded = true;
+                            });
+                          },
+                        ),
                       const SizedBox(width: 5),
-                      if (widget.first)
+                      if (widget.first && !isBreakGroup)
                         IconButton(
                           onPressed: !widget.canPauseGames
                               ? null
@@ -810,10 +815,16 @@ class _GameViewState extends State<GameView> {
   }
 
   Future<void> _handleEndGames(BuildContext context) async {
-    if (!gamesWereStarted) {
+    final games = widget.gameGroup.games;
+    final isBreakGroup =
+        games.isNotEmpty && games.every((g) => g.type == ItemType.break_);
+
+    if (!isBreakGroup && !gamesWereStarted) {
       if (context.mounted) {
-        showError(context,
-            'Spiele wurden nicht gestartet und konnten daher nicht beendet werden');
+        showError(
+          context,
+          'Spiele wurden nicht gestartet und konnten daher nicht beendet werden',
+        );
       }
       return;
     }
