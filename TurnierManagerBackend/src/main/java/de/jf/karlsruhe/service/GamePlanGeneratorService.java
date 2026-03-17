@@ -129,7 +129,7 @@ public class GamePlanGeneratorService {
         List<Team> teams = league.getTeams();
         List<ScheduledGame> finishedGames = scheduledGameRepository.findFinishedGamesByLeague(
                 league.getId(),
-                GameStatus.COMPLETED
+                GameStatus.COMPLETED_AND_STATED
         );
 
         Map<Team, TeamStatsDTO> statsMap = new HashMap<>();

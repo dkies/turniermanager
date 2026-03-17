@@ -27,6 +27,7 @@ public class GameTimingService {
         List<ScheduleItem> itemsAtTime = scheduledItemRepository.findAll().stream()
                 .filter(item -> item.getStartTime().equals(plannedStartTime))
                 .filter(item -> item.getStatus() != GameStatus.COMPLETED)
+                .filter(item -> item.getStatus() != GameStatus.COMPLETED_AND_STATED)
                 .toList();
 
         if (itemsAtTime.isEmpty()) {

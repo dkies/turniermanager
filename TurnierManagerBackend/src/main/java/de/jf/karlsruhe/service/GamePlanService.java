@@ -49,7 +49,12 @@ public class GamePlanService {
                 .findByAgeGroupAndStartTimeIsAfterOrderByStartTimeAsc(
                         ageGroup,
                         LocalDateTime.now().minusHours(1)
-                );
+                )
+                .stream()
+                .filter(item -> {
+                    return item.getStatus().equals(GameStatus.SCHEDULED);}
+                )
+        .toList();
 
         Map<ScheduleItem, ScheduledGame> gameMap = getGameMap(allScheduleItems);
 
@@ -66,7 +71,7 @@ public class GamePlanService {
         List<ScheduledGame> games = scheduledGameRepository.findByScheduleItemIn(gameItems);
 
         return games.stream()
-                .filter(game -> game.getScheduleItem().getStatus() != GameStatus.COMPLETED)
+                .filter(game -> game.getScheduleItem().getStatus() == GameStatus.SCHEDULED)
                 .collect(Collectors.toMap(
                         ScheduledGame::getScheduleItem,
                         game -> game

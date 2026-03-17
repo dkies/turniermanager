@@ -8,5 +8,7 @@ public enum GameStatus {
     /** Das Spiel ist beendet und das Ergebnis ist eingetragen. */
     COMPLETED,
     /** Das Spiel wurde abgesagt oder verschoben. */
-    CANCELED
+    CANCELED,
+    /** Das Spiel wurde beendet und mit den Spielstatistiken versehen **/
+    COMPLETED_AND_STATED
 }

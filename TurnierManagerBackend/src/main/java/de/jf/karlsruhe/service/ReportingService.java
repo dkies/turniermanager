@@ -80,7 +80,7 @@ public class ReportingService {
 
         return scheduledGameRepository.findByPitchAndItemStatusNot(
                 pitch,
-                GameStatus.COMPLETED
+                GameStatus.COMPLETED_AND_STATED
         );
     }
 

@@ -84,7 +84,7 @@ public class RoundStatsService {
     private LeagueTableDTO calculateLeagueTable(League league, RoundType roundType) {
         List<Team> teams = league.getTeams();
 
-        List<ScheduledGame> leagueGames = scheduledGameRepository.findFinishedGamesByLeague(league.getId(),GameStatus.COMPLETED);
+        List<ScheduledGame> leagueGames = scheduledGameRepository.findFinishedGamesByLeague(league.getId(), GameStatus.COMPLETED_AND_STATED);
 
         List<TeamScoreStatsDTO> teamStats = teams.stream()
                 .map(team -> computeTeamStats(team, leagueGames, roundType))

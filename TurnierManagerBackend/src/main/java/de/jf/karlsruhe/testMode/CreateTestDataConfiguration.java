@@ -51,7 +51,7 @@ public class CreateTestDataConfiguration {
                 game.setTeamAScore(scoreA);
                 game.setTeamBScore(scoreB);
                 ScheduleItem scheduleItem = game.getScheduleItem();
-                scheduleItem.setStatus(GameStatus.COMPLETED);
+                scheduleItem.setStatus(GameStatus.COMPLETED_AND_STATED);
 
                 // Speichert die geänderten Spiele
                 scheduledGameRepository.save(game);
@@ -81,7 +81,7 @@ public class CreateTestDataConfiguration {
             System.out.println("\n--- 1. Starte Turnier-Datenaufbau (Phase 1/2) ---");
 
             // --- SETUP CODE ---
-            LocalDateTime tournamentStart = LocalDateTime.of(2026, 4, 18, 9, 0);
+            LocalDateTime tournamentStart = LocalDateTime.of(2026, 3, 18, 9, 0);
             Tournament sommerCup = tournamentRepository.save(Tournament.builder().name("Sommer Cup 2026").startTime(tournamentStart).playTimeInSeconds(600).breakTimeInSeconds(300).build());
             Round gruppenphase = roundRepository.save(Round.builder().name("Gruppenphase").orderIndex(1).roundType(RoundType.QUALIFICATION).tournament(sommerCup).build());
 

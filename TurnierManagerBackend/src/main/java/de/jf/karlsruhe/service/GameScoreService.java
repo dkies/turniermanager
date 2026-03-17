@@ -33,6 +33,7 @@ public class GameScoreService {
         ScheduledGame game = scheduledGameRepository.findByGameNumber(dto.gameNumber())
                 .orElseThrow(() -> new IllegalArgumentException("Spielnummer " + dto.gameNumber() + " nicht gefunden."));
 
+
         return applyScoreUpdate(game, dto.teamAScore(), dto.teamBScore());
     }
 
@@ -46,9 +47,11 @@ public class GameScoreService {
     }
 
     private ScheduledGame applyScoreUpdate(ScheduledGame game, int teamAScore, int teamBScore) {
+        ScheduleItem scheduleItem = game.getScheduleItem();
+        scheduleItem.setStatus(GameStatus.COMPLETED_AND_STATED);
+        scheduledItemRepository.save(scheduleItem);
         game.setTeamAScore(teamAScore);
         game.setTeamBScore(teamBScore);
-
         return scheduledGameRepository.save(game);
     }
 
@@ -113,7 +116,7 @@ public class GameScoreService {
                 ScheduledGame game = scheduledGameRepository.findByScheduleItem(item)
                         .orElse(null);
                 if (game == null) continue;
-                if (item.getStatus() == GameStatus.COMPLETED) continue;
+                if (item.getStatus() != GameStatus.SCHEDULED) continue;
 
                 String leagueName = activeRound.getLeagues().stream()
                         .filter(l -> l.getTeams().contains(game.getTeamA()))
@@ -139,6 +142,7 @@ public class GameScoreService {
 
                 if (breaks == null) continue;
                 // Logik für eine Pause (ItemType ist BREAK oder CLEANING etc.)
+                if (item.getStatus() != GameStatus.SCHEDULED) continue;
                 dto = new GameDTO(
                         breaks.getId(),
                         item.getStartTime(),
