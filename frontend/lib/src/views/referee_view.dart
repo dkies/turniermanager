@@ -432,7 +432,10 @@ class _InsertBreakDialogState extends State<_InsertBreakDialog> {
   final _nameController = TextEditingController(text: 'Pause');
   bool _isGlobal = true;
   String? _selectedAgeGroupId;
-  TimeOfDay _selectedTime = TimeOfDay.now();
+  // Initial start time slightly in the future to avoid triggering
+  // the validation that disallows breaks before the current time
+  TimeOfDay _selectedTime =
+      TimeOfDay.fromDateTime(DateTime.now().add(const Duration(minutes: 2)));
   int _amount = 1;
 
   @override
