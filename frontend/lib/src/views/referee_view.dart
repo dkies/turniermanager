@@ -1138,7 +1138,10 @@ class GameEntryView extends StatelessWidget {
     if (isBreak) {
       return Container(
         width: double.infinity,
-        color: Colors.yellow.shade400,
+        decoration: BoxDecoration(
+          color: Colors.yellow.shade400,
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           child: row,
