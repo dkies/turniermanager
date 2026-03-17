@@ -717,7 +717,7 @@ class _GameViewState extends State<GameView> {
                   Row(
                     children: [
                       Text(
-                        'Startzeit: ${DateFormat.Hm().format(widget.gameGroup.startTime)} Uhr',
+                        'Spielzeit: ${DateFormat.Hm().format(widget.gameGroup.startTime)} - ${DateFormat.Hm().format(widget.gameGroup.startTime.add(Duration(seconds: widget.gameGroup.playTimeInSeconds)))} Uhr',
                         style: headerTextStyle,
                       ),
                       const SizedBox(width: 10),
