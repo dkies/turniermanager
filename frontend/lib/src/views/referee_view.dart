@@ -689,7 +689,12 @@ class _GameViewState extends State<GameView> {
     final games = widget.gameGroup.games;
     final isBreakGroup = _isBreakGroup();
 
-    final textColor = currentlyRunning ? selectedTextColor : standardTextColor;
+    final textColor = isBreakGroup
+        ? Colors.black
+        : (currentlyRunning ? selectedTextColor : standardTextColor);
+    final cardColor = isBreakGroup
+        ? Colors.yellow.shade400
+        : (currentlyRunning ? Colors.blue : null);
     final gameWidgets = <Widget>[];
 
     for (var i = 0; i < games.length; i++) {
@@ -722,7 +727,7 @@ class _GameViewState extends State<GameView> {
     );
 
     return Card(
-      color: currentlyRunning ? Colors.blue : null,
+      color: cardColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -762,8 +767,7 @@ class _GameViewState extends State<GameView> {
                       const SizedBox(width: 5),
                       if (!isBreakGroup)
                         CountDownView(
-                          playTimeInSeconds:
-                              widget.gameGroup.playTimeInSeconds,
+                          playTimeInSeconds: widget.gameGroup.playTimeInSeconds,
                           textColor: textColor,
                           start: currentlyRunning,
                           refresh: reset,
@@ -1132,9 +1136,11 @@ class GameEntryView extends StatelessWidget {
     if (isBreak) {
       return Container(
         width: double.infinity,
-        color: Colors.yellow.shade100,
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: row,
+        color: Colors.yellow.shade400,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          child: row,
+        ),
       );
     }
     return row;
