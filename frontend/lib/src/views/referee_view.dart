@@ -627,6 +627,11 @@ class _GameViewState extends State<GameView> {
     _settingsManager.getCurrentTimeInMillisecondsCommand();
   }
 
+  bool _isBreakGroup() {
+    final games = widget.gameGroup.games;
+    return games.isNotEmpty && games.every((g) => g.type == ItemType.break_);
+  }
+
   @override
   Widget build(BuildContext context) {
     void startOrPauseGames() {
@@ -663,8 +668,7 @@ class _GameViewState extends State<GameView> {
     }
 
     final games = widget.gameGroup.games;
-    final isBreakGroup =
-        games.isNotEmpty && games.every((g) => g.type == ItemType.break_);
+    final isBreakGroup = _isBreakGroup();
 
     final textColor = currentlyRunning ? selectedTextColor : standardTextColor;
     final gameWidgets = <Widget>[];
@@ -815,9 +819,7 @@ class _GameViewState extends State<GameView> {
   }
 
   Future<void> _handleEndGames(BuildContext context) async {
-    final games = widget.gameGroup.games;
-    final isBreakGroup =
-        games.isNotEmpty && games.every((g) => g.type == ItemType.break_);
+    final isBreakGroup = _isBreakGroup();
 
     if (!isBreakGroup && !gamesWereStarted) {
       if (context.mounted) {
