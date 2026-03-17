@@ -86,13 +86,24 @@ class _RefereeViewState extends State<RefereeView> {
 
     var mainContent = Scaffold(
       appBar: AppBar(
-        leading: const Center(
-          child: Text(
-            'Spielübersicht',
-            style: Constants.largeHeaderTextStyle,
-          ),
+        leading: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back),
+              tooltip: 'Zurück',
+              onPressed: () => GoRouter.of(context).pop(),
+            ),
+            const Expanded(
+              child: Center(
+                child: Text(
+                  'Spielübersicht',
+                  style: Constants.largeHeaderTextStyle,
+                ),
+              ),
+            ),
+          ],
         ),
-        leadingWidth: 200,
+        leadingWidth: 260,
         actions: [
           Tooltip(
             message: 'Umschalten: Spiele können pausiert werden',

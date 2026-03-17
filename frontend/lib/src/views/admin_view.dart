@@ -17,13 +17,24 @@ class AdminView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: const Center(
-          child: Text(
-            'Admin',
-            style: Constants.largeHeaderTextStyle,
-          ),
+        leading: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back),
+              tooltip: 'Zurück',
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            const Expanded(
+              child: Center(
+                child: Text(
+                  'Admin',
+                  style: Constants.largeHeaderTextStyle,
+                ),
+              ),
+            ),
+          ],
         ),
-        leadingWidth: 100,
+        leadingWidth: 220,
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
