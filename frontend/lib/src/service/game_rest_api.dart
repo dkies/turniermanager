@@ -314,19 +314,9 @@ class GameTestRestApi extends GameRestApi {
 
   @override
   Future<bool> endCurrentGames(DateTime originalStart) async {
-    var seedBase = DateTime.now();
-    var random = Random(seedBase.second + seedBase.millisecond);
-
-    for (var gameGroup in gameGroups) {
-      gameGroup.startTime = DateTime(
-        2025,
-        4,
-        1,
-        random.nextInt(25),
-        random.nextInt(61),
-        0,
-      );
-    }
+    gameGroups.removeWhere(
+      (group) => group.startTime.isAtSameMomentAs(originalStart),
+    );
 
     return true;
   }
@@ -471,6 +461,35 @@ class GameTestRestApi extends GameRestApi {
           'Altersklasse 1',
           GameStatus.scheduled,
           ItemType.game,
+        ),
+      ],
+    GameGroupDto(
+      DateTime(2025, 4, 1, 16, 0, 0),
+      10 * 60, // playTimeInSeconds (10 min)
+    )..games = [
+        GameDto(
+          'test-id-break-only-1',
+          DateTime(2025, 4, 1, 16, 0, 0),
+          0,
+          '-',
+          '-',
+          'Feld 1',
+          'Liga 1',
+          'Altersklasse 1',
+          GameStatus.scheduled,
+          ItemType.break_,
+        ),
+        GameDto(
+          'test-id-break-only-2',
+          DateTime(2025, 4, 1, 16, 0, 0),
+          0,
+          '-',
+          '-',
+          'Feld 2',
+          'Liga 1',
+          'Altersklasse 2',
+          GameStatus.scheduled,
+          ItemType.break_,
         ),
       ],
   ];
