@@ -635,11 +635,13 @@ class _GameViewState extends State<GameView> {
   @override
   Widget build(BuildContext context) {
     void startOrPauseGames() {
+      if (_isBreakGroup()) {
+        return;
+      }
+
       if (!currentlyRunning && !gamesWereStarted) {
         gamesWereStarted = true;
-        if (!_isBreakGroup()) {
-          soundPlayerService.playSound(Sounds.horn);
-        }
+        soundPlayerService.playSound(Sounds.horn);
         _settingsManager
             .setCurrentlyRunningGamesCommand(widget.gameGroup.startTime);
       }
