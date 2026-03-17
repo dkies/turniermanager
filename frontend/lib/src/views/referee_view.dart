@@ -1075,18 +1075,16 @@ class GameEntryView extends StatelessWidget {
               gameRoundEntry.leagueName,
               style: textStyle,
             ),
-            if (!isBreak) ...[
-              const SizedBox(width: 5),
-              Text(
-                '|',
-                style: textStyle,
-              ),
-              const SizedBox(width: 5),
-              Text(
-                gameRoundEntry.pitch.name,
-                style: textStyle,
-              ),
-            ],
+            const SizedBox(width: 5),
+            Text(
+              '|',
+              style: textStyle,
+            ),
+            const SizedBox(width: 5),
+            Text(
+              gameRoundEntry.pitch.name,
+              style: textStyle,
+            ),
           ],
         ),
         const SizedBox(width: 5),
