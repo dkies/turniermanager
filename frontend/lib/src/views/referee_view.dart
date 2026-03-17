@@ -28,8 +28,8 @@ class _RefereeViewState extends State<RefereeView> {
   final roundSettings = RoundSettings(
     GameSettings(
       DateTime.now(),
-      1,
-      3,
+      60, // initial break time in seconds (1 minute)
+      300, // initial play time in seconds (5 minutes)
     ),
   );
   bool barrierDissmissed = false;
