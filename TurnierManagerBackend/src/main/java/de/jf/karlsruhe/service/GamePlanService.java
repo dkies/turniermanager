@@ -63,9 +63,13 @@ public class GamePlanService {
 
     private Map<ScheduleItem, ScheduledGame> getGameMap(List<ScheduleItem> allScheduleItems) {
 
+        //List<ScheduleItem> breakItems = allScheduleItems.stream()
+        //        .filter(item -> ScheduledItemType.BREAK.equals(item.getItemType()))
+        //        .toList();
+
         List<ScheduleItem> gameItems = allScheduleItems.stream()
                 // Removed Filtering Breaks from the Schedule.
-                //.filter(item -> ScheduledItemType.BREAK.equals(item.getItemType()))
+                //.filter(item -> !ScheduledItemType.BREAK.equals(item.getItemType()))
                 .toList();
 
         List<ScheduledGame> games = scheduledGameRepository.findByScheduleItemIn(gameItems);
@@ -86,9 +90,9 @@ public class GamePlanService {
             List<League> relevantLeagues)
     {
         List<LeagueScheduleDTO> leagueSchedules = new ArrayList<>();
-        Set<ScheduleItem> processedBreaks = new HashSet<>();
 
         for (League league : relevantLeagues) {
+            Set<ScheduleItem> processedBreaks = new HashSet<>();
 
             List<GamePlanEntryDTO> entries = allScheduleItems.stream()
                     .map(item -> mapItemToGamePlanEntryDTO(item, gameMap.get(item), league, processedBreaks))

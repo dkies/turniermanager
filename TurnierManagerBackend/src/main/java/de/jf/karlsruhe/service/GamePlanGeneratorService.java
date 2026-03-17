@@ -29,6 +29,7 @@ public class GamePlanGeneratorService {
     private final TournamentRepository tournamentRepository;
     private final TeamRepository teamRepository;
     private final AgeGroupRepository ageGroupRepository;
+    private final ScheduledBreakRepository scheduledBreakRepository;
 
     /**
      * Sammelt die nächstverfügbare Startzeit für alle Pitches einer Altersgruppe,
@@ -113,7 +114,6 @@ public class GamePlanGeneratorService {
                     .teamB(pairing.teamB())
                     .gameNumber(nextNumber++)
                     .scheduleItem(gameItem)
-                    //.status(GameStatus.SCHEDULED)
                     .build();
             scheduledGameRepository.save(game);
 
@@ -258,8 +258,9 @@ public class GamePlanGeneratorService {
         }
 
     }
+
     @Transactional
-    public void endQualificationDetailed(HashMap<UUID,Integer> maxTeamsPerLeaguePerAgeGroup, String roundName) {
+    public void endQualificationDetailed(HashMap<UUID, Integer> maxTeamsPerLeaguePerAgeGroup, String roundName) {
         Tournament tournament = tournamentRepository.findAll().getFirst();
         if (tournament == null) return;
         Round finalPhase = roundRepository.save(Round.builder().name(roundName).orderIndex(2).roundType(RoundType.FINAL_STAGE).tournament(tournament).build());
@@ -271,8 +272,6 @@ public class GamePlanGeneratorService {
         }
 
     }
-
-
 
 
     @Transactional
@@ -358,5 +357,14 @@ public class GamePlanGeneratorService {
             // Den Schedule generieren
             generateScheduleForLeague(league, tournament);
         }
+    }
+
+    @Transactional
+    public void cancelCurrentGames() {
+        List<ScheduleItem> gamesToCancel = scheduledItemRepository.findAll().stream().filter(item -> item.getItemType() == ScheduledItemType.GAME).filter(item -> item.getStatus() != GameStatus.COMPLETED_AND_STATED).toList();
+        scheduledBreakRepository.deleteAllByScheduleItemIn(gamesToCancel);
+        scheduledGameRepository.deleteAllByScheduleItemIn(gamesToCancel);
+        scheduledItemRepository.deleteAll(gamesToCancel);
+
     }
 }

@@ -30,12 +30,14 @@ public class TournamentController {
 
     @PostMapping("/end-qualification")
     private void endQualificationRound(@RequestBody EndQualificationRoundDTO endQualificationRoundDTO) {
+        gamePlanGeneratorService.cancelCurrentGames();
         gamePlanGeneratorService.endQualification(endQualificationRoundDTO.maxTeamsPerLeague(), endQualificationRoundDTO.roundName());
     }
 
     @PostMapping("/end-qualification-detailed")
     private void endQualificationRoundDetailed(@RequestBody EndQualificationRoundDetailedDTO endQualificationRoundDetailedDTO) {
         tournamentManagementService.updateTimeSettings(endQualificationRoundDetailedDTO.playTimeInSeconds(), endQualificationRoundDetailedDTO.breakTimeInSeconds());
+        gamePlanGeneratorService.cancelCurrentGames();
         gamePlanGeneratorService.endQualificationDetailed(endQualificationRoundDetailedDTO.maxTeamsPerLeaguePerAgeGroup(), endQualificationRoundDetailedDTO.roundName());
     }
 }

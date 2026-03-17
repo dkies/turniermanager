@@ -41,5 +41,7 @@ public interface ScheduledGameRepository extends JpaRepository<ScheduledGame, UU
     List<ScheduledGame> findByScheduleItemIn(List<ScheduleItem> items);
 
     Optional<ScheduledGame> findByScheduleItem(ScheduleItem item);
+
+    void deleteAllByScheduleItemIn(List<ScheduleItem> gamesToCancel);
 }
 
