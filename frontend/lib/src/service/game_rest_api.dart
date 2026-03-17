@@ -260,8 +260,11 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
   @override
   Future<bool> deleteBreak(String breakId) async {
     try {
-      final uri = Uri.parse('$_baseUri/breaks/delete/$breakId');
-      final response = await client.delete(uri, headers: headers);
+      final response = await client.delete(
+        deleteBreakUri,
+        headers: headers,
+        body: jsonEncode(breakId),
+      );
       return response.statusCode == 200 || response.statusCode == 204;
     } on Exception {
       return false;
