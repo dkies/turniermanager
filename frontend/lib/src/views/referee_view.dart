@@ -831,7 +831,7 @@ class _GameViewState extends State<GameView> {
       return;
     }
 
-    if (!gameTimeEnded) {
+    if (!gameTimeEnded && !isBreakGroup) {
       final dialogResult = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
