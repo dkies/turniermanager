@@ -637,6 +637,9 @@ class _GameViewState extends State<GameView> {
     void startOrPauseGames() {
       if (!currentlyRunning && !gamesWereStarted) {
         gamesWereStarted = true;
+        if (!_isBreakGroup()) {
+          soundPlayerService.playSound(Sounds.horn);
+        }
         _settingsManager
             .setCurrentlyRunningGamesCommand(widget.gameGroup.startTime);
       }
