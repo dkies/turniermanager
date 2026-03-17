@@ -265,48 +265,60 @@ class ScheduleEntryView extends StatelessWidget {
         ? Constants.standardTextStyle.copyWith(color: Colors.black)
         : Constants.standardTextStyle;
 
-    return Container(
-      color: isBreak ? Colors.yellow.shade100 : null,
+    final content = Row(
+      children: [
+        SizedBox(
+          width: 240,
+          child: Row(
+            children: [
+              Text(
+                matchScheduleEntry.pitchName,
+                style: textStyle,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                '|',
+                style: textStyle,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                '${DateFormat.Hm().format(matchScheduleEntry.startTime)} - ${DateFormat.Hm().format(matchScheduleEntry.endTime)}',
+                style: textStyle,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 5),
+        Expanded(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                isBreak
+                    ? 'PAUSE'
+                    : '${matchScheduleEntry.teamAName} : ${matchScheduleEntry.teamBName}',
+                style: textStyle,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+
+    if (isBreak) {
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.yellow.shade400,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        child: content,
+      );
+    }
+
+    return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 240,
-            child: Row(
-              children: [
-                Text(
-                  matchScheduleEntry.pitchName,
-                  style: textStyle,
-                ),
-                const SizedBox(width: 5),
-                Text(
-                  '|',
-                  style: textStyle,
-                ),
-                const SizedBox(width: 5),
-                Text(
-                  '${DateFormat.Hm().format(matchScheduleEntry.startTime)} - ${DateFormat.Hm().format(matchScheduleEntry.endTime)}',
-                  style: textStyle,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 5),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  isBreak
-                      ? 'PAUSE'
-                      : '${matchScheduleEntry.teamAName} : ${matchScheduleEntry.teamBName}',
-                  style: textStyle,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+      child: content,
     );
   }
 }
