@@ -71,8 +71,99 @@ public class GamePlanGeneratorService {
                 .orElseThrow(() -> new IllegalStateException("Interner Fehler: Konnte keinen besten Pitch finden."));
     }
 
+
+    public record GameSchedulingTask(
+            ScheduledGame game,
+            League league,
+            AgeGroup ageGroup
+    ) {}
+
     @Transactional
-    public void generateScheduleForLeague(League league, Tournament tournament) {
+    public void generateScheduleForMultipleLeague(List<League> leagues, Tournament tournament) {
+        List<List<GameSchedulingTask>> tasksPerLeague = new ArrayList<>();
+
+        for (League league : leagues) {
+            List<GameSchedulingTask> tasks = prepareTasksForLeague(league);
+            tasksPerLeague.add(tasks);
+        }
+
+        Queue<GameSchedulingTask> queuedTasks = mergeTasksRoundRobin(tasksPerLeague);
+
+        Map<AgeGroup, Map<Pitch, LocalDateTime>> ageGroupPitchMaps = new HashMap<>();
+
+        int playTimeSeconds = tournament.getPlayTimeInSeconds();
+        int breakTimeSeconds = tournament.getBreakTimeInSeconds();
+        Duration gameDuration = Duration.ofSeconds(playTimeSeconds);
+        int nextNumber = getNextGameNumber();
+
+        while (!queuedTasks.isEmpty()) {
+            GameSchedulingTask task = queuedTasks.poll();
+            ScheduledGame game = task.game();
+            AgeGroup ageGroup = task.ageGroup();
+
+            Map<Pitch, LocalDateTime> pitchNextAvailableTimes = ageGroupPitchMaps.computeIfAbsent(ageGroup,
+                    ag -> getNextAvailableTimePerPitch(ag, tournament.getStartTime(), breakTimeSeconds));
+
+            Pitch bestPitch = findBestAvailablePitch(pitchNextAvailableTimes);
+            LocalDateTime startTime = pitchNextAvailableTimes.get(bestPitch);
+            LocalDateTime endTime = startTime.plus(gameDuration);
+
+            // 1. ScheduleItem erstellen & speichern
+            ScheduleItem gameItem = scheduledItemRepository.save(ScheduleItem.builder()
+                    .ageGroup(ageGroup)
+                    .itemType(ScheduledItemType.GAME)
+                    .startTime(startTime)
+                    .endTime(endTime)
+                    .scheduledPitch(bestPitch)
+                    .status(GameStatus.SCHEDULED)
+                    .league(task.league()) // Hier haben wir Zugriff auf die Liga!
+                    .build());
+
+            // 2. Game verknüpfen & speichern
+            game.setScheduleItem(gameItem);
+            game.setGameNumber(nextNumber++);
+            scheduledGameRepository.save(game);
+
+            // 3. Nächste freie Zeit auf diesem Platz aktualisieren
+            pitchNextAvailableTimes.put(bestPitch, endTime.plusSeconds(breakTimeSeconds));
+        }
+    }
+
+    // Hilfsmethode: Erzeugt die Tasks
+    public List<GameSchedulingTask> prepareTasksForLeague(League league) {
+        List<RoundRobinScheduler.GamePair> allFixtures = RoundRobinScheduler.generateSortedFixtures(league.getTeams());
+
+        return allFixtures.stream().map(pairing -> {
+            ScheduledGame game = ScheduledGame.builder()
+                    .teamA(pairing.teamA())
+                    .teamB(pairing.teamB())
+                    .build();
+            return new GameSchedulingTask(game, league, league.getAgeGroup());
+        }).collect(Collectors.toList());
+    }
+
+    // Hilfsmethode: Das Round-Robin-Merging für Tasks
+    public Queue<GameSchedulingTask> mergeTasksRoundRobin(List<List<GameSchedulingTask>> tasksPerLeague) {
+        Queue<GameSchedulingTask> interleavedQueue = new LinkedList<>();
+        boolean itemsRemaining = true;
+        int index = 0;
+
+        while (itemsRemaining) {
+            itemsRemaining = false;
+            for (List<GameSchedulingTask> leagueTasks : tasksPerLeague) {
+                if (index < leagueTasks.size()) {
+                    interleavedQueue.add(leagueTasks.get(index));
+                    itemsRemaining = true;
+                }
+            }
+            index++;
+        }
+        return interleavedQueue;
+    }
+
+
+    @Transactional
+    public void generateScheduleForSingleLeague(League league, Tournament tournament) {
 
         AgeGroup ageGroup = league.getAgeGroup();
         int playTimeSeconds = tournament.getPlayTimeInSeconds();
@@ -94,14 +185,12 @@ public class GamePlanGeneratorService {
 
             System.out.println(desiredStartTime);
 
-            LocalDateTime actualStartTime = desiredStartTime;
-
-            LocalDateTime actualEndTime = actualStartTime.plus(gameDuration);
+            LocalDateTime actualEndTime = desiredStartTime.plus(gameDuration);
 
             ScheduleItem gameItem = ScheduleItem.builder()
                     .ageGroup(ageGroup)
                     .itemType(ScheduledItemType.GAME)
-                    .startTime(actualStartTime)
+                    .startTime(desiredStartTime)
                     .endTime(actualEndTime)
                     .scheduledPitch(bestPitch)
                     .status(GameStatus.SCHEDULED)
@@ -251,10 +340,14 @@ public class GamePlanGeneratorService {
         if (tournament == null) return;
         Round finalPhase = roundRepository.save(Round.builder().name(roundName).orderIndex(2).roundType(RoundType.FINAL_STAGE).tournament(tournament).build());
         List<League> leagues = leagueRepository.findAll();
+
+
+
         for (League league : leagues) {
             List<Team> rankedTeams = rankTeamsByPerformance(league);
             List<League> equalLeagues = createEqualLeagues(league.getAgeGroup(), maxTeamsPerLeague, tournament, finalPhase, rankedTeams);
-            equalLeagues.forEach(item -> generateScheduleForLeague(item, tournament));
+            generateScheduleForMultipleLeague(equalLeagues, tournament);
+            //equalLeagues.forEach(item -> generateScheduleForSingleLeague(item, tournament));
         }
 
     }
@@ -268,7 +361,8 @@ public class GamePlanGeneratorService {
         for (League league : leagues) {
             List<Team> rankedTeams = rankTeamsByPerformance(league);
             List<League> equalLeagues = createEqualLeagues(league.getAgeGroup(), maxTeamsPerLeaguePerAgeGroup.get(league.getAgeGroup().getId()), tournament, finalPhase, rankedTeams);
-            equalLeagues.forEach(item -> generateScheduleForLeague(item, tournament));
+            generateScheduleForMultipleLeague(equalLeagues, tournament);
+            //equalLeagues.forEach(item -> generateScheduleForSingleLeague(item, tournament));
         }
 
     }
@@ -355,7 +449,7 @@ public class GamePlanGeneratorService {
             leagueRepository.save(league);
 
             // Den Schedule generieren
-            generateScheduleForLeague(league, tournament);
+            generateScheduleForSingleLeague(league, tournament);
         }
     }
 
