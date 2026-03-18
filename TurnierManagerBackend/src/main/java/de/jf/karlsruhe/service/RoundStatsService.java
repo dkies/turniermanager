@@ -74,6 +74,7 @@ public class RoundStatsService {
 
     private RoundStatsDTO calculateRoundStats(Round round, AgeGroup filterAgeGroup) {
         List<LeagueTableDTO> tables = round.getLeagues().stream()
+                .sorted(Comparator.comparing(League::getName))
                 .filter(l -> filterAgeGroup == null || l.getAgeGroup().equals(filterAgeGroup))
                 .map(league -> calculateLeagueTable(league, round.getRoundType()))
                 .collect(Collectors.toList());
