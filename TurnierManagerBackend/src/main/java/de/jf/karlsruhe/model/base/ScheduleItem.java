@@ -43,4 +43,13 @@ public class ScheduleItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "league_id")
     private League league;
+
+    public void shiftTime(long minutes) {
+        if (this.startTime != null) {
+            this.startTime = this.startTime.plusMinutes(minutes);
+        }
+        if (this.endTime != null) {
+            this.endTime = this.endTime.plusMinutes(minutes);
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package de.jf.karlsruhe.service;
 
+import de.jf.karlsruhe.model.base.AgeGroup;
 import de.jf.karlsruhe.model.base.Pitch;
 import de.jf.karlsruhe.model.base.ScheduleItem;
 import de.jf.karlsruhe.model.base.Tournament;
@@ -80,5 +81,81 @@ public class GameTimingService {
         }
 
         scheduledItemRepository.saveAll(allUpcoming);
+    }
+
+
+    /**
+     * Verschiebt alle Items, die nach (oder genau zu) einem Zeitpunkt starten.
+     */
+    @Transactional
+    public void shiftAllAfter(LocalDateTime threshold, long minutes, AgeGroup ageGroup) {
+        List<ScheduleItem> items = scheduledItemRepository.findByAgeGroupAndStartTimeIsAfter(ageGroup, threshold.minusSeconds(1));
+        items.forEach(item -> item.shiftTime(minutes));
+        scheduledItemRepository.saveAll(items);
+    }
+
+    /**
+     * Verschiebt alle Items, die vor einem Zeitpunkt starten.
+     */
+    @Transactional
+    public void shiftAllBefore(LocalDateTime threshold, long minutes, AgeGroup ageGroup) {
+        List<ScheduleItem> items = scheduledItemRepository.findByAgeGroupAndStartTimeIsBefore(ageGroup, threshold);
+        items.forEach(item -> item.shiftTime(minutes));
+        scheduledItemRepository.saveAll(items);
+    }
+
+    /**
+     * Tauscht die Zeitfenster (Start, Ende und Platz) zwischen zwei Items.
+     */
+    @Transactional
+    public void swapTimes(UUID idA, UUID idB) {
+        ScheduleItem itemA = scheduledItemRepository.findById(idA)
+                .orElseThrow(() -> new IllegalArgumentException("Item A nicht gefunden"));
+        ScheduleItem itemB = scheduledItemRepository.findById(idB)
+                .orElseThrow(() -> new IllegalArgumentException("Item B nicht gefunden"));
+
+        // Temporäres Backup der Zeiten von A
+        LocalDateTime tempStart = itemA.getStartTime();
+        LocalDateTime tempEnd = itemA.getEndTime();
+        Pitch tempPitch = itemA.getScheduledPitch();
+
+        // A bekommt die Zeiten von B
+        itemA.setStartTime(itemB.getStartTime());
+        itemA.setEndTime(itemB.getEndTime());
+        itemA.setScheduledPitch(itemB.getScheduledPitch());
+
+        // B bekommt die alten Zeiten von A
+        itemB.setStartTime(tempStart);
+        itemB.setEndTime(tempEnd);
+        itemB.setScheduledPitch(tempPitch);
+
+        scheduledItemRepository.saveAll(List.of(itemA, itemB));
+    }
+
+    /**
+     * GLOBAL: Verschiebt ALLE Items im gesamten Turnier, die nach (oder genau zu)
+     * einem Zeitpunkt starten, um x Minuten.
+     */
+    @Transactional
+    public void shiftAllGlobalAfter(LocalDateTime threshold, long minutes) {
+        // Wir holen alle Items ab dem Zeitpunkt, egal welche Altersgruppe oder Liga
+        List<ScheduleItem> items = scheduledItemRepository.findByStartTimeIsAfter(threshold.minusSeconds(1));
+
+        items.forEach(item -> item.shiftTime(minutes));
+
+        scheduledItemRepository.saveAll(items);
+    }
+
+    /**
+     * GLOBAL: Verschiebt ALLE Items im gesamten Turnier, die vor einem
+     * Zeitpunkt starten.
+     */
+    @Transactional
+    public void shiftAllGlobalBefore(LocalDateTime threshold, long minutes) {
+        List<ScheduleItem> items = scheduledItemRepository.findByStartTimeIsBefore(threshold);
+
+        items.forEach(item -> item.shiftTime(minutes));
+
+        scheduledItemRepository.saveAll(items);
     }
 }
