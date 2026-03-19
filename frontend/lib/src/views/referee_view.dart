@@ -130,6 +130,17 @@ class _RefereeViewState extends State<RefereeView> {
             label: const Text('Pause einfügen'),
           ),
           const SizedBox(width: 10),
+          ElevatedButton.icon(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (dialogContext) => const _SoundPreviewDialog(),
+              );
+            },
+            icon: const Icon(Icons.volume_up),
+            label: const Text('Sounds'),
+          ),
+          const SizedBox(width: 10),
           IconButton(
             onPressed: () {
               showDialog(
@@ -426,6 +437,99 @@ class _InsertBreakDialog extends StatefulWidget {
 
   @override
   State<_InsertBreakDialog> createState() => _InsertBreakDialogState();
+}
+
+class _SoundPreviewDialog extends StatefulWidget {
+  const _SoundPreviewDialog();
+
+  @override
+  State<_SoundPreviewDialog> createState() => _SoundPreviewDialogState();
+}
+
+class _SoundPreviewDialogState extends State<_SoundPreviewDialog> {
+  late final SoundPlayerService _soundPlayerService;
+
+  @override
+  void initState() {
+    super.initState();
+    _soundPlayerService = di<SoundPlayerService>();
+  }
+
+  String _soundLabel(Sounds sound) {
+    switch (sound) {
+      case Sounds.gong:
+        return 'Gong';
+      case Sounds.horn:
+        return 'Horn';
+      case Sounds.endMusic:
+        return 'Schlusslied';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Verfügbare Sounds'),
+      content: SizedBox(
+        width: 350,
+        child: ListView.separated(
+          shrinkWrap: true,
+          itemCount: Sounds.values.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 8),
+          itemBuilder: (context, index) {
+            final sound = Sounds.values[index];
+
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(_soundLabel(sound)),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        _soundPlayerService.toggleSoundPlayback(sound);
+                        if (mounted) {
+                          setState(() {});
+                        }
+                      },
+                      tooltip: _soundPlayerService.activeSound == sound &&
+                              _soundPlayerService.isPlaying
+                          ? 'Pausieren'
+                          : 'Abspielen',
+                      icon: Icon(
+                        _soundPlayerService.activeSound == sound &&
+                                _soundPlayerService.isPlaying
+                            ? Icons.pause
+                            : Icons.play_arrow,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: _soundPlayerService.activeSound == sound
+                          ? () {
+                              _soundPlayerService.stopPlayback();
+                              if (mounted) {
+                                setState(() {});
+                              }
+                            }
+                          : null,
+                      tooltip: 'Beenden',
+                      icon: const Icon(Icons.stop),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => GoRouter.of(context).pop(),
+          child: const Text('Schließen'),
+        ),
+      ],
+    );
+  }
 }
 
 class _InsertBreakDialogState extends State<_InsertBreakDialog> {
