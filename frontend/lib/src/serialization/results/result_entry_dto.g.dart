@@ -12,11 +12,11 @@ ResultEntryDto _$ResultEntryDtoFromJson(Map<String, dynamic> json) =>
       (json['victories'] as num).toInt(),
       (json['defeats'] as num).toInt(),
       (json['draws'] as num).toInt(),
-      (json['pointsDifference'] as num).toInt(),
+      (json['goalPointsDifference'] as num).toInt(),
       (json['totalPoints'] as num).toInt(),
       (json['ownScoredGoals'] as num).toInt(),
       (json['enemyScoredGoals'] as num).toInt(),
-      (json['avgScore'] as num?)?.toDouble(),
+      (json['avgGoalDiffScore'] as num?)?.toDouble(),
     );
 
 Map<String, dynamic> _$ResultEntryDtoToJson(ResultEntryDto instance) =>
@@ -25,9 +25,9 @@ Map<String, dynamic> _$ResultEntryDtoToJson(ResultEntryDto instance) =>
       'victories': instance.victories,
       'defeats': instance.defeats,
       'draws': instance.draws,
-      'pointsDifference': instance.pointsDifference,
+      'goalPointsDifference': instance.goalPointsDifference,
       'totalPoints': instance.totalPoints,
       'ownScoredGoals': instance.ownScoredGoals,
       'enemyScoredGoals': instance.enemyScoredGoals,
-      'avgScore': instance.avgScore,
+      'avgGoalDiffScore': instance.avgGoalDiffScore,
     };

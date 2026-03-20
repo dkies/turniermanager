@@ -417,7 +417,7 @@ class _LeagueViewState extends State<LeagueView> {
         cells.add(
           DataCell(
             Text(
-              result.pointsDifference.toString(),
+              result.goalPointsDifference.toString(),
               style: columnEntryTextStyle,
             ),
           ),
@@ -436,7 +436,9 @@ class _LeagueViewState extends State<LeagueView> {
       cells.add(
         DataCell(
           Text(
-            result.avgScore != null ? result.avgScore!.toStringAsFixed(1) : '-',
+            result.avgGoalDiffScore != null
+                ? result.avgGoalDiffScore!.toStringAsFixed(1)
+                : '-',
             style: columnEntryTextStyle,
           ),
         ),

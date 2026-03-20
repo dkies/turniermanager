@@ -10,22 +10,22 @@ class ResultEntryDto {
     this.victories,
     this.defeats,
     this.draws,
-    this.pointsDifference,
+    this.goalPointsDifference,
     this.totalPoints,
     this.ownScoredGoals,
     this.enemyScoredGoals,
-    this.avgScore,
+    this.avgGoalDiffScore,
   );
 
   String teamName;
   int victories;
   int defeats;
   int draws;
-  int pointsDifference;
+  int goalPointsDifference;
   int totalPoints;
   int ownScoredGoals;
   int enemyScoredGoals;
-  double? avgScore; // Optional
+  double? avgGoalDiffScore; // Optional
 
   factory ResultEntryDto.fromJson(Map<String, dynamic> json) =>
       _$ResultEntryDtoFromJson(json);
