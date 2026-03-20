@@ -7,9 +7,10 @@ public record TeamScoreStatsDTO(
         int victories,
         int defeats,
         int draws,
-        int pointsDifference,
+        int goalPointsDifference,
         int totalPoints,
         int ownScoredGoals,
         int enemyScoredGoals,
-        Optional<Double> avgScore
+        Optional<Double> avgGoalDiffScore,
+        Optional<Double> avgPoints
 ) {}

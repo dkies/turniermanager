@@ -90,22 +90,24 @@ public class RoundStatsService {
         List<TeamScoreStatsDTO> teamStats = teams.stream()
                 .map(team -> computeTeamStats(team, leagueGames, roundType))
                 .sorted((t1, t2) -> {
-                    if (t1.avgScore().isPresent() && t2.avgScore().isPresent()) {
-                        int avgComp = Double.compare(t2.avgScore().get(), t1.avgScore().get());
-                        if (avgComp != 0) return avgComp;
+                    if (t1.avgGoalDiffScore().isPresent() && t2.avgGoalDiffScore().isPresent() && t2.avgPoints().isPresent() && t1.avgPoints().isPresent()) {
+                        int avgPointsComp = Double.compare(t2.avgPoints().get(), t1.avgPoints().get());
+                        if (avgPointsComp != 0) return avgPointsComp;
+                        int avgGoalDiffComp = Double.compare(t2.avgGoalDiffScore().get(), t1.avgGoalDiffScore().get());
+                        if (avgGoalDiffComp != 0) return avgGoalDiffComp;
                     }
 
                     int pointsComp = Integer.compare(t2.totalPoints(), t1.totalPoints());
                     if (pointsComp != 0) return pointsComp;
 
-                    int diffComp = Integer.compare(t2.pointsDifference(), t1.pointsDifference());
+                    int diffComp = Integer.compare(t2.goalPointsDifference(), t1.goalPointsDifference());
                     if (diffComp != 0) return diffComp;
 
                     return Integer.compare(t2.ownScoredGoals(), t1.ownScoredGoals());
                 })
                 .collect(Collectors.toList());
 
-        return new LeagueTableDTO(league.getId(), league.getName(), league.getAgeGroup(),teamStats);
+        return new LeagueTableDTO(league.getId(), league.getName(), league.getAgeGroup(), teamStats);
     }
 
     private TeamScoreStatsDTO computeTeamStats(Team team, List<ScheduledGame> games, RoundType roundType) {
@@ -134,13 +136,15 @@ public class RoundStatsService {
         int gamesPlayed = teamGames.size();
 
         Optional<Double> avgScore = Optional.empty();
+        Optional<Double> avgPointsComp = Optional.empty();
         if (roundType == RoundType.QUALIFICATION && gamesPlayed > 0) {
             avgScore = Optional.of((double) (ownGoals - enemyGoals) / gamesPlayed);
+            avgPointsComp = Optional.of((double) totalPoints / gamesPlayed);
         }
 
         return new TeamScoreStatsDTO(
                 team.getName(), victories, defeats, draws, diff,
-                totalPoints, ownGoals, enemyGoals, avgScore
+                totalPoints, ownGoals, enemyGoals, avgScore, avgPointsComp
         );
     }
 }

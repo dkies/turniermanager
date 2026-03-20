@@ -76,7 +76,8 @@ public class GamePlanGeneratorService {
             ScheduledGame game,
             League league,
             AgeGroup ageGroup
-    ) {}
+    ) {
+    }
 
     @Transactional
     public void generateScheduleForMultipleLeague(List<League> leagues, Tournament tournament) {
@@ -272,16 +273,34 @@ public class GamePlanGeneratorService {
 
         List<TeamStatsDTO> statsList = getTeamStatisticsForLeague(league);
 
-        Comparator<TeamStatsDTO> rankingComparator = Comparator
-                .comparing((TeamStatsDTO s) -> {
-                    if (s.gamesPlayed() == 0) return 0.0;
-                    return (double) (s.goalsScored() - s.goalsAgainst()) / s.gamesPlayed();
-                }, Comparator.reverseOrder())
+        Comparator<TeamStatsDTO> rankingComparator = (t1, t2) -> {
+            // Durchschnittspunkte
+                double avgPoints1 = t1.gamesPlayed() > 0 ? (double) t1.pointsScored() / t1.gamesPlayed() : 0.0;
+                double avgPoints2 = t2.gamesPlayed() > 0 ? (double) t2.pointsScored() / t2.gamesPlayed() : 0.0;
+                int avgPointsComp = Double.compare(avgPoints2, avgPoints1);
+                if (avgPointsComp != 0) return avgPointsComp;
 
-                .thenComparing(TeamStatsDTO::goalsScored, Comparator.reverseOrder());
+            // Durchschnittliche Tordifferenz
+                double avgDiff1 = t1.gamesPlayed() > 0 ? (double) (t1.goalsScored() - t1.goalsAgainst()) / t1.gamesPlayed() : 0.0;
+                double avgDiff2 = t2.gamesPlayed() > 0 ? (double) (t2.goalsScored() - t2.goalsAgainst()) / t2.gamesPlayed() : 0.0;
+                int avgGoalDiffComp = Double.compare(avgDiff2, avgDiff1);
+                if (avgGoalDiffComp != 0) return avgGoalDiffComp;
 
-        statsList.sort(rankingComparator);
+            // Gesamtpunkte
+            int pointsComp = Integer.compare(t2.pointsScored(), t1.pointsScored());
+            if (pointsComp != 0) return pointsComp;
 
+            // Tordifferenz
+            int diff1 = t1.goalsScored() - t1.goalsAgainst();
+            int diff2 = t2.goalsScored() - t2.goalsAgainst();
+            int diffComp = Integer.compare(diff2, diff1);
+            if (diffComp != 0) return diffComp;
+
+            // Erzielte Tore
+            return Integer.compare(t2.goalsScored(), t1.goalsScored());
+        };
+
+        statsList.sort(rankingComparator.reversed());
         return statsList.stream()
                 .map(TeamStatsDTO::team)
                 .collect(Collectors.toList());
@@ -340,7 +359,6 @@ public class GamePlanGeneratorService {
         if (tournament == null) return;
         Round finalPhase = roundRepository.save(Round.builder().name(roundName).orderIndex(2).roundType(RoundType.FINAL_STAGE).tournament(tournament).build());
         List<League> leagues = leagueRepository.findAll();
-
 
 
         for (League league : leagues) {
