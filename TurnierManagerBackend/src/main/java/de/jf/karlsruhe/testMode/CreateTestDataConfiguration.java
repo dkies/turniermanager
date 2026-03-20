@@ -14,8 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@Configuration
-@Order(1) // Sorgt dafür, dass dieses Setup vor der Ranglisten-Evaluierung läuft
+//@Configuration
+//@Order(1) // Sorgt dafür, dass dieses Setup vor der Ranglisten-Evaluierung läuft
 public class CreateTestDataConfiguration {
 
     // Zufallsgenerator für die Punktestände
@@ -81,7 +81,7 @@ public class CreateTestDataConfiguration {
             System.out.println("\n--- 1. Starte Turnier-Datenaufbau (Phase 1/2) ---");
 
             // --- SETUP CODE ---
-            LocalDateTime tournamentStart = LocalDateTime.of(2026, 3, 20, 19, 0);
+            LocalDateTime tournamentStart = LocalDateTime.of(2026, 3, 21, 10, 0);
             Tournament sommerCup = tournamentRepository.save(Tournament.builder().name("Sommer Cup 2026").startTime(tournamentStart).playTimeInSeconds(600).breakTimeInSeconds(300).build());
             Round gruppenphase = roundRepository.save(Round.builder().name("Gruppenphase").orderIndex(1).roundType(RoundType.QUALIFICATION).tournament(sommerCup).build());
 
@@ -136,12 +136,12 @@ public class CreateTestDataConfiguration {
 
             // 5. TEST DATEN ERSTELLEN: ZUFÄLLIGE ERGEBNISSE EINTRAGEN (WIRD ÜBER DEN TRANSAKTIONALEN SERVICE GEMACHT)
             //System.out.println("\n--- Zufallsergebnisse werden eingetragen (Transaktion Phase) ---");
-            //dataCompletionService.completeGamesRandomly(gruppeA_U13);
+            dataCompletionService.completeGamesRandomly(gruppeA_U13);
 
             // Ergänze für U17:
             gamePlanGeneratorService.generateScheduleForSingleLeague(gruppeA_U17, sommerCup);
 
-            //dataCompletionService.completeGamesRandomly(gruppeA_U17);
+            dataCompletionService.completeGamesRandomly(gruppeA_U17);
 
             
 

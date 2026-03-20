@@ -162,7 +162,7 @@ public class GameScoreService {
 
         // 3. Mapping in die finale Liste der Zeit-Slots
         return groupedGames.entrySet().stream()
-                .map(entry -> new GameScheduleDateTimeDTO(entry.getKey(), entry.getValue(), playTimeInSeconds))
+                .map(entry -> new GameScheduleDateTimeDTO(entry.getKey(), entry.getValue().stream().sorted(Comparator.comparing(GameDTO::pitch)).toList(), playTimeInSeconds))
                 .collect(Collectors.toList());
     }
 

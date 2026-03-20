@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/api/reporting")
+@RequestMapping("/reporting")
 @RequiredArgsConstructor
 public class ReportingController {
 
@@ -21,7 +21,7 @@ public class ReportingController {
     private final ReportingService reportingService;
 
     @GetMapping(value = "/tournament-results/{ageGroupId}", produces = MediaType.APPLICATION_PDF_VALUE)
-    public ResponseEntity<byte[]> getTournamentResults(@RequestBody UUID ageGroupId) {
+    public ResponseEntity<byte[]> getTournamentResults(@PathVariable UUID ageGroupId) {
         RoundStatsDTO stats = roundStatsService.getStatsByAgeGroup(ageGroupId);
 
         // 2. PDF generieren
