@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:go_router/go_router.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
 import 'package:tournament_manager/src/constants.dart';
@@ -448,11 +449,24 @@ class _SoundPreviewDialog extends StatefulWidget {
 
 class _SoundPreviewDialogState extends State<_SoundPreviewDialog> {
   late final SoundPlayerService _soundPlayerService;
+  StreamSubscription<void>? _playbackStateSubscription;
 
   @override
   void initState() {
     super.initState();
     _soundPlayerService = di<SoundPlayerService>();
+    _playbackStateSubscription =
+        _soundPlayerService.playbackStateChanges.listen((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _playbackStateSubscription?.cancel();
+    super.dispose();
   }
 
   String _soundLabel(Sounds sound) {

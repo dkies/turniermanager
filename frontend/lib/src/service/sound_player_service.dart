@@ -6,6 +6,7 @@ abstract class SoundPlayerService implements Disposable {
   void playSound(Sounds sound);
   void toggleSoundPlayback(Sounds sound);
   void stopPlayback();
+  Stream<void> get playbackStateChanges;
   bool get isPlaying;
   bool get isPaused;
   Sounds? get activeSound;
@@ -13,6 +14,7 @@ abstract class SoundPlayerService implements Disposable {
 
 class SoundPlayerServiceImplementation implements SoundPlayerService {
   final _player = AudioPlayer();
+  final _playbackStateChangesController = StreamController<void>.broadcast();
   Sounds? _activeSound;
   PlayerState _playerState = PlayerState.stopped;
   late final StreamSubscription<PlayerState> _playerStateSubscription;
@@ -21,10 +23,12 @@ class SoundPlayerServiceImplementation implements SoundPlayerService {
   SoundPlayerServiceImplementation() {
     _playerStateSubscription = _player.onPlayerStateChanged.listen((state) {
       _playerState = state;
+      _playbackStateChangesController.add(null);
     });
     _playerCompleteSubscription = _player.onPlayerComplete.listen((_) {
       _activeSound = null;
       _playerState = PlayerState.stopped;
+      _playbackStateChangesController.add(null);
     });
   }
 
@@ -54,9 +58,11 @@ class SoundPlayerServiceImplementation implements SoundPlayerService {
     try {
       _activeSound = sound;
       _playerState = PlayerState.playing;
+      _playbackStateChangesController.add(null);
       await _player.play(AssetSource(soundPath));
     } on Exception {
       _playerState = PlayerState.stopped;
+      _playbackStateChangesController.add(null);
       return;
     }
   }
@@ -65,12 +71,14 @@ class SoundPlayerServiceImplementation implements SoundPlayerService {
   void toggleSoundPlayback(Sounds sound) async {
     if (_activeSound == sound && _playerState == PlayerState.playing) {
       _playerState = PlayerState.paused;
+      _playbackStateChangesController.add(null);
       await _player.pause();
       return;
     }
 
     if (_activeSound == sound && _playerState == PlayerState.paused) {
       _playerState = PlayerState.playing;
+      _playbackStateChangesController.add(null);
       await _player.resume();
       return;
     }
@@ -83,6 +91,7 @@ class SoundPlayerServiceImplementation implements SoundPlayerService {
     await _player.stop();
     _activeSound = sound;
     _playerState = PlayerState.playing;
+    _playbackStateChangesController.add(null);
     await _player.play(AssetSource(soundPath));
   }
 
@@ -91,7 +100,11 @@ class SoundPlayerServiceImplementation implements SoundPlayerService {
     await _player.stop();
     _activeSound = null;
     _playerState = PlayerState.stopped;
+    _playbackStateChangesController.add(null);
   }
+
+  @override
+  Stream<void> get playbackStateChanges => _playbackStateChangesController.stream;
 
   @override
   bool get isPlaying => _playerState == PlayerState.playing;
@@ -106,6 +119,7 @@ class SoundPlayerServiceImplementation implements SoundPlayerService {
   FutureOr onDispose() async {
     await _playerStateSubscription.cancel();
     await _playerCompleteSubscription.cancel();
+    await _playbackStateChangesController.close();
     await _player.stop();
     await _player.dispose();
   }
