@@ -8,6 +8,9 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.alignment.HorizontalAlignment;
 import de.jf.karlsruhe.model.base.Pitch;
 import de.jf.karlsruhe.model.base.ScheduledGame;
+import de.jf.karlsruhe.model.dto.LeagueTableDTO;
+import de.jf.karlsruhe.model.dto.RoundStatsDTO;
+import de.jf.karlsruhe.model.dto.TeamScoreStatsDTO;
 import de.jf.karlsruhe.model.enums.GameStatus;
 import de.jf.karlsruhe.model.repos.PitchRepository;
 import de.jf.karlsruhe.model.repos.ScheduledGameRepository;
@@ -150,6 +153,68 @@ public class ReportingService {
         Cell cell = new Cell(paragraph);
         cell.setHorizontalAlignment(HorizontalAlignment.CENTER);
         return cell;
+    }
+
+    public byte[] generateTournamentResultsPdf(RoundStatsDTO stats) {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Document document = new Document(PageSize.A4);
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // Schriftarten definieren
+            Font titleFont = new Font(Font.HELVETICA, 18, Font.BOLD, Color.BLACK);
+            Font leagueFont = new Font(Font.HELVETICA, 14, Font.BOLD, Color.BLUE);
+            Font headerFont = new Font(Font.HELVETICA, 10, Font.BOLD, Color.WHITE);
+            Font cellFont = new Font(Font.HELVETICA, 10, Font.NORMAL, Color.BLACK);
+
+            // Titel
+            Paragraph title = new Paragraph("Abschlusstabelle: " + stats.roundName(), titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            for (LeagueTableDTO leagueTable : stats.leagueTables()) {
+                // Name der Liga / Gruppe
+                Paragraph leagueName = new Paragraph("Liga: " + leagueTable.leagueName(), leagueFont);
+                leagueName.setSpacingBefore(10);
+                leagueName.setSpacingAfter(10);
+                document.add(leagueName);
+
+                // Tabelle erstellen (Platz, Team, Pkt, Diff, Tore)
+                Table table = new Table(5);
+                table.setWidth(100);
+                table.setPadding(3);
+
+                // Header setzen
+                String[] headers = {"Platz", "Team", "Punkte", "Diff", "Tore"};
+                for (String h : headers) {
+                    Cell headerCell = new Cell(new Phrase(h, headerFont));
+                    headerCell.setBackgroundColor(Color.DARK_GRAY);
+                    headerCell.setHorizontalAlignment(HorizontalAlignment.CENTER);
+                    table.addCell(headerCell);
+                }
+
+                int rank = 1;
+                for (TeamScoreStatsDTO team : leagueTable.teams()) {
+                    // Platzierung fett markieren für den Sieger
+                    Font currentFont = (rank == 1) ? new Font(Font.HELVETICA, 10, Font.BOLD, Color.BLACK) : cellFont;
+
+                    table.addCell(new Cell(new Phrase(String.valueOf(rank++), currentFont)));
+                    table.addCell(new Cell(new Phrase(team.teamName(), currentFont)));
+                    table.addCell(new Cell(new Phrase(String.valueOf(team.totalPoints()), currentFont)));
+                    table.addCell(new Cell(new Phrase(String.valueOf(team.goalPointsDifference()), currentFont)));
+                    table.addCell(new Cell(new Phrase(team.ownScoredGoals() + ":" + team.enemyScoredGoals(), currentFont)));
+                }
+
+                document.add(table);
+                document.add(new Paragraph("\n")); // Abstand zur nächsten Liga
+            }
+
+            document.close();
+            return out.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Fehler bei der PDF-Erstellung der Ergebnisse", e);
+        }
     }
 
 }
