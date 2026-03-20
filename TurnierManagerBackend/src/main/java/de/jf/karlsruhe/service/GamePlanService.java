@@ -46,16 +46,25 @@ public class GamePlanService {
             throw new IllegalArgumentException("Keine Ligen für diese Altersgruppe in der aktuellen Runde gefunden.");
         }
 
-        List<ScheduleItem> allScheduleItems = scheduledItemRepository
-                .findByAgeGroupAndStartTimeIsAfterOrderByStartTimeAsc(
-                        ageGroup,
-                        LocalDateTime.now().minusHours(1)
-                )
+//        List<ScheduleItem> allScheduleItems = scheduledItemRepository
+//                .findByAgeGroupAndStartTimeIsAfterOrderByStartTimeAsc(
+//                        ageGroup,
+//                        LocalDateTime.now().minusHours(1)
+//                )
+//                .stream()
+//                .filter(item -> {
+//                    return item.getStatus().equals(GameStatus.SCHEDULED);}
+//                )
+//        .toList();
+
+        List<ScheduleItem> allScheduleItems = scheduledItemRepository.findByAgeGroupOrderByStartTimeAsc(ageGroup)
                 .stream()
                 .filter(item -> {
-                    return item.getStatus().equals(GameStatus.SCHEDULED);}
-                )
-        .toList();
+                    return item.getStatus().equals(GameStatus.SCHEDULED);
+                }
+
+        ).toList();
+
 
         Map<ScheduleItem, ScheduledGame> gameMap = getGameMap(allScheduleItems);
 
@@ -84,8 +93,7 @@ public class GamePlanService {
             AgeGroup ageGroup,
             List<ScheduleItem> allScheduleItems,
             Map<ScheduleItem, ScheduledGame> gameMap,
-            List<League> relevantLeagues)
-    {
+            List<League> relevantLeagues) {
         List<LeagueScheduleDTO> leagueSchedules = new ArrayList<>();
         for (League league : relevantLeagues) {
             Set<ScheduleItem> processedBreaks = new HashSet<>();
@@ -108,8 +116,7 @@ public class GamePlanService {
             ScheduleItem item,
             ScheduledGame game,
             League targetLeague,
-            Set<ScheduleItem> processedBreaks)
-    {
+            Set<ScheduleItem> processedBreaks) {
         if (ScheduledItemType.GAME.equals(item.getItemType()) && game != null) {
             if (targetLeague.getTeams().contains(game.getTeamA()) && targetLeague.getTeams().contains(game.getTeamB())) {
                 return Optional.of(new GamePlanEntryDTO(
