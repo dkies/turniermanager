@@ -46,6 +46,7 @@ abstract class GameRestApi {
 
   Future<List<PitchDto>> getAllPitches();
   Future<bool> printPitch(String pitchId);
+  Future<bool> printResults(String ageGroupId);
 }
 
 class GameRestApiImplementation extends RestClient implements GameRestApi {
@@ -60,6 +61,7 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
   late final Uri deleteBreakUri;
   late final Uri getAllPitchesUri;
   late final String printPitchPath;
+  late final String printResultsPath;
   late final Uri getAllGameGroupsUri;
   late final Uri getAllGamesUri;
   late final Uri refreshTimingsUri;
@@ -79,6 +81,7 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
     deleteBreakUri = Uri.parse('$_baseUri/breaks/delete');
     getAllPitchesUri = Uri.parse('$_baseUri/pitches');
     printPitchPath = '$_baseUri/pitches/result-card/';
+    printResultsPath = '$_baseUri/reporting/tournament-results/';
     getAllGameGroupsUri =
         Uri.parse('$_baseUri/gameplan/activeGamesSortedDateTimeList');
     getAllGamesUri =
@@ -296,6 +299,28 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
       if (response.statusCode == 200) {
         String fileName = 'Schiedsrichterzettel_Platz_$pitchId.pdf';
 
+        final stream = Stream.fromIterable(response.bodyBytes);
+        await download(stream, fileName);
+        return true;
+      }
+
+      return false;
+    } on Exception {
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> printResults(String ageGroupId) async {
+    try {
+      final uri = Uri.parse(printResultsPath + ageGroupId);
+      final response = await client.get(
+        uri,
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final fileName = 'Turnierergebnisse_$ageGroupId.pdf';
         final stream = Stream.fromIterable(response.bodyBytes);
         await download(stream, fileName);
         return true;
@@ -702,6 +727,11 @@ class GameTestRestApi extends GameRestApi {
 
   @override
   Future<bool> printPitch(String pitchId) async {
+    return true;
+  }
+
+  @override
+  Future<bool> printResults(String ageGroupId) async {
     return true;
   }
 }

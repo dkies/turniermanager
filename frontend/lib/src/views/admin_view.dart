@@ -43,6 +43,8 @@ class AdminView extends StatelessWidget {
             GameScoreView(),
             SizedBox(height: 10),
             PitchPrinter(),
+            SizedBox(height: 10),
+            ResultPrinter(),
           ],
         ),
       ),
@@ -122,6 +124,83 @@ class PitchPrinter extends StatelessWidget with WatchItMixin {
     showError(
       context,
       'Ein oder mehrere Schiedrichterzettel konnten nicht erstellt werden!',
+    );
+  }
+}
+
+class ResultPrinter extends StatelessWidget with WatchItMixin {
+  const ResultPrinter({super.key});
+
+  GameManager get _gameManager => di<GameManager>();
+
+  @override
+  Widget build(BuildContext context) {
+    final ageGroups =
+        watchPropertyValue((GameManager manager) => manager.ageGroups);
+
+    final ageGroupWidgets = ageGroups
+        .map(
+          (ageGroup) => SeparatedRow(
+            separatorBuilder: (context, index) => const SizedBox(width: 10),
+            children: [
+              Text('${ageGroup.name} (ID: ${ageGroup.id})'),
+              IconButton(
+                onPressed: () => _handlePrintResults(context, ageGroup.id),
+                icon: const Icon(Icons.print),
+              ),
+            ],
+          ),
+        )
+        .toList();
+
+    return SeparatedColumn(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      separatorBuilder: (_, index) => const SizedBox(height: 10),
+      children: [
+        SeparatedRow(
+          separatorBuilder: (context, index) => const SizedBox(width: 10),
+          children: [
+            const Text(
+              'Turnierergebnisse',
+              style: Constants.mediumHeaderTextStyle,
+            ),
+            IconButton(
+              onPressed: () => _handlePrintAllResults(context),
+              icon: const Icon(Icons.print),
+              tooltip: 'Alles drucken',
+            ),
+          ],
+        ),
+        ...ageGroupWidgets,
+      ],
+    );
+  }
+
+  Future<void> _handlePrintResults(
+      BuildContext context, String ageGroupId) async {
+    final result =
+        await _gameManager.printResultsCommand.executeWithFuture(ageGroupId);
+
+    if (result || !context.mounted) {
+      return;
+    }
+
+    showError(
+      context,
+      'Turnierergebnisse für Altersgruppe #$ageGroupId konnten nicht erstellt werden!',
+    );
+  }
+
+  Future<void> _handlePrintAllResults(BuildContext context) async {
+    final result = await _gameManager.printAllResultsCommand.executeWithFuture();
+
+    if (result || !context.mounted) {
+      return;
+    }
+
+    showError(
+      context,
+      'Ein oder mehrere Turnierergebnisse konnten nicht erstellt werden!',
     );
   }
 }

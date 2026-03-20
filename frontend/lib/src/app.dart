@@ -88,6 +88,7 @@ class MainWidget extends StatelessWidget {
             path: AdminView.routeName,
             builder: (context, state) {
               final gameManager = di<GameManager>();
+              gameManager.getAgeGroupsCommand();
               gameManager.getAllGamesCommand();
               gameManager.getAllPitchesCommand();
 

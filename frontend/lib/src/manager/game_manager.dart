@@ -46,6 +46,8 @@ abstract class GameManager extends ChangeNotifier {
   late Command<void, void> getAllPitchesCommand;
   late Command<String, bool> printPitchCommand;
   late Command<void, bool> printAllPitchesCommand;
+  late Command<String, bool> printResultsCommand;
+  late Command<void, bool> printAllResultsCommand;
 
   AgeGroup? getAgeGroupByName(String name);
 
@@ -105,6 +107,10 @@ class GameManagerImplementation extends ChangeNotifier implements GameManager {
   late Command<String, bool> printPitchCommand;
   @override
   late Command<void, bool> printAllPitchesCommand;
+  @override
+  late Command<String, bool> printResultsCommand;
+  @override
+  late Command<void, bool> printAllResultsCommand;
 
   MatchSchedule _schedule = MatchSchedule('Runde ??');
 
@@ -318,6 +324,24 @@ class GameManagerImplementation extends ChangeNotifier implements GameManager {
           result = await _gameRestApi.printPitch(pitch.id);
         }
 
+        return result;
+      },
+      initialValue: false,
+    );
+
+    printResultsCommand = Command.createAsync(
+      (ageGroupId) async {
+        return await _gameRestApi.printResults(ageGroupId);
+      },
+      initialValue: false,
+    );
+
+    printAllResultsCommand = Command.createAsyncNoParam(
+      () async {
+        var result = true;
+        for (var ageGroup in ageGroups) {
+          result = await _gameRestApi.printResults(ageGroup.id);
+        }
         return result;
       },
       initialValue: false,
