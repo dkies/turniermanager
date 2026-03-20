@@ -2,6 +2,7 @@ enum GameStatus {
   scheduled('SCHEDULED'),
   inProgress('IN_PROGRESS'),
   completed('COMPLETED'),
+  completedAndStated('COMPLETED_AND_STATED'),
   canceled('CANCELED');
 
   final String value;
