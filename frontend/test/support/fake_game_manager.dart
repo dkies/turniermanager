@@ -56,7 +56,13 @@ class FakeGameManager extends ChangeNotifier implements GameManager {
 
     saveGameCommand = Command.createAsync<
         (int gameNumber, int teamAScore, int teamBScore), bool>(
-      (_) async => false,
+      (args) async {
+        saveGameInvocations++;
+        lastSaveGameNumber = args.$1;
+        lastSaveTeamAScore = args.$2;
+        lastSaveTeamBScore = args.$3;
+        return saveGameReturns;
+      },
       initialValue: false,
     );
 
@@ -82,19 +88,33 @@ class FakeGameManager extends ChangeNotifier implements GameManager {
     getAllPitchesCommand = Command.createAsyncNoParamNoResult(() async {});
 
     printPitchCommand = Command.createAsync<String, bool>(
-      (_) async => false,
+      (pitchId) async {
+        printPitchInvocations++;
+        lastPrintPitchId = pitchId;
+        return printPitchReturns;
+      },
       initialValue: false,
     );
     printAllPitchesCommand = Command.createAsyncNoParam<bool>(
-      () async => false,
+      () async {
+        printAllPitchesInvocations++;
+        return printAllPitchesReturns;
+      },
       initialValue: false,
     );
     printResultsCommand = Command.createAsync<String, bool>(
-      (_) async => false,
+      (ageGroupId) async {
+        printResultsInvocations++;
+        lastPrintResultsAgeGroupId = ageGroupId;
+        return printResultsReturns;
+      },
       initialValue: false,
     );
     printAllResultsCommand = Command.createAsyncNoParam<bool>(
-      () async => false,
+      () async {
+        printAllResultsInvocations++;
+        return printAllResultsReturns;
+      },
       initialValue: false,
     );
   }
@@ -120,6 +140,31 @@ class FakeGameManager extends ChangeNotifier implements GameManager {
   int deleteBreakInvocations = 0;
 
   int getCurrentRoundInvocations = 0;
+
+  /// Admin: [saveGameCommand] (default `false` = server error path in UI).
+  bool saveGameReturns = false;
+  int saveGameInvocations = 0;
+  int? lastSaveGameNumber;
+  int? lastSaveTeamAScore;
+  int? lastSaveTeamBScore;
+
+  /// Admin: [printPitchCommand].
+  bool printPitchReturns = false;
+  int printPitchInvocations = 0;
+  String? lastPrintPitchId;
+
+  /// Admin: [printAllPitchesCommand].
+  bool printAllPitchesReturns = false;
+  int printAllPitchesInvocations = 0;
+
+  /// Admin: [printResultsCommand].
+  bool printResultsReturns = false;
+  int printResultsInvocations = 0;
+  String? lastPrintResultsAgeGroupId;
+
+  /// Admin: [printAllResultsCommand].
+  bool printAllResultsReturns = false;
+  int printAllResultsInvocations = 0;
 
   @override
   late Command<String, void> getScheduleCommand;
@@ -218,6 +263,13 @@ class FakeGameManager extends ChangeNotifier implements GameManager {
 
   void setGameGroups(List<GameGroup> value) {
     _gameGroups = value;
+    notifyListeners();
+  }
+
+  /// Replace [games] for admin / score table tests.
+  void setGames(List<ExtendedGame> value) {
+    _games.clear();
+    _games.addAll(value);
     notifyListeners();
   }
 }
