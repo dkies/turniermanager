@@ -609,16 +609,28 @@ class GameTestRestApi extends GameRestApi {
       var startTime = baseTime.add(Duration(minutes: i * 25));
       var endTime = startTime.add(const Duration(minutes: 20));
 
-      // Every 4th entry is a break (teamAName shown as "PAUSE: <name>" in schedule view)
+      // Every 4th entry is a break; two consecutive breaks share the same slot (grouped card in UI)
       if ((i + 1) % 4 == 0) {
+        final teamA = scheduleTeams[(i ~/ 4) % scheduleTeams.length];
         scheduleList.add(MatchScheduleEntryDto(
           ItemType.break_,
           "Platz $fieldCount",
           startTime,
           endTime,
-          scheduleTeams[(i ~/ 4) % scheduleTeams.length],
+          teamA,
           null, // teamBName
           null, // gameNumber
+        ));
+        fieldCount++;
+        if (fieldCount > 3) fieldCount = 1;
+        scheduleList.add(MatchScheduleEntryDto(
+          ItemType.break_,
+          "Platz $fieldCount",
+          startTime,
+          endTime,
+          teamA,
+          null,
+          null,
         ));
       } else {
         gameNumber++;
