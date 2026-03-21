@@ -605,21 +605,39 @@ class GameTestRestApi extends GameRestApi {
     ];
 
     var scheduleList = <MatchScheduleEntryDto>[];
-    for (var i = 0; i < 14; i++) {
+    // Mixed pattern: games, single breaks (message in teamAName), grouped breaks (same slot, two pitches)
+    for (var i = 0; i < 16; i++) {
       var startTime = baseTime.add(Duration(minutes: i * 25));
       var endTime = startTime.add(const Duration(minutes: 20));
 
-      // Every 4th entry is a break; two consecutive breaks share the same slot (grouped card in UI)
-      if ((i + 1) % 4 == 0) {
-        final teamA = scheduleTeams[(i ~/ 4) % scheduleTeams.length];
+      // Single break entries (one slot, one card)
+      if (i == 2 || i == 9) {
+        final label = i == 2 ? 'Kurze Pause' : 'Getränkepause';
         scheduleList.add(MatchScheduleEntryDto(
           ItemType.break_,
           "Platz $fieldCount",
           startTime,
           endTime,
-          teamA,
-          null, // teamBName
-          null, // gameNumber
+          label,
+          null,
+          null,
+        ));
+        fieldCount++;
+        if (fieldCount > 3) fieldCount = 1;
+        continue;
+      }
+
+      // Grouped breaks: same start/end, two pitches (combined card in UI)
+      if (i == 5 || i == 12) {
+        final label = i == 5 ? 'Mittagspause' : 'Verschnaufpause';
+        scheduleList.add(MatchScheduleEntryDto(
+          ItemType.break_,
+          "Platz $fieldCount",
+          startTime,
+          endTime,
+          label,
+          null,
+          null,
         ));
         fieldCount++;
         if (fieldCount > 3) fieldCount = 1;
@@ -628,25 +646,27 @@ class GameTestRestApi extends GameRestApi {
           "Platz $fieldCount",
           startTime,
           endTime,
-          teamA,
+          label,
           null,
           null,
         ));
-      } else {
-        gameNumber++;
-        scheduleList.add(MatchScheduleEntryDto(
-          ItemType.game,
-          "Platz $fieldCount",
-          startTime,
-          endTime,
-          scheduleTeams[teamCount - 1],
-          scheduleTeams[(teamCount % 4)],
-          gameNumber,
-        ));
-        teamCount += 2;
-        if (teamCount > 4) teamCount = 1;
+        fieldCount++;
+        if (fieldCount > 3) fieldCount = 1;
+        continue;
       }
 
+      gameNumber++;
+      scheduleList.add(MatchScheduleEntryDto(
+        ItemType.game,
+        "Platz $fieldCount",
+        startTime,
+        endTime,
+        scheduleTeams[teamCount - 1],
+        scheduleTeams[(teamCount % 4)],
+        gameNumber,
+      ));
+      teamCount += 2;
+      if (teamCount > 4) teamCount = 1;
       fieldCount++;
       if (fieldCount > 3) fieldCount = 1;
     }
