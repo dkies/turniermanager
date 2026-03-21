@@ -41,5 +41,10 @@ public interface ScheduledItemRepository extends JpaRepository<ScheduleItem, UUI
     List<ScheduleItem> findByStartTimeIsBefore(LocalDateTime threshold);
 
     List<ScheduleItem> findByAgeGroupOrderByStartTimeAsc(AgeGroup ageGroup);
+
+    Optional<ScheduleItem> findFirstByScheduledPitchAndStartTimeBeforeAndEndTimeAfter(Pitch pitch, LocalDateTime start, LocalDateTime end);
+
+    Optional<ScheduleItem> findFirstByEndTimeIsAfterOrderByStartTimeAsc(LocalDateTime threshold);
+
 }
 

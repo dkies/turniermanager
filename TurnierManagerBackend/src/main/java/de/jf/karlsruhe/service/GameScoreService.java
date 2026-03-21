@@ -147,13 +147,13 @@ public class GameScoreService {
                         breaks.getId(),
                         item.getStartTime(),
                         0,                 // Keine Spielnummer bei Pausen
-                        "PAUSE",
-                        "PAUSE",
+                        breaks.getMessage(),
+                        breaks.getMessage(),
                         item.getScheduledPitch() != null ? item.getScheduledPitch().getName() : "Kein Feld",
                         "-",
                         item.getAgeGroup().getName(),
                         item.getStatus().toString(),       // Pausen sind im Plan quasi immer "bereit"
-                        "BREAK"            // Der Typ, den du im Record ergänzt hast
+                        ScheduledItemType.BREAK.toString()            // Der Typ, den du im Record ergänzt hast
                 );
             }
 
