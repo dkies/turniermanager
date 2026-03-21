@@ -295,7 +295,9 @@ class ScheduleEntryView extends StatelessWidget {
             children: [
               Text(
                 isBreak
-                    ? 'PAUSE'
+                    ? (matchScheduleEntry.teamAName.trim().isEmpty
+                        ? 'PAUSE'
+                        : 'PAUSE: ${matchScheduleEntry.teamAName}')
                     : '${matchScheduleEntry.teamAName} : ${matchScheduleEntry.teamBName}',
                 style: textStyle,
               ),
