@@ -37,4 +37,36 @@ void main() {
     expect(find.textContaining('Spielplan & Ergebnisse'), findsOneWidget);
     expect(find.textContaining('Team Alpha'), findsWidgets);
   });
+
+  testWidgets('AgeGroupView schedule area shows pause line for breaks', (tester) async {
+    bindLargeTestSurface(tester);
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: AgeGroupView(ageGroupName: testAgeGroupName),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('PAUSE auf'), findsWidgets);
+    expect(find.textContaining('Mittagspause'), findsWidgets);
+  });
+
+  testWidgets('AgeGroupView shows error when age group is unknown', (tester) async {
+    await resetAndRegisterTestDi(
+      gameManager: FakeGameManager(ageGroups: []),
+    );
+    bindLargeTestSurface(tester);
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: AgeGroupView(ageGroupName: 'Unknown'),
+      ),
+    );
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('nicht vorhanden'), findsOneWidget);
+  });
 }

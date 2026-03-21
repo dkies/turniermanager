@@ -45,4 +45,61 @@ void main() {
     expect(find.textContaining('Spielübersicht'), findsOneWidget);
     expect(find.textContaining('Pause einfügen'), findsOneWidget);
   });
+
+  testWidgets('RefereeView shows bottom hint and game row content', (tester) async {
+    bindLargeTestSurface(tester);
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => RefereeView(),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp.router(
+        routerConfig: router,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('Seite neu laden vermeiden'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Liga A'), findsWidgets);
+    expect(find.text('A'), findsWidgets);
+    expect(find.text('B'), findsWidgets);
+  });
+
+  testWidgets('RefereeView opens sound preview dialog', (tester) async {
+    bindLargeTestSurface(tester);
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => RefereeView(),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp.router(
+        routerConfig: router,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.textContaining('Sounds'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Verfügbare Sounds'), findsOneWidget);
+    expect(find.text('Gong'), findsOneWidget);
+    expect(find.text('Schließen'), findsOneWidget);
+
+    await tester.tap(find.text('Schließen'));
+    await tester.pumpAndSettle();
+    expect(find.text('Verfügbare Sounds'), findsNothing);
+  });
 }
