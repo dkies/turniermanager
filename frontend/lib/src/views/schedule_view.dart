@@ -270,10 +270,7 @@ class ScheduleEntryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isBreak = matchScheduleEntry.itemType == ItemType.break_;
-    final textStyle = isBreak
-        ? Constants.standardTextStyle.copyWith(color: Colors.black)
-        : Constants.standardTextStyle;
+    const textStyle = Constants.standardTextStyle;
 
     final content = Row(
       children: [
@@ -286,10 +283,7 @@ class ScheduleEntryView extends StatelessWidget {
                 style: textStyle,
               ),
               const SizedBox(width: 5),
-              Text(
-                '|',
-                style: textStyle,
-              ),
+              const Text('|', style: textStyle),
               const SizedBox(width: 5),
               Text(
                 '${DateFormat.Hm().format(matchScheduleEntry.startTime)} - ${DateFormat.Hm().format(matchScheduleEntry.endTime)}',
@@ -304,11 +298,7 @@ class ScheduleEntryView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                isBreak
-                    ? (matchScheduleEntry.teamAName.trim().isEmpty
-                        ? 'PAUSE'
-                        : 'PAUSE: ${matchScheduleEntry.teamAName}')
-                    : '${matchScheduleEntry.teamAName} : ${matchScheduleEntry.teamBName}',
+                '${matchScheduleEntry.teamAName} : ${matchScheduleEntry.teamBName}',
                 style: textStyle,
               ),
             ],
@@ -317,17 +307,6 @@ class ScheduleEntryView extends StatelessWidget {
       ],
     );
 
-    if (isBreak) {
-      return Container(
-        decoration: BoxDecoration(
-          color: Colors.yellow.shade400,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        child: content,
-      );
-    }
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: content,
@@ -335,13 +314,14 @@ class ScheduleEntryView extends StatelessWidget {
   }
 }
 
-/// Consecutive [ItemType.break_] entries sharing the same start/end time.
+/// One or more [ItemType.break_] entries; consecutive breaks with the same start/end
+/// time are merged into one group. Display: time left, `PAUSE auf pitchName: …` right.
 class ScheduleBreakGroup {
   ScheduleBreakGroup(this.entries);
   final List<MatchScheduleEntry> entries;
 }
 
-/// Merges multiple subsequent breaks with identical time slots into [ScheduleBreakGroup].
+/// Wraps each break run in [ScheduleBreakGroup] (merging consecutive same-slot breaks).
 List<Object> _expandScheduleEntriesForBreakGroups(
     List<MatchScheduleEntry> entries) {
   final out = <Object>[];
@@ -365,11 +345,8 @@ List<Object> _expandScheduleEntriesForBreakGroups(
       group.add(n);
       j++;
     }
-    if (group.length > 1) {
-      out.add(ScheduleBreakGroup(group));
-    } else {
-      out.add(group.first);
-    }
+    // Single and grouped breaks use the same layout (time left, PAUSE lines right).
+    out.add(ScheduleBreakGroup(group));
     i = j;
   }
   return out;
