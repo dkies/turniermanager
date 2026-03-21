@@ -33,14 +33,22 @@ class FakeGameManager extends ChangeNotifier implements GameManager {
         Command.createAsyncNoResult<String>((_) async {});
 
     endCurrentGamesCommand = Command.createAsync<DateTime, bool>(
-      (_) async => false,
+      (_) async {
+        endCurrentGamesInvocations++;
+        return endCurrentGamesReturns;
+      },
       initialValue: false,
     );
     startNextRoundCommand = Command.createAsync<RoundSettings, bool>(
-      (_) async => false,
+      (_) async {
+        startNextRoundInvocations++;
+        return startNextRoundReturns;
+      },
       initialValue: false,
     );
-    getCurrentRoundCommand = Command.createAsyncNoParamNoResult(() async {});
+    getCurrentRoundCommand = Command.createAsyncNoParamNoResult(() async {
+      getCurrentRoundInvocations++;
+    });
 
     getAgeGroupsCommand = Command.createAsyncNoParamNoResult(() async {});
 
@@ -56,12 +64,18 @@ class FakeGameManager extends ChangeNotifier implements GameManager {
         (bool isGlobal, DateTime startTime, int amountOfBreaks, String message,
             String? ageGroupId),
         bool>(
-      (_) async => false,
+      (_) async {
+        addBreakInvocations++;
+        return addBreakReturns;
+      },
       initialValue: false,
     );
 
     deleteBreakCommand = Command.createAsync<String, bool>(
-      (_) async => false,
+      (_) async {
+        deleteBreakInvocations++;
+        return deleteBreakReturns;
+      },
       initialValue: false,
     );
 
@@ -91,6 +105,21 @@ class FakeGameManager extends ChangeNotifier implements GameManager {
   List<GameGroup> _gameGroups;
   final List<ExtendedGame> _games;
   final List<Pitch> _pitches;
+
+  /// Configure outcomes for integration / widget tests (default: false).
+  bool endCurrentGamesReturns = false;
+  int endCurrentGamesInvocations = 0;
+
+  bool startNextRoundReturns = false;
+  int startNextRoundInvocations = 0;
+
+  bool addBreakReturns = false;
+  int addBreakInvocations = 0;
+
+  bool deleteBreakReturns = false;
+  int deleteBreakInvocations = 0;
+
+  int getCurrentRoundInvocations = 0;
 
   @override
   late Command<String, void> getScheduleCommand;

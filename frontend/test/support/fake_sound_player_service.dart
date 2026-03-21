@@ -4,6 +4,9 @@ import 'package:tournament_manager/src/service/sound_player_service.dart';
 
 /// Minimal [SoundPlayerService] for widget tests (no audio).
 class FakeSoundPlayerService implements SoundPlayerService {
+  /// All sounds passed to [playSound] / [toggleSoundPlayback] (for assertions).
+  final List<Sounds> playSoundLog = [];
+
   @override
   Sounds? activeSound;
 
@@ -20,10 +23,13 @@ class FakeSoundPlayerService implements SoundPlayerService {
 
   @override
   void playSound(Sounds sound) {
+    playSoundLog.add(sound);
     activeSound = sound;
     isPlaying = true;
     isPaused = false;
-    _playback.add(null);
+    if (!_playback.isClosed) {
+      _playback.add(null);
+    }
   }
 
   @override
@@ -31,7 +37,9 @@ class FakeSoundPlayerService implements SoundPlayerService {
     activeSound = null;
     isPlaying = false;
     isPaused = false;
-    _playback.add(null);
+    if (!_playback.isClosed) {
+      _playback.add(null);
+    }
   }
 
   @override

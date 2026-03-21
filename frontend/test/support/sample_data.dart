@@ -86,6 +86,24 @@ GameGroup sampleGameGroup() {
 DateTime sampleGameGroupStartTime() => DateTime(2025, 6, 1, 10, 0);
 
 /// Only break entries — yellow card, "Pause:" header, no play row.
+/// Normal game plus a break row (for delete-break integration tests).
+GameGroup sampleGameGroupWithBreak() {
+  final gg = sampleGameGroup();
+  gg.games.add(
+    Game(
+      'break-del-1',
+      2,
+      Pitch('p1', 'Platz 1'),
+      Team('x'),
+      Team('y'),
+      'Liga A',
+      testAgeGroupName,
+      ItemType.break_,
+    ),
+  );
+  return gg;
+}
+
 GameGroup sampleBreakOnlyGameGroup() {
   final pitch = Pitch('p1', 'Platz 1');
   final g = Game(
