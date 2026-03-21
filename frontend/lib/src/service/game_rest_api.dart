@@ -597,30 +597,31 @@ class GameTestRestApi extends GameRestApi {
     int gameNumber = 0;
     var baseTime = DateTime.now();
 
+    const scheduleTeams = [
+      'Größenkönige',
+      'Straßenläufer',
+      'Müller FC',
+      'Düsseldorf äußerst'
+    ];
+
     var scheduleList = <MatchScheduleEntryDto>[];
     for (var i = 0; i < 14; i++) {
       var startTime = baseTime.add(Duration(minutes: i * 25));
       var endTime = startTime.add(const Duration(minutes: 20));
 
-      // Every 4th entry is a break
+      // Every 4th entry is a break (teamAName shown as "PAUSE: <name>" in schedule view)
       if ((i + 1) % 4 == 0) {
         scheduleList.add(MatchScheduleEntryDto(
           ItemType.break_,
           "Platz $fieldCount",
           startTime,
           endTime,
-          null, // teamAName
+          scheduleTeams[(i ~/ 4) % scheduleTeams.length],
           null, // teamBName
           null, // gameNumber
         ));
       } else {
         gameNumber++;
-        const scheduleTeams = [
-          'Größenkönige',
-          'Straßenläufer',
-          'Müller FC',
-          'Düsseldorf äußerst'
-        ];
         scheduleList.add(MatchScheduleEntryDto(
           ItemType.game,
           "Platz $fieldCount",
