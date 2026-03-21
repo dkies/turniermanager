@@ -123,4 +123,16 @@ public class GameController {
         gameTimingService.swapTimes(request.idA(), request.idB());
         return ResponseEntity.ok("Zeiten zwischen den Items getauscht.");
     }
+
+    @PostMapping("/cancel-all-after-time")
+    public ResponseEntity<String> cancelGames(@RequestBody LocalDateTime cancelTime) {
+        try {
+            gamePlanGeneratorService.cancelGamesFromTime(cancelTime);
+            return ResponseEntity.ok("Spiele ab " + cancelTime + " wurden erfolgreich storniert.");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body("Fehler beim Stornieren der Spiele: " + e.getMessage());
+        }
+    }
+
 }

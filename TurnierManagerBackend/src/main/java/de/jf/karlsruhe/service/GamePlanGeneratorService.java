@@ -275,16 +275,16 @@ public class GamePlanGeneratorService {
 
         Comparator<TeamStatsDTO> rankingComparator = (t1, t2) -> {
             // Durchschnittspunkte
-                double avgPoints1 = t1.gamesPlayed() > 0 ? (double) t1.pointsScored() / t1.gamesPlayed() : 0.0;
-                double avgPoints2 = t2.gamesPlayed() > 0 ? (double) t2.pointsScored() / t2.gamesPlayed() : 0.0;
-                int avgPointsComp = Double.compare(avgPoints2, avgPoints1);
-                if (avgPointsComp != 0) return avgPointsComp;
+            double avgPoints1 = t1.gamesPlayed() > 0 ? (double) t1.pointsScored() / t1.gamesPlayed() : 0.0;
+            double avgPoints2 = t2.gamesPlayed() > 0 ? (double) t2.pointsScored() / t2.gamesPlayed() : 0.0;
+            int avgPointsComp = Double.compare(avgPoints2, avgPoints1);
+            if (avgPointsComp != 0) return avgPointsComp;
 
             // Durchschnittliche Tordifferenz
-                double avgDiff1 = t1.gamesPlayed() > 0 ? (double) (t1.goalsScored() - t1.goalsAgainst()) / t1.gamesPlayed() : 0.0;
-                double avgDiff2 = t2.gamesPlayed() > 0 ? (double) (t2.goalsScored() - t2.goalsAgainst()) / t2.gamesPlayed() : 0.0;
-                int avgGoalDiffComp = Double.compare(avgDiff2, avgDiff1);
-                if (avgGoalDiffComp != 0) return avgGoalDiffComp;
+            double avgDiff1 = t1.gamesPlayed() > 0 ? (double) (t1.goalsScored() - t1.goalsAgainst()) / t1.gamesPlayed() : 0.0;
+            double avgDiff2 = t2.gamesPlayed() > 0 ? (double) (t2.goalsScored() - t2.goalsAgainst()) / t2.gamesPlayed() : 0.0;
+            int avgGoalDiffComp = Double.compare(avgDiff2, avgDiff1);
+            if (avgGoalDiffComp != 0) return avgGoalDiffComp;
 
             // Gesamtpunkte
             int pointsComp = Integer.compare(t2.pointsScored(), t1.pointsScored());
@@ -474,9 +474,20 @@ public class GamePlanGeneratorService {
     @Transactional
     public void cancelCurrentGames() {
         List<ScheduleItem> gamesToCancel = scheduledItemRepository.findAll().stream().filter(item -> item.getItemType() == ScheduledItemType.GAME).filter(item -> item.getStatus() != GameStatus.COMPLETED_AND_STATED).toList();
+        cancelGames(gamesToCancel);
+    }
+
+    @Transactional
+    public void cancelGamesFromTime(LocalDateTime cancelTime) {
+        List<ScheduleItem> items = scheduledItemRepository.findByStartTimeIsAfter(cancelTime.minusSeconds(1));
+        cancelGames(items);
+    }
+
+    @Transactional
+    public void cancelGames(List<ScheduleItem> gamesToCancel) {
         scheduledBreakRepository.deleteAllByScheduleItemIn(gamesToCancel);
         scheduledGameRepository.deleteAllByScheduleItemIn(gamesToCancel);
         scheduledItemRepository.deleteAll(gamesToCancel);
-
     }
+
 }

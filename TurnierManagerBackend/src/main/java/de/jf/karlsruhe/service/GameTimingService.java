@@ -5,6 +5,7 @@ import de.jf.karlsruhe.model.base.Pitch;
 import de.jf.karlsruhe.model.base.ScheduleItem;
 import de.jf.karlsruhe.model.base.Tournament;
 import de.jf.karlsruhe.model.enums.GameStatus;
+import de.jf.karlsruhe.model.enums.ScheduledItemType;
 import de.jf.karlsruhe.model.repos.ScheduledItemRepository;
 import de.jf.karlsruhe.model.repos.TournamentRepository;
 import jakarta.transaction.Transactional;
