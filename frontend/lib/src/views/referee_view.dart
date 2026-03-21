@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
 import 'package:tournament_manager/src/constants.dart';
 import 'package:tournament_manager/src/helper/error_helper.dart';
-import 'package:tournament_manager/src/manager/game_manager.dart';
+import 'package:tournament_manager/src/manager/game_manager_base.dart';
 import 'package:tournament_manager/src/manager/settings_manager.dart';
 import 'package:tournament_manager/src/model/age_group.dart';
 import 'package:tournament_manager/src/model/referee/game.dart';

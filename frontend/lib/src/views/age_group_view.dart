@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:separated_column/separated_column.dart';
 import 'package:tournament_manager/src/constants.dart';
-import 'package:tournament_manager/src/manager/game_manager.dart';
+import 'package:tournament_manager/src/manager/game_manager_base.dart';
 import 'package:tournament_manager/src/views/results_view.dart';
 import 'package:tournament_manager/src/views/schedule_view.dart';
 import 'package:watch_it/watch_it.dart';

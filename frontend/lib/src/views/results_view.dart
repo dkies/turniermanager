@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:tournament_manager/src/constants.dart';
-import 'package:tournament_manager/src/manager/game_manager.dart';
+import 'package:tournament_manager/src/manager/game_manager_base.dart';
 import 'package:tournament_manager/src/model/age_group.dart';
 import 'package:tournament_manager/src/model/results/league.dart';
 import 'package:watch_it/watch_it.dart';

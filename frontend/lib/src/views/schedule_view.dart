@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:tournament_manager/src/constants.dart';
-import 'package:tournament_manager/src/manager/game_manager.dart';
+import 'package:tournament_manager/src/manager/game_manager_base.dart';
 import 'package:tournament_manager/src/model/age_group.dart';
 import 'package:tournament_manager/src/model/schedule/league.dart';
 import 'package:tournament_manager/src/model/schedule/match_schedule_entry.dart';
@@ -276,20 +276,25 @@ class ScheduleEntryView extends StatelessWidget {
       children: [
         SizedBox(
           width: 240,
-          child: Row(
-            children: [
-              Text(
-                matchScheduleEntry.pitchName,
-                style: textStyle,
-              ),
-              const SizedBox(width: 5),
-              const Text('|', style: textStyle),
-              const SizedBox(width: 5),
-              Text(
-                '${DateFormat.Hm().format(matchScheduleEntry.startTime)} - ${DateFormat.Hm().format(matchScheduleEntry.endTime)}',
-                style: textStyle,
-              ),
-            ],
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  matchScheduleEntry.pitchName,
+                  style: textStyle,
+                ),
+                const SizedBox(width: 5),
+                const Text('|', style: textStyle),
+                const SizedBox(width: 5),
+                Text(
+                  '${DateFormat.Hm().format(matchScheduleEntry.startTime)} - ${DateFormat.Hm().format(matchScheduleEntry.endTime)}',
+                  style: textStyle,
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(width: 5),
