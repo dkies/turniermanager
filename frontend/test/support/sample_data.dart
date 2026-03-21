@@ -82,6 +82,27 @@ GameGroup sampleGameGroup() {
   return gg;
 }
 
+/// Same time as [sampleGameGroup] — use with settings `currentlyRunningGames` for barrier tests.
+DateTime sampleGameGroupStartTime() => DateTime(2025, 6, 1, 10, 0);
+
+/// Only break entries — yellow card, "Pause:" header, no play row.
+GameGroup sampleBreakOnlyGameGroup() {
+  final pitch = Pitch('p1', 'Platz 1');
+  final g = Game(
+    'break-1',
+    1,
+    pitch,
+    Team(''),
+    Team(''),
+    'Liga A',
+    testAgeGroupName,
+    ItemType.break_,
+  );
+  final gg = GameGroup(DateTime(2025, 6, 1, 11, 0), 120);
+  gg.games.add(g);
+  return gg;
+}
+
 ExtendedGame sampleExtendedGame() => ExtendedGame(
       1,
       'Platz 1',
