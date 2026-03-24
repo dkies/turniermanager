@@ -58,7 +58,7 @@ public class ReportingService {
         }
 
         if (games.isEmpty()) {
-            return Optional.of(new byte[0]);
+            return Optional.empty();
         }
 
         // ... (Mapping und Sortierung nach GameNumber) ...
