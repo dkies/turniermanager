@@ -14,8 +14,7 @@ COPY src ./src
 # Package the application
 RUN mvn package -DskipTests
 
-# Use an OpenJDK image to run the application
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:25-jre-ubi10-minimal@sha256:d1276c798b69fb8dc33b4c6a6974d7ed4e842b2ffe130478f88b05e27f74fb0c
 
 # Set the working directory
 WORKDIR /app
