@@ -167,30 +167,34 @@ class _ScheduleContentViewState extends State<ScheduleContentView> {
         watchPropertyValue((GameManager manager) => manager.schedule);
     amountItems = schedule.leagueSchedules.length;
 
-    var screenSize = MediaQuery.sizeOf(context);
     var amountLeagues = schedule.leagueSchedules.length;
-    var enclosingPadding = 20;
-    var leaguePadding = amountLeagues > 1 ? 10 : 0;
-    var displayFactor = amountLeagues > 1 ? 2 : 1;
-    var leagueWidgetSize =
-        (screenSize.width - enclosingPadding - leaguePadding) / displayFactor;
-    leagueWidgetSize = leagueWidgetSize < 500
-        ? screenSize.width - enclosingPadding
-        : leagueWidgetSize;
-    return Padding(
-      padding: const EdgeInsets.all(10),
-      child: ScrollablePositionedList.builder(
-        itemScrollController: itemScrollController,
-        scrollDirection: Axis.horizontal,
-        itemCount: schedule.leagueSchedules.length,
-        itemBuilder: (context, index) {
-          var entry = schedule.leagueSchedules[index];
-          return LeagueView(
-            league: entry,
-            width: leagueWidgetSize,
-          );
-        },
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        var enclosingPadding = 20;
+        var leaguePadding = amountLeagues > 1 ? 10 : 0;
+        var displayFactor = amountLeagues > 1 ? 2 : 1;
+        var parentWidth = constraints.maxWidth;
+        var leagueWidgetSize =
+            (parentWidth - enclosingPadding - leaguePadding) / displayFactor;
+        leagueWidgetSize = leagueWidgetSize < 500
+            ? parentWidth - enclosingPadding
+            : leagueWidgetSize;
+        return Padding(
+          padding: const EdgeInsets.all(10),
+          child: ScrollablePositionedList.builder(
+            itemScrollController: itemScrollController,
+            scrollDirection: Axis.horizontal,
+            itemCount: schedule.leagueSchedules.length,
+            itemBuilder: (context, index) {
+              var entry = schedule.leagueSchedules[index];
+              return LeagueView(
+                league: entry,
+                width: leagueWidgetSize,
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

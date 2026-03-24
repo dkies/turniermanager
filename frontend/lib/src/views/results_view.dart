@@ -162,31 +162,35 @@ class _ResultsContentViewState extends State<ResultsContentView> {
     var results = watchPropertyValue((GameManager manager) => manager.results);
     amountItems = results.leagueTables.length;
 
-    var screenSize = MediaQuery.sizeOf(context);
     var amountLeagues = results.leagueTables.length;
-    var enclosingPadding = 20;
-    var leaguePadding = amountLeagues > 1 ? 10 : 0;
-    var displayFactor = amountLeagues > 1 ? 2 : 1;
-    var leagueWidgetSize =
-        (screenSize.width - enclosingPadding - leaguePadding) / displayFactor;
-    leagueWidgetSize = leagueWidgetSize < 750
-        ? screenSize.width - enclosingPadding
-        : leagueWidgetSize;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        var enclosingPadding = 20;
+        var leaguePadding = amountLeagues > 1 ? 10 : 0;
+        var displayFactor = amountLeagues > 1 ? 2 : 1;
+        var parentWidth = constraints.maxWidth;
+        var leagueWidgetSize =
+            (parentWidth - enclosingPadding - leaguePadding) / displayFactor;
+        leagueWidgetSize = leagueWidgetSize < 750
+            ? parentWidth - enclosingPadding
+            : leagueWidgetSize;
 
-    return Padding(
-      padding: EdgeInsets.all(enclosingPadding / 2),
-      child: ScrollablePositionedList.builder(
-        itemScrollController: itemScrollController,
-        scrollDirection: Axis.horizontal,
-        itemCount: results.leagueTables.length,
-        itemBuilder: (context, index) {
-          var entry = results.leagueTables[index];
-          return LeagueView(
-            league: entry,
-            width: leagueWidgetSize,
-          );
-        },
-      ),
+        return Padding(
+          padding: EdgeInsets.all(enclosingPadding / 2),
+          child: ScrollablePositionedList.builder(
+            itemScrollController: itemScrollController,
+            scrollDirection: Axis.horizontal,
+            itemCount: results.leagueTables.length,
+            itemBuilder: (context, index) {
+              var entry = results.leagueTables[index];
+              return LeagueView(
+                league: entry,
+                width: leagueWidgetSize,
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
