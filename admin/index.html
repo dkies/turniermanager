@@ -1,75 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tournament Manager Admin</title>
-    <script src="/tailwind.css"></script>
-</head>
-<body class="bg-gray-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <header class="mb-10">
-            <h1 class="text-3xl font-bold text-center text-blue-700">Tournament Manager Admin</h1>
-            <p class="text-center text-gray-600 mt-2">Administrative interface for tournament management</p>
-        </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Tournament Setup Section -->
-            <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h2 class="text-xl font-semibold text-blue-600 mb-4">Tournament Setup</h2>
-                <ul class="space-y-3">
-                    <li>
-                    <a href="ageGroups.html" class="flex items-center text-gray-700 hover:text-blue-500 hover:bg-blue-50 p-2 rounded-md transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                        Age Group Management
-                    </a>
-                    </li>
-                    <li>
-                    <a href="teams.html" class="flex items-center text-gray-700 hover:text-blue-500 hover:bg-blue-50 p-2 rounded-md transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                        Team Management
-                    </a>
-                    </li>
-                    <li>
-                    <a href="pitches.html" class="flex items-center text-gray-700 hover:text-blue-500 hover:bg-blue-50 p-2 rounded-md transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                        Pitch Management
-                    </a>
-                    </li>
-                    <li>
-                        <a href="create-tournament.html" class="flex items-center text-gray-700 hover:text-blue-500 hover:bg-blue-50 p-2 rounded-md transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                            Create Tournament
-                        </a>
-                    </li>
-                    <li>
-                    <a href="create-qualification-tournament.html" class="flex items-center text-gray-700 hover:text-blue-500 hover:bg-blue-50 p-2 rounded-md transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        Qualification Management
-                        </a>
-                    </li>
-                    <li>
-                    <a href="rounds.html" class="flex items-center text-gray-700 hover:text-blue-500 hover:bg-blue-50 p-2 rounded-md transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        Runden
-                        </a>
-                    </li>
-                </ul>
-            </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tournament Manager Admin</title>
+  <script src="/tailwind.css"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <header class="mb-10">
+      <h1 class="text-3xl font-bold text-center text-blue-700">Tournament Manager Admin</h1>
+      <p class="text-center text-gray-600 mt-2">Administrative interface for tournament management</p>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Tournament Setup Section -->
+      <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+        <h2 class="text-xl font-semibold text-blue-600 mb-4">Tournament Setup</h2>
+        <ul class="space-y-3">
+          <li>
+            <a href="ageGroups.html"
+              class="flex items-center text-gray-700 hover:text-blue-500 hover:bg-blue-50 p-2 rounded-md transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Age Group Management
+            </a>
+          </li>
+          <li>
+            <a href="teams.html"
+              class="flex items-center text-gray-700 hover:text-blue-500 hover:bg-blue-50 p-2 rounded-md transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Team Management
+            </a>
+          </li>
+          <li>
+            <a href="pitches.html"
+              class="flex items-center text-gray-700 hover:text-blue-500 hover:bg-blue-50 p-2 rounded-md transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Pitch Management
+            </a>
+          </li>
+          <li>
+            <a href="create-tournament.html"
+              class="flex items-center text-gray-700 hover:text-blue-500 hover:bg-blue-50 p-2 rounded-md transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Configure Tournament
+            </a>
+          </li>
+          <li>
+            <a href="create-qualification-tournament.html"
+              class="flex items-center text-gray-700 hover:text-blue-500 hover:bg-blue-50 p-2 rounded-md transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Start Qualification Round
+            </a>
+          </li>
+          <li>
+            <a href="rounds.html"
+              class="flex items-center text-gray-700 hover:text-blue-500 hover:bg-blue-50 p-2 rounded-md transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Runden
+            </a>
+          </li>
+        </ul>
+      </div>
 
 
     </div>
 </body>
+
 </html>

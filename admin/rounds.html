@@ -17,7 +17,7 @@
                 <h2 class="text-xl font-semibold text-gray-700">All Rounds</h2>
                 <button id="download-selected-btn" disabled 
                         class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                    Download Selected Result Cards
+                    Download Selected Tournament Results
                 </button>
             </div>
             
@@ -49,6 +49,36 @@
             fetchRounds();
             setupEventListeners();
         });
+
+        async function resolveRoundsWithAgeGroup(rounds) {
+            const resolvedRounds = await Promise.all(rounds.map(async (round) => {
+                try {
+                    const statsResponse = await fetch(`${CONFIG.getApiUrl('stats')}/${round.id}`);
+                    if (!statsResponse.ok) {
+                        return { ...round, ageGroupId: null, ageGroupName: null };
+                    }
+
+                    const stats = await statsResponse.json();
+                    const firstLeagueWithAgeGroup = (stats.leagueTables || []).find(
+                        league => league.ageGroup && league.ageGroup.id
+                    );
+
+                    if (!firstLeagueWithAgeGroup) {
+                        return { ...round, ageGroupId: null, ageGroupName: null };
+                    }
+
+                    return {
+                        ...round,
+                        ageGroupId: firstLeagueWithAgeGroup.ageGroup.id,
+                        ageGroupName: firstLeagueWithAgeGroup.ageGroup.name
+                    };
+                } catch (error) {
+                    return { ...round, ageGroupId: null, ageGroupName: null };
+                }
+            }));
+
+            return resolvedRounds;
+        }
         
         function setupEventListeners() {
             // Select all checkbox
@@ -75,7 +105,8 @@
                 }
                 
                 const rounds = await response.json();
-                displayRounds(rounds);
+                const resolvedRounds = await resolveRoundsWithAgeGroup(rounds);
+                displayRounds(resolvedRounds);
             } catch (error) {
                 console.error('Error:', error);
                 document.getElementById('rounds-table-body').innerHTML = `
@@ -106,7 +137,7 @@
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <input type="checkbox" class="round-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
-                               data-round-id="${round.id}" onchange="updateDownloadButtonState()">
+                               data-round-id="${round.id}" data-age-group-id="${round.ageGroupId || ''}" onchange="updateDownloadButtonState()">
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         ${escapeHtml(round.name)}
@@ -120,11 +151,15 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <a href="${CONFIG.getApiUrl('rounds')}/result-cards?roundIds=${round.id}" 
+                        ${round.ageGroupId ? `
+                        <button
                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                           download="result-cards-${round.id}.pdf">
+                           onclick="downloadRoundResultCards('${round.ageGroupId}', '${round.id}')">
                             Download
-                        </a>
+                        </button>` : `
+                        <span class="inline-flex items-center px-3 py-2 text-xs font-medium rounded-md bg-gray-100 text-gray-500">
+                            Not available
+                        </span>`}
                     </td>
                 </tr>
             `).join('');
@@ -136,29 +171,43 @@
             
             if (selectedCheckboxes.length > 0) {
                 downloadButton.disabled = false;
-                downloadButton.innerText = `Download ${selectedCheckboxes.length} Selected Result Cards`;
+                downloadButton.innerText = `Download ${selectedCheckboxes.length} Selected Tournament Results`;
             } else {
                 downloadButton.disabled = true;
-                downloadButton.innerText = 'Download Selected Result Cards';
+                downloadButton.innerText = 'Download Selected Tournament Results';
             }
+        }
+
+        function downloadRoundResultCards(ageGroupId, roundId) {
+            const downloadUrl = `${CONFIG.getApiUrl('reporting')}/tournament-results/${ageGroupId}`;
+
+            const tempLink = document.createElement('a');
+            tempLink.href = downloadUrl;
+            tempLink.download = `tournament-results-${roundId}.pdf`;
+            document.body.appendChild(tempLink);
+            tempLink.click();
+            document.body.removeChild(tempLink);
         }
         
         function downloadSelectedResultCards() {
             const selectedCheckboxes = document.querySelectorAll('.round-checkbox:checked');
-            const roundIds = Array.from(selectedCheckboxes).map(checkbox => checkbox.dataset.roundId);
+            const selectedRounds = Array.from(selectedCheckboxes).map(checkbox => ({
+                roundId: checkbox.dataset.roundId,
+                ageGroupId: checkbox.dataset.ageGroupId
+            }));
             
-            if (roundIds.length === 0) return;
-            
-            const queryParams = roundIds.map(id => `roundIds=${id}`).join('&');
-            const downloadUrl = `${CONFIG.getApiUrl('rounds')}/result-cards?${queryParams}`;
-            
-            // Create temporary anchor and trigger download
-            const tempLink = document.createElement('a');
-            tempLink.href = downloadUrl;
-            tempLink.download = `result-cards-multiple.pdf`;
-            document.body.appendChild(tempLink);
-            tempLink.click();
-            document.body.removeChild(tempLink);
+            if (selectedRounds.length === 0) return;
+
+            const validRounds = selectedRounds.filter(round => round.ageGroupId);
+            const invalidCount = selectedRounds.length - validRounds.length;
+
+            validRounds.forEach(round => {
+                downloadRoundResultCards(round.ageGroupId, round.roundId);
+            });
+
+            if (invalidCount > 0) {
+                alert(`${invalidCount} selected round(s) do not have an age group mapping and were skipped.`);
+            }
         }
 
         function escapeHtml(unsafe) {

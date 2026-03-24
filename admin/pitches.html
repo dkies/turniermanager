@@ -222,13 +222,13 @@
                     
                     // Add each pitch to the table
                     pitches.forEach(pitch => {
-                        const ageGroupsList = pitch.ageGroups ? pitch.ageGroups.map(ag => ag.name).join(', ') : 'None';
+                        const ageGroupName = pitch.ageGroup ? pitch.ageGroup.name : 'None';
                         
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${pitch.id}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${pitch.name}</td>
-                            <td class="px-6 py-4 whitespace-normal text-sm text-gray-500">${ageGroupsList}</td>
+                            <td class="px-6 py-4 whitespace-normal text-sm text-gray-500">${ageGroupName}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <div class="flex justify-end space-x-2">
                                     <button 
@@ -279,22 +279,21 @@
             event.preventDefault();
             
             // Get selected age groups
-            const selectedAgeGroups = [];
-            document.querySelectorAll('input[name="ageGroups"]:checked').forEach(checkbox => {
-                const ageGroupId = checkbox.value;
-                const ageGroup = allAgeGroups.find(ag => ag.id === ageGroupId);
-                if (ageGroup) {
-                    selectedAgeGroups.push(ageGroup);
-                }
-            });
+            const selectedAgeGroups = Array.from(document.querySelectorAll('input[name="ageGroups"]:checked'));
+            if (selectedAgeGroups.length !== 1) {
+                alert('Please select exactly one age group for the pitch.');
+                return;
+            }
+
+            const allowedAgeGroupId = selectedAgeGroups[0].value;
             
             const formData = {
                 name: document.getElementById('name').value,
-                ageGroups: selectedAgeGroups
+                allowedAgeGroupId
             };
             
             try {
-                const response = await fetch(PITCH_API_URL, {
+                const response = await fetch(`${PITCH_API_URL}/create`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -350,7 +349,7 @@
                 document.getElementById('editName').value = pitch.name;
                 
                 // Populate age groups checkboxes
-                populateEditAgeGroupsCheckboxes(pitch.ageGroups || []);
+                populateEditAgeGroupsCheckboxes(pitch.ageGroup ? [pitch.ageGroup] : []);
                 
                 // Show modal
                 document.getElementById('editModal').classList.remove('hidden');
@@ -367,18 +366,17 @@
             const id = document.getElementById('editPitchId').value;
             
             // Get selected age groups
-            const selectedAgeGroups = [];
-            document.querySelectorAll('input[name="editAgeGroups"]:checked').forEach(checkbox => {
-                const ageGroupId = checkbox.value;
-                const ageGroup = allAgeGroups.find(ag => ag.id === ageGroupId);
-                if (ageGroup) {
-                    selectedAgeGroups.push(ageGroup);
-                }
-            });
+            const selectedAgeGroups = Array.from(document.querySelectorAll('input[name="editAgeGroups"]:checked'));
+            if (selectedAgeGroups.length !== 1) {
+                alert('Please select exactly one age group for the pitch.');
+                return;
+            }
+
+            const allowedAgeGroupId = selectedAgeGroups[0].value;
             
             const formData = {
                 name: document.getElementById('editName').value,
-                ageGroups: selectedAgeGroups
+                allowedAgeGroupId
             };
             
             try {
