@@ -3,6 +3,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:tournament_manager/src/manager/game_manager.dart';
 import 'package:tournament_manager/src/manager/settings_manager.dart';
+import 'package:http/browser_client.dart';
 import 'package:tournament_manager/src/service/config_service.dart';
 import 'package:tournament_manager/src/service/game_rest_api.dart';
 import 'package:tournament_manager/src/service/sound_player_service.dart';
@@ -28,7 +29,9 @@ setup() {
       } else {
         var url = Uri.http(backend);
         return GameRestApiImplementation(
-            url.toString()); // this is for the real world
+          url.toString(),
+          httpClient: BrowserClient(),
+        );
       }
     },
   );

@@ -21,6 +21,7 @@ import 'package:tournament_manager/src/serialization/game_status.dart';
 import 'package:tournament_manager/src/serialization/schedule/item_type.dart';
 import 'package:tournament_manager/src/serialization/schedule/match_schedule_dto.dart';
 import 'package:tournament_manager/src/serialization/schedule/match_schedule_entry_dto.dart';
+import 'package:http/http.dart' as http;
 import 'package:tournament_manager/src/service/rest_client.dart';
 import 'package:collection/collection.dart';
 
@@ -67,7 +68,8 @@ class GameRestApiImplementation extends RestClient implements GameRestApi {
   late final Uri refreshTimingsUri;
   late final Uri endQualificationDetailedUri;
 
-  GameRestApiImplementation(String baseUri) {
+  GameRestApiImplementation(String baseUri, {required http.Client httpClient})
+      : super(httpClient) {
     _baseUri = baseUri;
 
     getSchedulePath = '$_baseUri/gameplan/agegroup/';

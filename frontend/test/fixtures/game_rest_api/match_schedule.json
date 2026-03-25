@@ -1,0 +1,38 @@
+{
+  "roundName": "Runde 1",
+  "ageGroupName": "U12",
+  "leagues": [
+    {
+      "leagueName": "Liga A",
+      "entries": [
+        {
+          "itemType": "GAME",
+          "pitchName": "Platz 1",
+          "startTime": "2025-06-01T09:00:00.000",
+          "endTime": "2025-06-01T09:30:00.000",
+          "teamAName": "Alpha",
+          "teamBName": "Beta",
+          "gameNumber": 1
+        },
+        {
+          "itemType": "GAME",
+          "pitchName": "Platz 2",
+          "startTime": "2025-06-01T09:00:00.000",
+          "endTime": "2025-06-01T09:30:00.000",
+          "teamAName": "Gamma",
+          "teamBName": "Delta",
+          "gameNumber": 2
+        },
+        {
+          "itemType": "BREAK",
+          "pitchName": "Platz 1",
+          "startTime": "2025-06-01T09:30:00.000",
+          "endTime": "2025-06-01T10:00:00.000",
+          "teamAName": "Mittagspause",
+          "teamBName": null,
+          "gameNumber": null
+        }
+      ]
+    }
+  ]
+}

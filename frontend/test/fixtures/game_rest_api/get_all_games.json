@@ -1,0 +1,28 @@
+[
+  {
+    "id": "ext-1",
+    "startTime": "2025-06-01T09:00:00.000",
+    "gameNumber": 812,
+    "teamA": "Größenkönige",
+    "teamB": "Straßenläufer",
+    "pitch": "Platz 1",
+    "leagueName": "Liga 1",
+    "ageGroupName": "U12",
+    "pointsTeamA": 2,
+    "pointsTeamB": 3,
+    "status": "SCHEDULED"
+  },
+  {
+    "id": "ext-2",
+    "startTime": "2025-06-01T09:00:00.000",
+    "gameNumber": 5,
+    "teamA": "Müller FC",
+    "teamB": "Düsseldorf äußerst",
+    "pitch": "Platz 2",
+    "leagueName": "Liga 2",
+    "ageGroupName": "U14",
+    "pointsTeamA": 0,
+    "pointsTeamB": 1,
+    "status": "IN_PROGRESS"
+  }
+]
