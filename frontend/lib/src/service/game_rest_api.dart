@@ -687,34 +687,61 @@ class GameTestRestApi extends GameRestApi {
 
   @override
   Future<List<ExtendedGameDto>> getAllGames() async {
-    return [
-      ExtendedGameDto(
-        'test-extended-id-1',
-        DateTime.now().add(const Duration(minutes: 10)),
-        1,
-        'Größenkönige',
-        'Straßenläufer',
-        'Platz 1',
-        'Liga 1',
-        'Altersklasse 1',
-        2,
-        3,
-        GameStatus.scheduled,
-      ),
-      ExtendedGameDto(
-        'test-extended-id-2',
-        DateTime.now(),
-        2,
-        'Müller FC',
-        'Düsseldorf äußerst',
-        'Platz 2',
-        'Liga 2',
-        'Altersklasse 2',
-        5,
-        6,
-        GameStatus.scheduled,
-      ),
+    // Wie Schedule-Mock: Slots mit 1–4 Spielen gleicher Startzeit + Einzelspiele (Admin-Gruppierung).
+    const teams = [
+      'Größenkönige',
+      'Straßenläufer',
+      'Müller FC',
+      'Düsseldorf äußerst',
+      'Überflieger',
+      'Köln-Schlümpfe',
+      'Heiße Füße',
+      'Großstadt-Bären',
     ];
+
+    var pairIndex = 0;
+    final result = <ExtendedGameDto>[];
+    var slotTime = DateTime.now();
+    const betweenSlots = Duration(minutes: 35);
+
+    // Pro Slot: absichtlich nicht sortierte, lückenhafte gameNumbers (API-Reihenfolge ≠ Anzeige).
+    void addParallelSlot(DateTime start, List<int> gameNumbersInApiOrder) {
+      for (var p = 0; p < gameNumbersInApiOrder.length; p++) {
+        final gameNumber = gameNumbersInApiOrder[p];
+        final ti = (pairIndex * 2) % teams.length;
+        final tj = (pairIndex * 2 + 1) % teams.length;
+        pairIndex++;
+        result.add(
+          ExtendedGameDto(
+            'test-extended-id-$gameNumber',
+            start,
+            gameNumber,
+            teams[ti],
+            teams[tj],
+            'Platz ${p + 1}',
+            'Liga ${(gameNumber % 3) + 1}',
+            'Altersklasse ${(gameNumber % 2) + 1}',
+            (gameNumber % 5) + 1,
+            (gameNumber % 4) + 1,
+            GameStatus.scheduled,
+          ),
+        );
+      }
+      slotTime = start.add(betweenSlots);
+    }
+
+    addParallelSlot(slotTime, [812, 5, 400, 99]);
+    addParallelSlot(slotTime, [701]);
+    addParallelSlot(slotTime, [888, 12, 550]);
+    addParallelSlot(slotTime, [300, 1]);
+    addParallelSlot(slotTime, [42]);
+    addParallelSlot(slotTime, [600]);
+    addParallelSlot(slotTime, [115, 999, 2, 77]);
+    addParallelSlot(slotTime, [330, 44]);
+    addParallelSlot(slotTime, [18, 900, 505]);
+    addParallelSlot(slotTime, [303]);
+
+    return result;
   }
 
   @override

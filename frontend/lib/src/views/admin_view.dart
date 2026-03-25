@@ -192,7 +192,8 @@ class ResultPrinter extends StatelessWidget with WatchItMixin {
   }
 
   Future<void> _handlePrintAllResults(BuildContext context) async {
-    final result = await _gameManager.printAllResultsCommand.executeWithFuture();
+    final result =
+        await _gameManager.printAllResultsCommand.executeWithFuture();
 
     if (result || !context.mounted) {
       return;
@@ -257,9 +258,12 @@ class GameScoreView extends StatelessWidget with WatchItMixin {
   Widget build(BuildContext context) {
     var games = watchPropertyValue((GameManager manager) => manager.games);
 
-    // Create a sorted copy instead of mutating the original list
     final sortedGames = List<ExtendedGame>.from(games)
-      ..sort((a, b) => a.gameNumber.compareTo(b.gameNumber));
+      ..sort((a, b) {
+        final timeCmp = a.startTime.compareTo(b.startTime);
+        if (timeCmp != 0) return timeCmp;
+        return a.gameNumber.compareTo(b.gameNumber);
+      });
 
     return SeparatedColumn(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -425,90 +429,125 @@ class _GameDataTableState extends State<_GameDataTable> {
   Widget build(BuildContext context) {
     return DataTable(
       columns: widget.columns,
-      rows: widget.games.map((game) {
-        // Ensure controllers exist (safety check)
-        final teamAController = _teamAControllers[game.gameNumber] ??=
-            TextEditingController(text: game.pointsTeamA.toString());
-        final teamBController = _teamBControllers[game.gameNumber] ??=
-            TextEditingController(text: game.pointsTeamB.toString());
+      rows: _buildRows(context),
+    );
+  }
 
-        final isSaved = _savedGameNumbers.contains(game.gameNumber);
+  bool _sameStartTime(ExtendedGame a, ExtendedGame b) =>
+      a.startTime == b.startTime;
 
-        return DataRow(
-          color: isSaved
-              ? WidgetStateProperty.all(Colors.green.withOpacity(0.3))
-              : null,
-          cells: [
-            DataCell(Text(game.gameNumber.toString(),
-                style: Constants.standardTextStyle)),
-            DataCell(Text(DateFormat.Hm().format(game.startTime),
-                style: Constants.standardTextStyle)),
-            DataCell(
-                Text(game.ageGroupName, style: Constants.standardTextStyle)),
-            DataCell(Text(game.leagueName, style: Constants.standardTextStyle)),
-            DataCell(Text(game.teamA, style: Constants.standardTextStyle)),
-            DataCell(TextField(
-              controller: teamAController,
-              onChanged: (_) {
-                _updateSavedStatus(
-                    game.gameNumber, teamAController, teamBController);
-              },
-            )),
-            const DataCell(Text(':', style: Constants.standardTextStyle)),
-            DataCell(TextField(
-              controller: teamBController,
-              onChanged: (_) {
-                _updateSavedStatus(
-                    game.gameNumber, teamAController, teamBController);
-              },
-            )),
-            DataCell(Text(game.teamB, style: Constants.standardTextStyle)),
-            DataCell(
-              IconButton(
-                onPressed: () async {
-                  final teamAScore = int.tryParse(teamAController.text);
-                  final teamBScore = int.tryParse(teamBController.text);
+  DataRow _spacerRow() {
+    return DataRow(
+      cells: List.generate(
+        widget.columns.length,
+        (_) => const DataCell(SizedBox(height: 14)),
+      ),
+    );
+  }
 
-                  if (teamAScore == null || teamBScore == null) {
-                    if (context.mounted) {
-                      showError(
-                        context,
-                        "Spiel #${game.gameNumber} konnte nicht gespeichert werden! Falsches Zahlenformat!",
-                      );
-                    }
-                    return;
-                  }
+  List<DataRow> _buildRows(BuildContext context) {
+    final games = widget.games;
+    final rows = <DataRow>[];
 
-                  final result = await widget.gameManager.saveGameCommand
-                      .executeWithFuture((
-                    game.gameNumber,
-                    teamAScore,
-                    teamBScore,
-                  ));
+    for (var i = 0; i < games.length; i++) {
+      rows.add(_buildRow(context, games[i]));
 
-                  if (!context.mounted) {
-                    return;
-                  }
+      final hasNext = i + 1 < games.length;
+      if (!hasNext) continue;
 
-                  if (result) {
-                    // Mark game as successfully saved and store the saved scores
-                    setState(() {
-                      _savedGameNumbers.add(game.gameNumber);
-                      _savedScores[game.gameNumber] = (teamAScore, teamBScore);
-                    });
-                  } else {
-                    showError(
-                      context,
-                      "Spiel #${game.gameNumber} konnte nicht gespeichert werden! Server-Fehler / Exception!",
-                    );
-                  }
-                },
-                icon: const Icon(Icons.save),
-              ),
-            ),
-          ],
-        );
-      }).toList(),
+      final cur = games[i];
+      final next = games[i + 1];
+      if (_sameStartTime(cur, next)) continue;
+
+      // Leerzeile nach jedem Startzeit-Block (ein oder mehrere Spiele).
+      rows.add(_spacerRow());
+    }
+
+    return rows;
+  }
+
+  DataRow _buildRow(BuildContext context, ExtendedGame game) {
+    // Ensure controllers exist (safety check)
+    final teamAController = _teamAControllers[game.gameNumber] ??=
+        TextEditingController(text: game.pointsTeamA.toString());
+    final teamBController = _teamBControllers[game.gameNumber] ??=
+        TextEditingController(text: game.pointsTeamB.toString());
+
+    final isSaved = _savedGameNumbers.contains(game.gameNumber);
+
+    return DataRow(
+      color: isSaved
+          ? WidgetStateProperty.all(Colors.green.withOpacity(0.3))
+          : null,
+      cells: [
+        DataCell(Text(game.gameNumber.toString(),
+            style: Constants.standardTextStyle)),
+        DataCell(Text(
+          DateFormat.Hm().format(game.startTime),
+          style: Constants.standardTextStyle,
+        )),
+        DataCell(Text(game.ageGroupName, style: Constants.standardTextStyle)),
+        DataCell(Text(game.leagueName, style: Constants.standardTextStyle)),
+        DataCell(Text(game.teamA, style: Constants.standardTextStyle)),
+        DataCell(TextField(
+          controller: teamAController,
+          onChanged: (_) {
+            _updateSavedStatus(
+                game.gameNumber, teamAController, teamBController);
+          },
+        )),
+        const DataCell(Text(':', style: Constants.standardTextStyle)),
+        DataCell(TextField(
+          controller: teamBController,
+          onChanged: (_) {
+            _updateSavedStatus(
+                game.gameNumber, teamAController, teamBController);
+          },
+        )),
+        DataCell(Text(game.teamB, style: Constants.standardTextStyle)),
+        DataCell(
+          IconButton(
+            onPressed: () async {
+              final teamAScore = int.tryParse(teamAController.text);
+              final teamBScore = int.tryParse(teamBController.text);
+
+              if (teamAScore == null || teamBScore == null) {
+                if (context.mounted) {
+                  showError(
+                    context,
+                    "Spiel #${game.gameNumber} konnte nicht gespeichert werden! Falsches Zahlenformat!",
+                  );
+                }
+                return;
+              }
+
+              final result =
+                  await widget.gameManager.saveGameCommand.executeWithFuture((
+                game.gameNumber,
+                teamAScore,
+                teamBScore,
+              ));
+
+              if (!context.mounted) {
+                return;
+              }
+
+              if (result) {
+                setState(() {
+                  _savedGameNumbers.add(game.gameNumber);
+                  _savedScores[game.gameNumber] = (teamAScore, teamBScore);
+                });
+              } else {
+                showError(
+                  context,
+                  "Spiel #${game.gameNumber} konnte nicht gespeichert werden! Server-Fehler / Exception!",
+                );
+              }
+            },
+            icon: const Icon(Icons.save),
+          ),
+        ),
+      ],
     );
   }
 }
