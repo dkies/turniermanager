@@ -140,4 +140,144 @@ void main() {
       expect(body['teamBScore'], 8);
     });
   });
+
+  group('GameRestApiImplementation + MockClient (error responses)', () {
+    const base = 'http://test.local';
+
+    test('getAllAgeGroups returns empty on 404', () async {
+      final client = MockClient((_) async => http.Response('', 404));
+      addTearDown(client.close);
+      final api = GameRestApiImplementation(base, httpClient: client);
+      expect(await api.getAllAgeGroups(), isEmpty);
+    });
+
+    test('getAllAgeGroups returns empty on 200 when body is not a JSON list',
+        () async {
+      final client =
+          MockClient((_) async => http.Response('{"not":"list"}', 200));
+      addTearDown(client.close);
+      final api = GameRestApiImplementation(base, httpClient: client);
+      expect(await api.getAllAgeGroups(), isEmpty);
+    });
+
+    test('getAllGames returns empty on 500', () async {
+      final client = MockClient((_) async => http.Response('err', 500));
+      addTearDown(client.close);
+      final api = GameRestApiImplementation(base, httpClient: client);
+      expect(await api.getAllGames(), isEmpty);
+    });
+
+    test('getCurrentRound returns empty on 503', () async {
+      final client = MockClient((_) async => http.Response('', 503));
+      addTearDown(client.close);
+      final api = GameRestApiImplementation(base, httpClient: client);
+      expect(await api.getCurrentRound(), isEmpty);
+    });
+
+    test('getAllPitches returns empty on 401', () async {
+      final client = MockClient((_) async => http.Response('unauthorized', 401));
+      addTearDown(client.close);
+      final api = GameRestApiImplementation(base, httpClient: client);
+      expect(await api.getAllPitches(), isEmpty);
+    });
+
+    test('getResults returns null on 404', () async {
+      final client = MockClient((_) async => http.Response('', 404));
+      addTearDown(client.close);
+      final api = GameRestApiImplementation(base, httpClient: client);
+      expect(await api.getResults('any'), isNull);
+    });
+
+    test('saveGame returns false on 400 and on 201', () async {
+      final bad = MockClient((_) async => http.Response('bad', 400));
+      addTearDown(bad.close);
+      expect(
+          await GameRestApiImplementation(base, httpClient: bad).saveGame(1, 0, 0),
+          isFalse);
+
+      final created =
+          MockClient((_) async => http.Response('', 201)); // API expects 200
+      addTearDown(created.close);
+      expect(
+          await GameRestApiImplementation(base, httpClient: created)
+              .saveGame(1, 0, 0),
+          isFalse);
+    });
+  });
+
+  group('GameRestApiImplementation + MockClient (invalid JSON on 200)', () {
+    const base = 'http://test.local';
+
+    test('getSchedule: malformed JSON throws', () async {
+      final client =
+          MockClient((_) async => http.Response('not-json{', 200, headers: {
+                'content-type': 'application/json',
+              }));
+      addTearDown(client.close);
+      final api = GameRestApiImplementation(base, httpClient: client);
+      await expectLater(
+        api.getSchedule('x'),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('getResults: malformed JSON throws', () async {
+      final client = MockClient((_) async => http.Response('{broken', 200));
+      addTearDown(client.close);
+      final api = GameRestApiImplementation(base, httpClient: client);
+      await expectLater(
+        api.getResults('x'),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('getAllAgeGroups: malformed JSON throws', () async {
+      final client = MockClient((_) async => http.Response('[,', 200));
+      addTearDown(client.close);
+      final api = GameRestApiImplementation(base, httpClient: client);
+      await expectLater(
+        api.getAllAgeGroups(),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('getAllGames: malformed JSON throws', () async {
+      final client = MockClient((_) async => http.Response('}', 200));
+      addTearDown(client.close);
+      final api = GameRestApiImplementation(base, httpClient: client);
+      await expectLater(
+        api.getAllGames(),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('getCurrentRound: malformed JSON throws', () async {
+      final client = MockClient((_) async => http.Response("''", 200));
+      addTearDown(client.close);
+      final api = GameRestApiImplementation(base, httpClient: client);
+      await expectLater(
+        api.getCurrentRound(),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('getAllPitches: JSON list of non-maps throws on map', () async {
+      final client = MockClient((_) async => http.Response('[1]', 200));
+      addTearDown(client.close);
+      final api = GameRestApiImplementation(base, httpClient: client);
+      await expectLater(
+        api.getAllPitches(),
+        throwsA(anything),
+      );
+    });
+
+    test(
+        'getSchedule: valid JSON but wrong shape for DTO throws (array root)',
+        () async {
+      final client = MockClient((_) async => http.Response('[]', 200));
+      addTearDown(client.close);
+      final api = GameRestApiImplementation(base, httpClient: client);
+      await expectLater(api.getSchedule('x'), throwsA(anything));
+    });
+  });
 }
