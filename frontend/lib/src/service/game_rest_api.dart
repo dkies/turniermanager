@@ -707,6 +707,13 @@ class GameTestRestApi extends GameRestApi {
     const betweenSlots = Duration(minutes: 35);
 
     // Pro Slot: absichtlich nicht sortierte, lückenhafte gameNumbers (API-Reihenfolge ≠ Anzeige).
+    GameStatus demoStatusFor(int gameNumber) {
+      if (gameNumber % 7 == 0) return GameStatus.canceled;
+      if (gameNumber % 5 == 0) return GameStatus.completedAndStated;
+      if (gameNumber % 3 == 0) return GameStatus.completed;
+      return GameStatus.scheduled;
+    }
+
     void addParallelSlot(DateTime start, List<int> gameNumbersInApiOrder) {
       for (var p = 0; p < gameNumbersInApiOrder.length; p++) {
         final gameNumber = gameNumbersInApiOrder[p];
@@ -725,7 +732,7 @@ class GameTestRestApi extends GameRestApi {
             'Altersklasse ${(gameNumber % 2) + 1}',
             (gameNumber % 5) + 1,
             (gameNumber % 4) + 1,
-            GameStatus.scheduled,
+            demoStatusFor(gameNumber),
           ),
         );
       }

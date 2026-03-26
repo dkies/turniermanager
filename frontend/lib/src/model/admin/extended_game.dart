@@ -1,3 +1,5 @@
+import 'package:tournament_manager/src/serialization/game_status.dart';
+
 class ExtendedGame {
   ExtendedGame(
     this.gameNumber,
@@ -9,6 +11,7 @@ class ExtendedGame {
     this.pointsTeamA,
     this.pointsTeamB,
     this.startTime,
+    this.status,
   );
 
   int gameNumber;
@@ -20,4 +23,5 @@ class ExtendedGame {
   int pointsTeamA;
   int pointsTeamB;
   DateTime startTime;
+  GameStatus status;
 }

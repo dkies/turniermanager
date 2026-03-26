@@ -10,6 +10,7 @@ import 'package:tournament_manager/src/model/results/results.dart';
 import 'package:tournament_manager/src/model/schedule/league.dart' as schedule;
 import 'package:tournament_manager/src/model/schedule/match_schedule.dart';
 import 'package:tournament_manager/src/model/schedule/match_schedule_entry.dart';
+import 'package:tournament_manager/src/serialization/game_status.dart';
 import 'package:tournament_manager/src/serialization/schedule/item_type.dart';
 
 const testAgeGroupName = 'U12';
@@ -131,6 +132,7 @@ ExtendedGame sampleExtendedGame() => ExtendedGame(
       2,
       1,
       DateTime(2025, 6, 1, 10, 0),
+      GameStatus.completed,
     );
 
 List<Pitch> samplePitches() => [Pitch('pitch-1', 'Platz 1')];

@@ -10,6 +10,7 @@ import 'package:tournament_manager/src/model/age_group.dart';
 import 'package:tournament_manager/src/model/admin/extended_game.dart';
 import 'package:tournament_manager/src/model/referee/game_settings.dart';
 import 'package:tournament_manager/src/model/referee/round_settings.dart';
+import 'package:tournament_manager/src/serialization/game_status.dart';
 import 'package:watch_it/watch_it.dart';
 
 class AdminView extends StatefulWidget with WatchItStatefulWidgetMixin {
@@ -781,9 +782,7 @@ class _GameDataTable extends StatefulWidget {
 class _GameDataTableState extends State<_GameDataTable> {
   final Map<int, TextEditingController> _teamAControllers = {};
   final Map<int, TextEditingController> _teamBControllers = {};
-  final Set<int> _savedGameNumbers = {}; // Track successfully saved games
-  final Map<int, (int teamAScore, int teamBScore)> _savedScores =
-      {}; // Track saved scores
+  final Set<int> _dirtyCompletedAndStatedGameNumbers = {};
 
   @override
   void initState() {
@@ -812,13 +811,11 @@ class _GameDataTableState extends State<_GameDataTable> {
       // Create controllers for new games or update existing ones
       _initializeControllers();
 
-      // Clear saved status for games that are no longer in the list
+      // Clear dirty status for games that are no longer in the list
       final currentGameNumbersSet =
           widget.games.map((g) => g.gameNumber).toSet();
-      _savedGameNumbers.removeWhere(
+      _dirtyCompletedAndStatedGameNumbers.removeWhere(
           (gameNumber) => !currentGameNumbersSet.contains(gameNumber));
-      _savedScores.removeWhere(
-          (gameNumber, _) => !currentGameNumbersSet.contains(gameNumber));
     }
   }
 
@@ -848,47 +845,28 @@ class _GameDataTableState extends State<_GameDataTable> {
     }
   }
 
-  void _updateSavedStatus(
-    int gameNumber,
+  void _updateDirtyCompletedAndStatedStatus(
+    ExtendedGame game,
     TextEditingController teamAController,
     TextEditingController teamBController,
   ) {
-    final savedScore = _savedScores[gameNumber];
+    final edited = teamAController.text != game.pointsTeamA.toString() ||
+        teamBController.text != game.pointsTeamB.toString();
+    final shouldBeDirty = game.status == GameStatus.completedAndStated && edited;
+    final isDirty =
+        _dirtyCompletedAndStatedGameNumbers.contains(game.gameNumber);
 
-    if (savedScore == null) {
-      // No saved score, nothing to do
+    if (shouldBeDirty == isDirty) {
       return;
     }
 
-    final newTeamAScore = int.tryParse(teamAController.text);
-    final newTeamBScore = int.tryParse(teamBController.text);
-
-    if (newTeamAScore != null && newTeamBScore != null) {
-      // Both values are valid numbers
-      final matchesSaved =
-          newTeamAScore == savedScore.$1 && newTeamBScore == savedScore.$2;
-
-      final isCurrentlySaved = _savedGameNumbers.contains(gameNumber);
-
-      if (matchesSaved && !isCurrentlySaved) {
-        // Values match saved values but not marked as saved - mark as saved
-        setState(() {
-          _savedGameNumbers.add(gameNumber);
-        });
-      } else if (!matchesSaved && isCurrentlySaved) {
-        // Values don't match saved values but marked as saved - remove saved status
-        setState(() {
-          _savedGameNumbers.remove(gameNumber);
-        });
+    setState(() {
+      if (shouldBeDirty) {
+        _dirtyCompletedAndStatedGameNumbers.add(game.gameNumber);
+      } else {
+        _dirtyCompletedAndStatedGameNumbers.remove(game.gameNumber);
       }
-    } else {
-      // Invalid input - remove saved status if currently saved
-      if (_savedGameNumbers.contains(gameNumber)) {
-        setState(() {
-          _savedGameNumbers.remove(gameNumber);
-        });
-      }
-    }
+    });
   }
 
   @override
@@ -950,12 +928,20 @@ class _GameDataTableState extends State<_GameDataTable> {
     final teamBController = _teamBControllers[game.gameNumber] ??=
         TextEditingController(text: game.pointsTeamB.toString());
 
-    final isSaved = _savedGameNumbers.contains(game.gameNumber);
+    final isDirtyCompletedAndStated =
+        _dirtyCompletedAndStatedGameNumbers.contains(game.gameNumber);
+    final statusColor = switch (game.status) {
+      GameStatus.completed => Colors.yellow.withOpacity(0.3),
+      GameStatus.completedAndStated => Colors.green.withOpacity(0.3),
+      GameStatus.canceled => Colors.red.withOpacity(0.25),
+      _ => null,
+    };
+    final effectiveColor = isDirtyCompletedAndStated
+        ? WidgetStateProperty.all(Colors.orange.withOpacity(0.35))
+        : (statusColor == null ? null : WidgetStateProperty.all(statusColor));
 
     return DataRow(
-      color: isSaved
-          ? WidgetStateProperty.all(Colors.green.withOpacity(0.3))
-          : null,
+      color: effectiveColor,
       cells: [
         DataCell(Text(game.gameNumber.toString(),
             style: Constants.standardTextStyle)),
@@ -969,16 +955,16 @@ class _GameDataTableState extends State<_GameDataTable> {
         DataCell(TextField(
           controller: teamAController,
           onChanged: (_) {
-            _updateSavedStatus(
-                game.gameNumber, teamAController, teamBController);
+            _updateDirtyCompletedAndStatedStatus(
+                game, teamAController, teamBController);
           },
         )),
         const DataCell(Text(':', style: Constants.standardTextStyle)),
         DataCell(TextField(
           controller: teamBController,
           onChanged: (_) {
-            _updateSavedStatus(
-                game.gameNumber, teamAController, teamBController);
+            _updateDirtyCompletedAndStatedStatus(
+                game, teamAController, teamBController);
           },
         )),
         DataCell(Text(game.teamB, style: Constants.standardTextStyle)),
@@ -1011,8 +997,7 @@ class _GameDataTableState extends State<_GameDataTable> {
 
               if (result) {
                 setState(() {
-                  _savedGameNumbers.add(game.gameNumber);
-                  _savedScores[game.gameNumber] = (teamAScore, teamBScore);
+                  _dirtyCompletedAndStatedGameNumbers.remove(game.gameNumber);
                 });
               } else {
                 showError(
