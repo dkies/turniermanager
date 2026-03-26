@@ -444,7 +444,7 @@ public class GamePlanGeneratorService {
 
         // 1. Die Runde erstellen
         Round round = roundRepository.save(Round.builder()
-                .name("Gruppenphase")
+                .name("Qualifikation")
                 .orderIndex(1)
                 .roundType(RoundType.QUALIFICATION)
                 .tournament(tournament)

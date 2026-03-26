@@ -48,6 +48,9 @@ public class AgeGroupService {
 
     @Transactional(readOnly = true)
     public List<AgeGroup> getAllAgeGroups() {
-        return ageGroupRepository.findAll();
+        return ageGroupRepository.findAll()
+                .stream()
+                .sorted((a, b) -> a.getName().compareToIgnoreCase(b.getName()))
+                .collect(Collectors.toList());
     }
 }
