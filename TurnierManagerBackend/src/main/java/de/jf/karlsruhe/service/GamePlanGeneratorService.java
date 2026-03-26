@@ -297,7 +297,11 @@ public class GamePlanGeneratorService {
             if (diffComp != 0) return diffComp;
 
             // Erzielte Tore
-            return Integer.compare(t2.goalsScored(), t1.goalsScored());
+            int diffGoalsScored = Integer.compare(t2.goalsScored(), t1.goalsScored());
+            if (diffGoalsScored != 0) return diffGoalsScored;
+
+            // Wenn alles gleich ist, hash vergleichen (stabiler Sortieralgorithmus)
+            return Integer.compare(System.identityHashCode(t1), System.identityHashCode(t2));
         };
 
         statsList.sort(rankingComparator.reversed());

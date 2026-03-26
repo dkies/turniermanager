@@ -103,7 +103,11 @@ public class RoundStatsService {
                     int diffComp = Integer.compare(t2.goalPointsDifference(), t1.goalPointsDifference());
                     if (diffComp != 0) return diffComp;
 
-                    return Integer.compare(t2.ownScoredGoals(), t1.ownScoredGoals());
+                    int diffGoalsScored = Integer.compare(t2.ownScoredGoals(), t1.ownScoredGoals());
+                    if (diffGoalsScored != 0) return diffGoalsScored;
+
+                    // Wenn alles gleich ist, hash vergleichen (stabiler Sortieralgorithmus)
+                    return Integer.compare(System.identityHashCode(t1), System.identityHashCode(t2));
                 })
                 .collect(Collectors.toList());
 
