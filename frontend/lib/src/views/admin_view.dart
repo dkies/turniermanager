@@ -927,8 +927,10 @@ class _GameDataTableState extends State<_GameDataTable> {
   @override
   void didUpdateWidget(_GameDataTable oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Update controllers when games list changes
-    if (oldWidget.games != widget.games) {
+    // Do not treat every parent rebuild as data update.
+    // GameScoreView creates a new list instance on build; we only want to
+    // sync controllers when the underlying game data actually changed.
+    if (_hasRelevantGameDataChanged(oldWidget.games, widget.games)) {
       // Dispose controllers for games that are no longer in the list
       final currentGameNumbers = widget.games.map((g) => g.gameNumber).toSet();
       final oldGameNumbers = oldWidget.games.map((g) => g.gameNumber).toSet();
@@ -952,6 +954,32 @@ class _GameDataTableState extends State<_GameDataTable> {
           (gameNumber) => !currentGameNumbersSet.contains(gameNumber));
       _emitUnsavedChangesState();
     }
+  }
+
+  bool _hasRelevantGameDataChanged(
+    List<ExtendedGame> oldGames,
+    List<ExtendedGame> newGames,
+  ) {
+    if (identical(oldGames, newGames)) {
+      return false;
+    }
+    if (oldGames.length != newGames.length) {
+      return true;
+    }
+
+    for (var i = 0; i < oldGames.length; i++) {
+      final oldGame = oldGames[i];
+      final newGame = newGames[i];
+      if (oldGame.gameNumber != newGame.gameNumber ||
+          oldGame.pointsTeamA != newGame.pointsTeamA ||
+          oldGame.pointsTeamB != newGame.pointsTeamB ||
+          oldGame.status != newGame.status ||
+          oldGame.startTime != newGame.startTime) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   void _emitUnsavedChangesState() {
