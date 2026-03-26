@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tournament_manager/src/serialization/game_status.dart';
 import 'package:tournament_manager/src/views/admin_view.dart';
 
 import '../support/fake_game_manager.dart';
@@ -123,6 +124,40 @@ void main() {
   });
 
   group('save game scores', () {
+    testWidgets('save button is disabled for non-completable status',
+        (tester) async {
+      final game = sampleExtendedGame()..status = GameStatus.scheduled;
+      final scheduledManager = FakeGameManager(
+        ageGroups: [sampleAgeGroup()],
+        games: [game],
+        pitches: samplePitches(),
+      );
+      await resetAndRegisterTestDi(
+        gameManager: scheduledManager,
+      );
+
+      bindLargeTestSurface(tester);
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: AdminView(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final saveButtonFinder = find.byWidgetPredicate(
+        (w) =>
+            w is IconButton &&
+            w.icon is Icon &&
+            (w.icon as Icon).icon == Icons.save,
+      );
+      final saveButton = tester.widget<IconButton>(saveButtonFinder);
+      expect(saveButton.onPressed, isNull);
+
+      await tester.tap(saveButtonFinder);
+      await settle(tester);
+      expect(scheduledManager.saveGameInvocations, 0);
+    });
+
     testWidgets('invalid format shows snackbar', (tester) async {
       bindLargeTestSurface(tester);
       await tester.pumpWidget(

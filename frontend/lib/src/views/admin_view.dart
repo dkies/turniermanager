@@ -930,6 +930,8 @@ class _GameDataTableState extends State<_GameDataTable> {
 
     final isDirtyCompletedAndStated =
         _dirtyCompletedAndStatedGameNumbers.contains(game.gameNumber);
+    final canSave = game.status == GameStatus.completed ||
+        game.status == GameStatus.completedAndStated;
     final statusColor = switch (game.status) {
       GameStatus.completed => Colors.yellow.withOpacity(0.3),
       GameStatus.completedAndStated => Colors.green.withOpacity(0.3),
@@ -970,7 +972,9 @@ class _GameDataTableState extends State<_GameDataTable> {
         DataCell(Text(game.teamB, style: Constants.standardTextStyle)),
         DataCell(
           IconButton(
-            onPressed: () async {
+            onPressed: !canSave
+                ? null
+                : () async {
               final teamAScore = int.tryParse(teamAController.text);
               final teamBScore = int.tryParse(teamBController.text);
 
