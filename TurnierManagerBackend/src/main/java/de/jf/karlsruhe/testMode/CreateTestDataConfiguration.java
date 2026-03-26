@@ -14,8 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@Configuration
-@Order(1) // Sorgt dafür, dass dieses Setup vor der Ranglisten-Evaluierung läuft
+//@Configuration
+//@Order(1) // Sorgt dafür, dass dieses Setup vor der Ranglisten-Evaluierung läuft
 public class CreateTestDataConfiguration {
 
     // Zufallsgenerator für die Punktestände

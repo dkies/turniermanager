@@ -20,20 +20,19 @@ RUN flutter config --enable-web
 # Build without service worker to ensure app works offline without PWA caching
 RUN flutter build web --release --source-maps --pwa-strategy=none --no-web-resources-cdn
 
-# Use an Nginx image to serve the Flutter web application
-FROM nginx:stable-alpine
+# Use a Caddy image to serve the Flutter web application
+FROM caddy:2-alpine
 
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
-# Copy the built web files to the Nginx html directory
-COPY --from=build /app/build/web /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy the built web files to the Caddy web root
+COPY --from=build /app/build/web /srv
+COPY Caddyfile /etc/caddy/Caddyfile
 
 # Expose port 80 to the outside world
 EXPOSE 80
 
-# Start Nginx server
 # Create entrypoint script
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
