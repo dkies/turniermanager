@@ -751,6 +751,28 @@ class GameScoreView extends StatelessWidget with WatchItMixin {
           'Spielwertungen',
           style: Constants.mediumHeaderTextStyle,
         ),
+        Wrap(
+          spacing: 12,
+          runSpacing: 8,
+          children: const [
+            _LegendItem(
+              color: Color(0x4DFFEB3B),
+              label: 'Completed',
+            ),
+            _LegendItem(
+              color: Color(0x4D4CAF50),
+              label: 'Completed and stated',
+            ),
+            _LegendItem(
+              color: Color(0x40F44336),
+              label: 'Canceled',
+            ),
+            _LegendItem(
+              color: Color(0x59FF9800),
+              label: 'Ungespeicherte lokale Änderung (completed_and_stated)',
+            ),
+          ],
+        ),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: _GameDataTable(
@@ -759,6 +781,36 @@ class GameScoreView extends StatelessWidget with WatchItMixin {
             columns: _columns,
           ),
         ),
+      ],
+    );
+  }
+}
+
+class _LegendItem extends StatelessWidget {
+  const _LegendItem({
+    required this.color,
+    required this.label,
+  });
+
+  final Color color;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 14,
+          height: 14,
+          decoration: BoxDecoration(
+            color: color,
+            border: Border.all(color: Colors.black26),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(label, style: Constants.standardTextStyle),
       ],
     );
   }
