@@ -1,5 +1,8 @@
 class BrowserUnsavedChangesGuard {
-  void register(bool Function() hasUnsavedChanges) {}
+  void register(
+    bool Function() hasUnsavedChanges, {
+    required String message,
+  }) {}
 
   void dispose() {}
 }

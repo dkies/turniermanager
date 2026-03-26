@@ -10,6 +10,9 @@ import 'package:tournament_manager/src/model/referee/game.dart';
 import 'package:tournament_manager/src/model/referee/game_group.dart';
 import 'package:tournament_manager/src/serialization/schedule/item_type.dart';
 import 'package:tournament_manager/src/service/sound_player_service.dart';
+import 'package:tournament_manager/src/views/unsaved_changes_browser_guard.dart'
+    if (dart.library.html)
+        'package:tournament_manager/src/views/unsaved_changes_browser_guard_web.dart';
 import 'package:watch_it/watch_it.dart';
 import 'package:intl/intl.dart';
 
@@ -23,13 +26,66 @@ class RefereeView extends StatefulWidget with WatchItStatefulWidgetMixin {
 }
 
 class _RefereeViewState extends State<RefereeView> {
+  static const _leaveWarningText =
+      'Es laufen noch Spiele. Seite wirklich verlassen?';
   bool barrierDissmissed = false;
   late final SettingsManager _settingsManager;
+  late final BrowserUnsavedChangesGuard _browserUnsavedChangesGuard;
 
   @override
   void initState() {
     super.initState();
     _settingsManager = di<SettingsManager>();
+    _browserUnsavedChangesGuard = createBrowserUnsavedChangesGuard();
+    _browserUnsavedChangesGuard.register(
+      _hasRunningGames,
+      message: _leaveWarningText,
+    );
+  }
+
+  @override
+  void dispose() {
+    _browserUnsavedChangesGuard.dispose();
+    super.dispose();
+  }
+
+  bool _hasRunningGames() {
+    return _settingsManager.currentlyRunningGames != null;
+  }
+
+  Future<bool> _confirmLeavingWithRunningGames() async {
+    if (!_hasRunningGames()) {
+      return true;
+    }
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: const Icon(Icons.warning_amber_rounded),
+        title: const Text('Laufende Spiele'),
+        content: const Text(_leaveWarningText),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Verlassen'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Bleiben'),
+          ),
+        ],
+      ),
+    );
+
+    return result ?? false;
+  }
+
+  Future<void> _handleBackNavigation() async {
+    final canLeave = await _confirmLeavingWithRunningGames();
+    if (!canLeave || !mounted) {
+      return;
+    }
+    GoRouter.of(context).pop();
   }
 
   void _dismissBarrier() {
@@ -55,7 +111,7 @@ class _RefereeViewState extends State<RefereeView> {
             IconButton(
               icon: const Icon(Icons.arrow_back),
               tooltip: 'Zurück',
-              onPressed: () => GoRouter.of(context).pop(),
+              onPressed: _handleBackNavigation,
             ),
             const Expanded(
               child: Center(
@@ -141,12 +197,25 @@ class _RefereeViewState extends State<RefereeView> {
       )
     ];
 
-    return Stack(
-      children: [
-        mainContent,
-        if (currentlyRunningGames != null && !barrierDissmissed)
-          ...unmuteBarrier,
-      ],
+    return PopScope(
+      canPop: currentlyRunningGames == null,
+      onPopInvoked: (didPop) async {
+        if (didPop) {
+          return;
+        }
+        final canLeave = await _confirmLeavingWithRunningGames();
+        if (!canLeave || !context.mounted) {
+          return;
+        }
+        GoRouter.of(context).pop();
+      },
+      child: Stack(
+        children: [
+          mainContent,
+          if (currentlyRunningGames != null && !barrierDissmissed)
+            ...unmuteBarrier,
+        ],
+      ),
     );
   }
 }

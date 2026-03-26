@@ -4,7 +4,10 @@ import 'dart:html' as html;
 class BrowserUnsavedChangesGuard {
   StreamSubscription<html.Event>? _beforeUnloadSubscription;
 
-  void register(bool Function() hasUnsavedChanges) {
+  void register(
+    bool Function() hasUnsavedChanges, {
+    required String message,
+  }) {
     _beforeUnloadSubscription?.cancel();
     _beforeUnloadSubscription = html.window.onBeforeUnload.listen((event) {
       if (!hasUnsavedChanges()) {
@@ -13,7 +16,7 @@ class BrowserUnsavedChangesGuard {
 
       event.preventDefault();
       if (event is html.BeforeUnloadEvent) {
-        event.returnValue = '';
+        event.returnValue = message;
       }
     });
   }

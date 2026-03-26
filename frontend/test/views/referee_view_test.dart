@@ -161,6 +161,59 @@ void main() {
 
       expect(find.text('OPEN_REFEREE'), findsOneWidget);
     });
+
+    testWidgets('back shows leave dialog when games are running',
+        (tester) async {
+      await resetAndRegisterTestDi(
+        gameManager: FakeGameManager(
+          ageGroups: [sampleAgeGroup()],
+          gameGroups: [sampleGameGroup()],
+        ),
+        settingsManager: FakeSettingsManager(
+          currentlyRunningGames: sampleGameGroupStartTime(),
+        ),
+      );
+      bindLargeTestSurface(tester);
+
+      await tester.pumpWidget(
+        MaterialApp.router(
+          routerConfig: _routerWithPushToReferee(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('OPEN_REFEREE'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Spielübersicht'), findsOneWidget);
+
+      final largeUnmuteIconButtonFinder = find.byWidgetPredicate(
+        (w) {
+          if (w is! IconButton) return false;
+          final icon = w.icon;
+          return icon is Icon &&
+              icon.icon == Icons.volume_up &&
+              icon.size == 100;
+        },
+      );
+      await tester.tap(largeUnmuteIconButtonFinder);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Zurück'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Laufende Spiele'), findsOneWidget);
+      expect(find.textContaining('Es laufen noch Spiele'), findsOneWidget);
+
+      await tester.tap(find.text('Bleiben'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Spielübersicht'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Zurück'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Verlassen'));
+      await tester.pumpAndSettle();
+      expect(find.text('OPEN_REFEREE'), findsOneWidget);
+    });
   });
 
   group('Game groups variants', () {

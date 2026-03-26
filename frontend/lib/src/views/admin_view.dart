@@ -26,6 +26,8 @@ class AdminView extends StatefulWidget with WatchItStatefulWidgetMixin {
 }
 
 class _AdminViewState extends State<AdminView> {
+  static const _leaveWarningText =
+      'Es gibt ungespeicherte Änderungen. Seite wirklich verlassen?';
   final roundSettings = RoundSettings(
     GameSettings(
       DateTime.now(),
@@ -44,7 +46,10 @@ class _AdminViewState extends State<AdminView> {
     _gameManager = di<GameManager>();
     _settingsManager = di<SettingsManager>();
     _browserUnsavedChangesGuard = createBrowserUnsavedChangesGuard();
-    _browserUnsavedChangesGuard.register(() => _hasUnsavedLocalChanges);
+    _browserUnsavedChangesGuard.register(
+      () => _hasUnsavedLocalChanges,
+      message: _leaveWarningText,
+    );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final ageGroups = _gameManager.ageGroups;
@@ -83,9 +88,7 @@ class _AdminViewState extends State<AdminView> {
       builder: (dialogContext) => AlertDialog(
         icon: const Icon(Icons.warning_amber_rounded),
         title: const Text('Ungespeicherte Änderungen'),
-        content: const Text(
-          'Es gibt ungespeicherte Änderungen. Seite wirklich verlassen?',
-        ),
+        content: const Text(_leaveWarningText),
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
