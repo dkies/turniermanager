@@ -45,6 +45,9 @@ void main() {
       expect(find.textContaining('Schiedsrichterzettel'), findsOneWidget);
       expect(find.textContaining('Turnierergebnisse'), findsOneWidget);
       expect(find.textContaining('Platz 1'), findsWidgets);
+      expect(find.textContaining('Pause einfügen'), findsOneWidget);
+      expect(find.byTooltip('Einstellungen (nächste Runde)'), findsOneWidget);
+      expect(find.textContaining('Nächste Runde'), findsOneWidget);
     });
 
     testWidgets('AdminView data table lists game row with team names',
@@ -199,6 +202,136 @@ void main() {
       expect(gameManager.saveGameInvocations, 2);
       expect(gameManager.lastSaveTeamAScore, 9);
       expect(gameManager.lastSaveTeamBScore, 1);
+    });
+  });
+
+  group('round management actions', () {
+    testWidgets('settings dialog opens and closes', (tester) async {
+      bindLargeTestSurface(tester);
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: AdminView(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Einstellungen (nächste Runde)'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Einstellungen (nächste Runde)'), findsOneWidget);
+      expect(find.text('Max. Anzahl Teams / Runde'), findsOneWidget);
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.text('OK'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Einstellungen (nächste Runde)'), findsNothing);
+    });
+
+    testWidgets('insert break success refreshes round', (tester) async {
+      gameManager.addBreakReturns = true;
+      bindLargeTestSurface(tester);
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: AdminView(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.textContaining('Pause einfügen'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.text('Einfügen'),
+        ),
+      );
+      await settle(tester);
+
+      expect(gameManager.addBreakInvocations, 1);
+      expect(gameManager.getCurrentRoundInvocations, 1);
+    });
+
+    testWidgets('insert break failure shows snackbar', (tester) async {
+      gameManager.addBreakReturns = false;
+      bindLargeTestSurface(tester);
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: AdminView(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.textContaining('Pause einfügen'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.text('Einfügen'),
+        ),
+      );
+      await settle(tester);
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(
+        find.textContaining('Pause konnte nicht eingefügt werden'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('next round success starts next round and refreshes', (tester) async {
+      gameManager.startNextRoundReturns = true;
+      bindLargeTestSurface(tester);
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: AdminView(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.textContaining('Nächste Runde'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.text('OK'),
+        ),
+      );
+      await settle(tester);
+
+      expect(gameManager.startNextRoundInvocations, 1);
+      expect(gameManager.getCurrentRoundInvocations, 1);
+    });
+
+    testWidgets('next round failure shows snackbar', (tester) async {
+      gameManager.startNextRoundReturns = false;
+      bindLargeTestSurface(tester);
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: AdminView(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.textContaining('Nächste Runde'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.text('OK'),
+        ),
+      );
+      await settle(tester);
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(
+        find.textContaining('Nächste Runde konnte nicht gestartet werden'),
+        findsOneWidget,
+      );
     });
   });
 

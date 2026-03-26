@@ -6,11 +6,8 @@ import 'package:tournament_manager/src/constants.dart';
 import 'package:tournament_manager/src/helper/error_helper.dart';
 import 'package:tournament_manager/src/manager/game_manager_base.dart';
 import 'package:tournament_manager/src/manager/settings_manager.dart';
-import 'package:tournament_manager/src/model/age_group.dart';
 import 'package:tournament_manager/src/model/referee/game.dart';
 import 'package:tournament_manager/src/model/referee/game_group.dart';
-import 'package:tournament_manager/src/model/referee/game_settings.dart';
-import 'package:tournament_manager/src/model/referee/round_settings.dart';
 import 'package:tournament_manager/src/serialization/schedule/item_type.dart';
 import 'package:tournament_manager/src/service/sound_player_service.dart';
 import 'package:watch_it/watch_it.dart';
@@ -26,34 +23,13 @@ class RefereeView extends StatefulWidget with WatchItStatefulWidgetMixin {
 }
 
 class _RefereeViewState extends State<RefereeView> {
-  final roundSettings = RoundSettings(
-    GameSettings(
-      DateTime.now(),
-      60, // initial break time in seconds (1 minute)
-      300, // initial play time in seconds (5 minutes)
-    ),
-  );
   bool barrierDissmissed = false;
-  late final GameManager _gameManager;
   late final SettingsManager _settingsManager;
 
   @override
   void initState() {
     super.initState();
-    _gameManager = di<GameManager>();
     _settingsManager = di<SettingsManager>();
-
-    // Initialize round settings when age groups are available
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final ageGroups = _gameManager.ageGroups;
-      for (var ageGroup in ageGroups) {
-        roundSettings.numberPerRounds.update(
-          ageGroup.id,
-          (value) => Constants.maxNumberOfTeamsDefault,
-          ifAbsent: () => Constants.maxNumberOfTeamsDefault,
-        );
-      }
-    });
   }
 
   void _dismissBarrier() {
@@ -66,19 +42,6 @@ class _RefereeViewState extends State<RefereeView> {
   Widget build(BuildContext context) {
     final gameGroups =
         watchPropertyValue((GameManager manager) => manager.gameGroups);
-    final ageGroups =
-        watchPropertyValue((GameManager manager) => manager.ageGroups);
-
-    // Update round settings when age groups change
-    if (ageGroups.isNotEmpty) {
-      for (var ageGroup in ageGroups) {
-        roundSettings.numberPerRounds.update(
-          ageGroup.id,
-          (value) => Constants.maxNumberOfTeamsDefault,
-          ifAbsent: () => Constants.maxNumberOfTeamsDefault,
-        );
-      }
-    }
 
     final canPauseGames =
         watchPropertyValue((SettingsManager manager) => manager.canPause);
@@ -121,123 +84,11 @@ class _RefereeViewState extends State<RefereeView> {
             onPressed: () {
               showDialog(
                 context: context,
-                builder: (dialogContext) => _InsertBreakDialog(
-                  gameManager: _gameManager,
-                  ageGroups: ageGroups,
-                ),
-              );
-            },
-            icon: const Icon(Icons.add_circle_outline),
-            label: const Text('Pause einfügen'),
-          ),
-          const SizedBox(width: 10),
-          ElevatedButton.icon(
-            onPressed: () {
-              showDialog(
-                context: context,
                 builder: (dialogContext) => const _SoundPreviewDialog(),
               );
             },
             icon: const Icon(Icons.volume_up),
             label: const Text('Sounds'),
-          ),
-          const SizedBox(width: 10),
-          IconButton(
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (dialogContext) => _SettingsDialog(
-                  roundSettings: roundSettings,
-                  ageGroups: ageGroups,
-                ),
-              );
-            },
-            icon: const Icon(Icons.settings),
-            tooltip: "Einstellungen (nächste Runde)",
-          ),
-          const SizedBox(width: 10),
-          ElevatedButton(
-            onPressed: () async {
-              if (currentlyRunningGames != null) {
-                showError(context,
-                    'Runde konnte nicht gewechselt werden, es laufen noch Spiele!');
-                return;
-              }
-
-              showDialog(
-                context: context,
-                builder: (dialogContext) {
-                  return AlertDialog(
-                    icon: const Icon(Icons.warning),
-                    iconColor: Colors.yellow,
-                    title: const Text('Wechsel zur nächsten Runde'),
-                    content: const SizedBox(
-                      height: 100,
-                      child: Center(
-                        child: Text(
-                          'Soll diese Runde wirklich beendet werden?\nDieser Schritt kann nicht rückgängig gemacht werden!',
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                    actions: [
-                      ElevatedButton(
-                        onPressed: () async {
-                          final result = await _gameManager
-                              .startNextRoundCommand
-                              .executeWithFuture(roundSettings);
-                          if (result) {
-                            _gameManager.getCurrentRoundCommand();
-                            _settingsManager
-                                .setCurrentlyRunningGamesCommand(null);
-                            _settingsManager
-                                .setCurrentTimeInMillisecondsCommand(null);
-                          }
-
-                          if (!dialogContext.mounted) {
-                            return;
-                          }
-
-                          GoRouter.of(dialogContext).pop();
-
-                          if (!result && context.mounted) {
-                            showError(context,
-                                'Nächste Runde konnte nicht gestartet werden!');
-                          }
-                        },
-                        child: const Text('OK'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          GoRouter.of(dialogContext).pop();
-                        },
-                        child: const Text('Abbrechen'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-            child: const Row(
-              children: [
-                Icon(
-                  Icons.double_arrow,
-                  color: Colors.white,
-                  size: Constants.headerIonSize,
-                ),
-                SizedBox(width: 5),
-                Text(
-                  'Nächste Runde',
-                  style: Constants.largeHeaderTextStyle,
-                ),
-                SizedBox(width: 5),
-                Icon(
-                  Icons.double_arrow,
-                  color: Colors.white,
-                  size: Constants.headerIonSize,
-                ),
-              ],
-            ),
           ),
         ],
       ),
@@ -298,146 +149,6 @@ class _RefereeViewState extends State<RefereeView> {
       ],
     );
   }
-}
-
-class _SettingsDialog extends StatefulWidget {
-  const _SettingsDialog({
-    required this.roundSettings,
-    required this.ageGroups,
-  });
-
-  final RoundSettings roundSettings;
-  final List<AgeGroup> ageGroups;
-
-  @override
-  State<_SettingsDialog> createState() => _SettingsDialogState();
-}
-
-class _SettingsDialogState extends State<_SettingsDialog> {
-  late final Map<String, TextEditingController> _teamControllers;
-  late final TextEditingController _breakTimeController;
-  late final TextEditingController _playTimeController;
-
-  @override
-  void initState() {
-    super.initState();
-    _teamControllers = {
-      for (var ageGroup in widget.ageGroups)
-        ageGroup.id: TextEditingController(
-          text: widget.roundSettings.numberPerRounds[ageGroup.id]?.toString() ??
-              Constants.maxNumberOfTeamsDefault.toString(),
-        )
-    };
-    _breakTimeController = TextEditingController(
-      text: widget.roundSettings.gameSettings.breakTime.toString(),
-    );
-    _playTimeController = TextEditingController(
-      text: widget.roundSettings.gameSettings.playTime.toString(),
-    );
-  }
-
-  @override
-  void dispose() {
-    for (var controller in _teamControllers.values) {
-      controller.dispose();
-    }
-    _breakTimeController.dispose();
-    _playTimeController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Einstellungen (nächste Runde)'),
-      content: SizedBox(
-        height: MediaQuery.of(context).size.height / 2,
-        width: 300,
-        child: Column(
-          children: [
-            const Text('Max. Anzahl Teams / Runde'),
-            Expanded(
-              child: ListView.separated(
-                itemBuilder: (_, index) {
-                  final ageGroup = widget.ageGroups[index];
-                  final controller = _teamControllers[ageGroup.id]!;
-
-                  return TextField(
-                    controller: controller,
-                    decoration: InputDecoration(
-                      label: Text(ageGroup.name),
-                    ),
-                    onChanged: (userInput) {
-                      final result = int.tryParse(userInput);
-                      if (result == null) {
-                        return;
-                      }
-
-                      widget.roundSettings.numberPerRounds.update(
-                        ageGroup.id,
-                        (value) => result,
-                        ifAbsent: () => result,
-                      );
-                    },
-                  );
-                },
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemCount: widget.ageGroups.length,
-              ),
-            ),
-            const Text('Sonstiges'),
-            TextField(
-              controller: _breakTimeController,
-              decoration: const InputDecoration(
-                label: Text('Pausenzeit (sek)'),
-              ),
-              onChanged: (userInput) {
-                final result = int.tryParse(userInput);
-                if (result == null) {
-                  return;
-                }
-
-                widget.roundSettings.gameSettings.breakTime = result;
-              },
-            ),
-            TextField(
-              controller: _playTimeController,
-              decoration: const InputDecoration(
-                label: Text('Spielzeit / Spiel (sek)'),
-              ),
-              onChanged: (userInput) {
-                final result = int.tryParse(userInput);
-                if (result == null) {
-                  return;
-                }
-
-                widget.roundSettings.gameSettings.playTime = result;
-              },
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => GoRouter.of(context).pop(),
-          child: const Text('OK'),
-        ),
-      ],
-    );
-  }
-}
-
-class _InsertBreakDialog extends StatefulWidget {
-  const _InsertBreakDialog({
-    required this.gameManager,
-    required this.ageGroups,
-  });
-
-  final GameManager gameManager;
-  final List<AgeGroup> ageGroups;
-
-  @override
-  State<_InsertBreakDialog> createState() => _InsertBreakDialogState();
 }
 
 class _SoundPreviewDialog extends StatefulWidget {
@@ -540,179 +251,6 @@ class _SoundPreviewDialogState extends State<_SoundPreviewDialog> {
         TextButton(
           onPressed: () => GoRouter.of(context).pop(),
           child: const Text('Schließen'),
-        ),
-      ],
-    );
-  }
-}
-
-class _InsertBreakDialogState extends State<_InsertBreakDialog> {
-  final _nameController = TextEditingController(text: 'Pause');
-  bool _isGlobal = true;
-  String? _selectedAgeGroupId;
-  // Initial start time slightly in the future to avoid triggering
-  // the validation that disallows breaks before the current time
-  TimeOfDay _selectedTime =
-      TimeOfDay.fromDateTime(DateTime.now().add(const Duration(minutes: 2)));
-  int _amount = 1;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.ageGroups.isNotEmpty) {
-      _selectedAgeGroupId = widget.ageGroups.first.id;
-    }
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _pickTime() async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: _selectedTime,
-    );
-    if (picked != null && mounted) {
-      setState(() => _selectedTime = picked);
-    }
-  }
-
-  Future<void> _submit() async {
-    final message = _nameController.text.trim();
-    if (message.isEmpty) {
-      showError(context, 'Name eingeben.');
-      return;
-    }
-    if (!_isGlobal &&
-        (_selectedAgeGroupId == null || _selectedAgeGroupId!.isEmpty)) {
-      showError(context, 'Altersgruppe auswählen.');
-      return;
-    }
-
-    final now = DateTime.now();
-    final startTime = DateTime(
-      now.year,
-      now.month,
-      now.day,
-      _selectedTime.hour,
-      _selectedTime.minute,
-    );
-
-    if (startTime.isBefore(now)) {
-      showError(context, 'Die Uhrzeit darf nicht in der Vergangenheit liegen.');
-      return;
-    }
-
-    final result = await widget.gameManager.addBreakCommand.executeWithFuture(
-      (
-        _isGlobal,
-        startTime,
-        _amount,
-        message,
-        _isGlobal ? null : _selectedAgeGroupId
-      ),
-    );
-
-    if (!mounted) return;
-    GoRouter.of(context).pop();
-    if (result) {
-      widget.gameManager.getCurrentRoundCommand();
-    } else {
-      showError(context, 'Pause konnte nicht eingefügt werden.');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Pause einfügen'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            InkWell(
-              onTap: _pickTime,
-              child: InputDecorator(
-                decoration: const InputDecoration(
-                  label: Text('Uhrzeit'),
-                  suffixIcon: Icon(Icons.schedule),
-                ),
-                child: Text(
-                  _selectedTime.format(context),
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            InputDecorator(
-              decoration: const InputDecoration(
-                label: Text('Anzahl geblockte Spieleinheiten'),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    onPressed:
-                        _amount <= 1 ? null : () => setState(() => _amount--),
-                    icon: const Icon(Icons.remove),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      '$_amount',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => setState(() => _amount++),
-                    icon: const Icon(Icons.add),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                label: Text('Name'),
-              ),
-            ),
-            const SizedBox(height: 16),
-            CheckboxListTile(
-              value: _isGlobal,
-              onChanged: (v) => setState(() => _isGlobal = v ?? true),
-              title: const Text('Global (alle Altersgruppen)'),
-              controlAffinity: ListTileControlAffinity.leading,
-            ),
-            if (!_isGlobal) ...[
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                value: _selectedAgeGroupId,
-                decoration: const InputDecoration(
-                  label: Text('Altersgruppe'),
-                ),
-                items: widget.ageGroups
-                    .map((g) =>
-                        DropdownMenuItem(value: g.id, child: Text(g.name)))
-                    .toList(),
-                onChanged: (v) => setState(() => _selectedAgeGroupId = v),
-              ),
-            ],
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => GoRouter.of(context).pop(),
-          child: const Text('Abbrechen'),
-        ),
-        ElevatedButton(
-          onPressed: _submit,
-          child: const Text('Einfügen'),
         ),
       ],
     );

@@ -76,10 +76,7 @@ void main() {
       await _pumpReferee(tester, router: _routerRefereeOnly());
 
       expect(find.textContaining('Spielübersicht'), findsOneWidget);
-      expect(find.textContaining('Pause einfügen'), findsOneWidget);
       expect(find.textContaining('Sounds'), findsOneWidget);
-      expect(find.textContaining('Nächste Runde'), findsOneWidget);
-      expect(find.byTooltip('Einstellungen (nächste Runde)'), findsOneWidget);
       expect(find.byTooltip('Zurück'), findsOneWidget);
     });
 
@@ -119,68 +116,6 @@ void main() {
       expect(find.text('Verfügbare Sounds'), findsNothing);
     });
 
-    testWidgets('settings dialog shows round options', (tester) async {
-      await _pumpReferee(tester, router: _routerRefereeOnly());
-
-      await tester.tap(find.byTooltip('Einstellungen (nächste Runde)'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Einstellungen (nächste Runde)'), findsOneWidget);
-      expect(find.text('Max. Anzahl Teams / Runde'), findsOneWidget);
-      expect(find.textContaining('Pausenzeit'), findsOneWidget);
-      expect(find.textContaining('Spielzeit / Spiel'), findsOneWidget);
-
-      await tester.tap(
-        find.descendant(
-          of: find.byType(AlertDialog),
-          matching: find.text('OK'),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('Einstellungen (nächste Runde)'), findsNothing);
-    });
-
-    testWidgets('insert pause dialog opens and cancels', (tester) async {
-      await _pumpReferee(tester, router: _routerRefereeOnly());
-
-      await tester.tap(find.text('Pause einfügen').first);
-      await tester.pumpAndSettle();
-
-      expect(find.text('Pause einfügen'), findsWidgets);
-      expect(find.text('Global (alle Altersgruppen)'), findsOneWidget);
-      expect(find.text('Einfügen'), findsOneWidget);
-
-      await tester.tap(
-        find.descendant(
-          of: find.byType(AlertDialog),
-          matching: find.text('Abbrechen'),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('Global (alle Altersgruppen)'), findsNothing);
-    });
-
-    testWidgets('next round dialog shows warning and cancels', (tester) async {
-      await _pumpReferee(tester, router: _routerRefereeOnly());
-
-      await tester.tap(find.textContaining('Nächste Runde'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Wechsel zur nächsten Runde'), findsOneWidget);
-      expect(
-        find.textContaining('kann nicht rückgängig gemacht werden'),
-        findsOneWidget,
-      );
-
-      await tester.tap(
-        find.descendant(
-          of: find.byType(AlertDialog),
-          matching: find.text('Abbrechen'),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('Wechsel zur nächsten Runde'), findsNothing);
-    });
   });
 
   group('Settings: pause switch', () {
