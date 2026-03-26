@@ -11,6 +11,9 @@ import 'package:tournament_manager/src/model/admin/extended_game.dart';
 import 'package:tournament_manager/src/model/referee/game_settings.dart';
 import 'package:tournament_manager/src/model/referee/round_settings.dart';
 import 'package:tournament_manager/src/serialization/game_status.dart';
+import 'package:tournament_manager/src/views/unsaved_changes_browser_guard.dart'
+    if (dart.library.html)
+        'package:tournament_manager/src/views/unsaved_changes_browser_guard_web.dart';
 import 'package:watch_it/watch_it.dart';
 
 class AdminView extends StatefulWidget with WatchItStatefulWidgetMixin {
@@ -32,12 +35,16 @@ class _AdminViewState extends State<AdminView> {
   );
   late final GameManager _gameManager;
   late final SettingsManager _settingsManager;
+  late final BrowserUnsavedChangesGuard _browserUnsavedChangesGuard;
+  bool _hasUnsavedLocalChanges = false;
 
   @override
   void initState() {
     super.initState();
     _gameManager = di<GameManager>();
     _settingsManager = di<SettingsManager>();
+    _browserUnsavedChangesGuard = createBrowserUnsavedChangesGuard();
+    _browserUnsavedChangesGuard.register(() => _hasUnsavedLocalChanges);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final ageGroups = _gameManager.ageGroups;
@@ -49,6 +56,58 @@ class _AdminViewState extends State<AdminView> {
         );
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _browserUnsavedChangesGuard.dispose();
+    super.dispose();
+  }
+
+  void _onHasUnsavedLocalChangesChanged(bool value) {
+    if (_hasUnsavedLocalChanges == value) {
+      return;
+    }
+    setState(() {
+      _hasUnsavedLocalChanges = value;
+    });
+  }
+
+  Future<bool> _confirmLeavingWithUnsavedChanges() async {
+    if (!_hasUnsavedLocalChanges) {
+      return true;
+    }
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: const Icon(Icons.warning_amber_rounded),
+        title: const Text('Ungespeicherte Änderungen'),
+        content: const Text(
+          'Es gibt ungespeicherte Änderungen. Seite wirklich verlassen?',
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Verlassen'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Bleiben'),
+          ),
+        ],
+      ),
+    );
+
+    return result ?? false;
+  }
+
+  Future<void> _handleBackNavigation() async {
+    final canLeave = await _confirmLeavingWithUnsavedChanges();
+    if (!canLeave || !mounted) {
+      return;
+    }
+    Navigator.of(context).pop();
   }
 
   @override
@@ -68,14 +127,26 @@ class _AdminViewState extends State<AdminView> {
       }
     }
 
-    return Scaffold(
-      appBar: AppBar(
+    return PopScope(
+      canPop: !_hasUnsavedLocalChanges,
+      onPopInvoked: (didPop) async {
+        if (didPop) {
+          return;
+        }
+        final canLeave = await _confirmLeavingWithUnsavedChanges();
+        if (!canLeave || !context.mounted) {
+          return;
+        }
+        Navigator.of(context).pop();
+      },
+      child: Scaffold(
+        appBar: AppBar(
         leading: Row(
           children: [
             IconButton(
               icon: const Icon(Icons.arrow_back),
               tooltip: 'Zurück',
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: _handleBackNavigation,
             ),
             const Expanded(
               child: Center(
@@ -202,18 +273,21 @@ class _AdminViewState extends State<AdminView> {
           ),
           const SizedBox(width: 10),
         ],
-      ),
-      body: Padding(
+        ),
+        body: Padding(
         padding: const EdgeInsets.all(10),
         child: ListView(
-          children: const [
-            GameScoreView(),
+          children: [
+            GameScoreView(
+              onHasUnsavedLocalChangesChanged: _onHasUnsavedLocalChangesChanged,
+            ),
             SizedBox(height: 10),
-            PitchPrinter(),
+            const PitchPrinter(),
             SizedBox(height: 10),
-            ResultPrinter(),
+            const ResultPrinter(),
           ],
         ),
+      ),
       ),
     );
   }
@@ -685,9 +759,13 @@ class ResultPrinter extends StatelessWidget with WatchItMixin {
 }
 
 class GameScoreView extends StatelessWidget with WatchItMixin {
-  const GameScoreView({super.key});
+  const GameScoreView({
+    super.key,
+    required this.onHasUnsavedLocalChangesChanged,
+  });
 
   GameManager get _gameManager => di<GameManager>();
+  final ValueChanged<bool> onHasUnsavedLocalChangesChanged;
 
   static List<DataColumn> get _columns => [
         DataColumn(
@@ -779,6 +857,7 @@ class GameScoreView extends StatelessWidget with WatchItMixin {
             games: sortedGames,
             gameManager: _gameManager,
             columns: _columns,
+            onHasUnsavedLocalChangesChanged: onHasUnsavedLocalChangesChanged,
           ),
         ),
       ],
@@ -821,11 +900,13 @@ class _GameDataTable extends StatefulWidget {
     required this.games,
     required this.gameManager,
     required this.columns,
+    required this.onHasUnsavedLocalChangesChanged,
   });
 
   final List<ExtendedGame> games;
   final GameManager gameManager;
   final List<DataColumn> columns;
+  final ValueChanged<bool> onHasUnsavedLocalChangesChanged;
 
   @override
   State<_GameDataTable> createState() => _GameDataTableState();
@@ -840,6 +921,7 @@ class _GameDataTableState extends State<_GameDataTable> {
   void initState() {
     super.initState();
     _initializeControllers();
+    _emitUnsavedChangesState();
   }
 
   @override
@@ -868,7 +950,14 @@ class _GameDataTableState extends State<_GameDataTable> {
           widget.games.map((g) => g.gameNumber).toSet();
       _dirtyCompletedAndStatedGameNumbers.removeWhere(
           (gameNumber) => !currentGameNumbersSet.contains(gameNumber));
+      _emitUnsavedChangesState();
     }
+  }
+
+  void _emitUnsavedChangesState() {
+    widget.onHasUnsavedLocalChangesChanged(
+      _dirtyCompletedAndStatedGameNumbers.isNotEmpty,
+    );
   }
 
   void _initializeControllers() {
@@ -919,6 +1008,7 @@ class _GameDataTableState extends State<_GameDataTable> {
         _dirtyCompletedAndStatedGameNumbers.remove(game.gameNumber);
       }
     });
+    _emitUnsavedChangesState();
   }
 
   @override
@@ -1055,6 +1145,7 @@ class _GameDataTableState extends State<_GameDataTable> {
                 setState(() {
                   _dirtyCompletedAndStatedGameNumbers.remove(game.gameNumber);
                 });
+                _emitUnsavedChangesState();
               } else {
                 showError(
                   context,

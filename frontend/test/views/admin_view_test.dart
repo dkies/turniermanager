@@ -121,6 +121,67 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('OPEN_ADMIN'), findsOneWidget);
     });
+
+    testWidgets('back shows leave dialog when local changes are dirty',
+        (tester) async {
+      final game = sampleExtendedGame()..status = GameStatus.completedAndStated;
+      await resetAndRegisterTestDi(
+        gameManager: FakeGameManager(
+          ageGroups: [sampleAgeGroup()],
+          games: [game],
+          pitches: samplePitches(),
+        ),
+      );
+
+      bindLargeTestSurface(tester);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: Builder(
+                builder: (context) => TextButton(
+                  onPressed: () {
+                    Navigator.of(context).push<void>(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const AdminView(),
+                      ),
+                    );
+                  },
+                  child: const Text('OPEN_ADMIN'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('OPEN_ADMIN'));
+      await tester.pumpAndSettle();
+      expect(find.text('Admin'), findsOneWidget);
+
+      await tester.enterText(find.byType(TextField).first, '9');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Zurück'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ungespeicherte Änderungen'), findsOneWidget);
+      expect(
+        find.textContaining('Seite wirklich verlassen'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Bleiben'));
+      await tester.pumpAndSettle();
+      expect(find.text('Admin'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Zurück'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Verlassen'));
+      await tester.pumpAndSettle();
+      expect(find.text('OPEN_ADMIN'), findsOneWidget);
+    });
   });
 
   group('save game scores', () {
