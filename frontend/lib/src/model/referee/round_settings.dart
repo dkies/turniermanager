@@ -3,7 +3,7 @@ import 'package:tournament_manager/src/model/referee/game_settings.dart';
 class RoundSettings {
   RoundSettings(
     this.gameSettings, {
-    this.roundName = 'Qualifikation',
+    this.roundName = 'Ligarunde',
   });
 
   Map<String, int> numberPerRounds = {};
