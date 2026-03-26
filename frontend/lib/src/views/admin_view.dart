@@ -86,7 +86,10 @@ class _AdminViewState extends State<AdminView> {
     final result = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        icon: const Icon(Icons.warning_amber_rounded),
+        icon: const Icon(
+          Icons.report_gmailerrorred_rounded,
+          color: Colors.red,
+        ),
         title: const Text('Ungespeicherte Änderungen'),
         content: const Text(_leaveWarningText),
         actions: [
