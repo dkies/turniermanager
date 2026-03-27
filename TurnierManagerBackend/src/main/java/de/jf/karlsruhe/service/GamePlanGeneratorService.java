@@ -318,7 +318,7 @@ public class GamePlanGeneratorService {
         List<League> leagues = new ArrayList<>();
         for (int i = 0; i < numberOfLeagues; i++) {
             League league = League.builder()
-                    .name(String.format("Gruppe %s (%s)", (char) ('A' + i), ageGroup.getName()))
+                    .name(String.format("Liga %d (%s)", (i + 1), ageGroup.getName()))
                     .tournament(tournament)
                     .ageGroup(ageGroup)
                     .round(round)

@@ -132,16 +132,16 @@ public class CreateTestDataConfiguration {
 
 
             // 4. Ausführung der Spielplan-Generierung
-            //gamePlanGeneratorService.generateScheduleForSingleLeague(gruppeA_U13, sommerCup);
+            gamePlanGeneratorService.generateScheduleForSingleLeague(gruppeA_U13, sommerCup);
 
             // 5. TEST DATEN ERSTELLEN: ZUFÄLLIGE ERGEBNISSE EINTRAGEN (WIRD ÜBER DEN TRANSAKTIONALEN SERVICE GEMACHT)
             //System.out.println("\n--- Zufallsergebnisse werden eingetragen (Transaktion Phase) ---");
-            //dataCompletionService.completeGamesRandomly(gruppeA_U13);
+            dataCompletionService.completeGamesRandomly(gruppeA_U13);
 
             // Ergänze für U17:
-            //gamePlanGeneratorService.generateScheduleForSingleLeague(gruppeA_U17, sommerCup);
+            gamePlanGeneratorService.generateScheduleForSingleLeague(gruppeA_U17, sommerCup);
 
-            //dataCompletionService.completeGamesRandomly(gruppeA_U17);
+            dataCompletionService.completeGamesRandomly(gruppeA_U17);
 
             
 
