@@ -304,7 +304,7 @@ public class GamePlanGeneratorService {
             return Integer.compare(System.identityHashCode(t1), System.identityHashCode(t2));
         };
 
-        statsList.sort(rankingComparator.reversed());
+        statsList.sort(rankingComparator);
         return statsList.stream()
                 .map(TeamStatsDTO::team)
                 .collect(Collectors.toList());
@@ -329,22 +329,17 @@ public class GamePlanGeneratorService {
         }
 
         int leagueIndex = 0;
-        HashMap<League, Integer> numberOfTeamsPerLeague = new HashMap<>();
+        HashMap<League, Integer> numberOfTeamsPerLeague = new LinkedHashMap<>();
         for (Team team : teamsToDivide) {
             League currentLeague = leagues.get(leagueIndex);
-            Integer value = numberOfTeamsPerLeague.get(currentLeague);
-            if (value == null) {
-                numberOfTeamsPerLeague.put(currentLeague, 1);
-            } else {
-                value += 1;
-                numberOfTeamsPerLeague.put(currentLeague, value);
-            }
+            numberOfTeamsPerLeague.put(currentLeague, numberOfTeamsPerLeague.getOrDefault(currentLeague, 0) + 1);
             leagueIndex = (leagueIndex + 1) % leagues.size();
         }
 
         Queue<Team> teamsQueue = new LinkedList<>(teamsToDivide);
         for (League league : numberOfTeamsPerLeague.keySet()) {
             int i = numberOfTeamsPerLeague.get(league);
+            System.out.println(league.getName() + " ");
             for (int j = 0; j < i; j++) {
                 Team poll = teamsQueue.poll();
                 league.getTeams().add(poll);
