@@ -339,7 +339,6 @@ public class GamePlanGeneratorService {
         Queue<Team> teamsQueue = new LinkedList<>(teamsToDivide);
         for (League league : numberOfTeamsPerLeague.keySet()) {
             int i = numberOfTeamsPerLeague.get(league);
-            System.out.println(league.getName() + " ");
             for (int j = 0; j < i; j++) {
                 Team poll = teamsQueue.poll();
                 league.getTeams().add(poll);
