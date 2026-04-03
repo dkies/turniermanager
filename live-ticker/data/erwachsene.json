@@ -1,0 +1,46 @@
+{
+  "ageGroup": "Erwachsene",
+  "lastUpdated": "2026-03-28T14:00:00+02:00",
+  "matches": [
+    {
+      "id": 1,
+      "startTime": "2026-03-28T12:00:00+02:00",
+      "field": 1,
+      "teamA": "Indiaca Club Rheintal",
+      "teamB": "TV Adlerberg",
+      "status": "completed",
+      "scoreA": 25,
+      "scoreB": 19
+    },
+    {
+      "id": 2,
+      "startTime": "2026-03-28T12:00:00+02:00",
+      "field": 2,
+      "teamA": "SG Flusstal",
+      "teamB": "TuS Waldheim",
+      "status": "completed",
+      "scoreA": 23,
+      "scoreB": 25
+    },
+    {
+      "id": 3,
+      "startTime": "2026-03-28T13:00:00+02:00",
+      "field": 1,
+      "teamA": "Indiaca Club Rheintal",
+      "teamB": "TuS Waldheim",
+      "status": "scheduled",
+      "scoreA": null,
+      "scoreB": null
+    },
+    {
+      "id": 4,
+      "startTime": "2026-03-28T13:00:00+02:00",
+      "field": 2,
+      "teamA": "TV Adlerberg",
+      "teamB": "SG Flusstal",
+      "status": "scheduled",
+      "scoreA": null,
+      "scoreB": null
+    }
+  ]
+}

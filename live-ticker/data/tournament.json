@@ -1,0 +1,9 @@
+{
+  "tournamentName": "Indiaca-Turnier 2026",
+  "lastUpdated": "2026-03-28T14:30:00+02:00",
+  "ageGroups": [
+    { "id": "u14", "label": "U14", "file": "data/u14.json" },
+    { "id": "u18", "label": "U18", "file": "data/u18.json" },
+    { "id": "erwachsene", "label": "Erwachsene", "file": "data/erwachsene.json" }
+  ]
+}

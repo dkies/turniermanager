@@ -1,0 +1,8 @@
+services:
+  liveticker:
+    build: .
+    ports:
+      - "80:80"
+    volumes:
+      - ./data:/usr/share/nginx/html/data
+    restart: unless-stopped

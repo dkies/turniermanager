@@ -1,0 +1,52 @@
+{
+  "ageGroup": "U18",
+  "lastUpdated": "2026-03-28T13:45:00+02:00",
+  "matches": [
+    {
+      "id": 1,
+      "startTime": "2026-03-28T09:30:00+02:00",
+      "field": 3,
+      "teamA": "JSG Nordstadt",
+      "teamB": "VfL Westheim",
+      "status": "completed",
+      "scoreA": 25,
+      "scoreB": 22
+    },
+    {
+      "id": 2,
+      "startTime": "2026-03-28T10:30:00+02:00",
+      "field": 3,
+      "teamA": "TSV Bergdorf",
+      "teamB": "JSG Nordstadt",
+      "status": "scheduled",
+      "scoreA": 18,
+      "scoreB": 20
+    },
+    {
+      "id": 3,
+      "startTime": "2026-03-28T14:30:00+02:00",
+      "field": 3,
+      "teamA": "VfL Westheim",
+      "teamB": "TSV Bergdorf",
+      "status": "scheduled",
+      "scoreA": null,
+      "scoreB": null
+    }
+  ],
+  "pauseTimes": [
+    {
+      "id": 1,
+      "startTime": "2026-03-28T12:30:00+02:00",
+      "endTime": "2026-03-28T13:30:00+02:00",
+      "field": 3,
+      "description": "Mittagspause"
+    },
+    {
+      "id": 2,
+      "startTime": "2026-03-28T14:30:00+02:00",
+      "endTime": "2026-03-28T15:30:00+02:00",
+      "field": 3,
+      "description": "Pinkelpause"
+    }
+  ]
+}
