@@ -11,7 +11,7 @@ services:
       - turnier-backend
 
   turnier-backend:
-    image: ghcr.io/jf-landkreis-karlsruhe/turnier-backend:latest
+    build: ../backend/turniermanager
     ports:
       - "8080:8080"  # Mapping port 8080 on the host to port 8080 on the container
     environment:
@@ -40,3 +40,17 @@ services:
       - "8082:80"
     environment:
       - BACKEND_URL=localhost:8080
+
+  turnier-sync:
+    build: ../sync
+    environment:
+      - BACKEND_URL=http://turnier-backend:8080
+      - FTP_HOST=${FTP_HOST}
+      - FTP_USER=${FTP_USER}
+      - FTP_PASS=${FTP_PASS}
+      - FTP_PATH=${FTP_PATH:-/data}
+      - SYNC_INTERVAL=${SYNC_INTERVAL:-30}
+      - FTP_TLS=${FTP_TLS:-false}
+    depends_on:
+      - turnier-backend
+    restart: unless-stopped
