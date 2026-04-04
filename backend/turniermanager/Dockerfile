@@ -16,6 +16,7 @@ RUN mvn package -DskipTests
 
 # Use an OpenJDK image to run the application
 FROM openjdk:21-jdk-slim
+# FROM eclipse-temurin:21-jdk-alpine
 
 # Set the working directory
 WORKDIR /app
