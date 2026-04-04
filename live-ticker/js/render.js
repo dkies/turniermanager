@@ -37,8 +37,8 @@ export function renderTabs(ageGroups, activeId, onSwitch) {
 
 export function renderMatches(matches, pauseTimes) {
   hideLoading();
-  const pauses = (pauseTimes || []).map((p) => ({ ...p, _type: 'pause', status: 'pause' }));
-  const allItems = [...(matches || []), ...pauses];
+  const mergedPauses = mergePauses(pauseTimes || []);
+  const allItems = [...(matches || []), ...mergedPauses];
 
   if (allItems.length === 0) {
     matchList.innerHTML = '';
@@ -73,14 +73,33 @@ export function renderMatches(matches, pauseTimes) {
   });
 }
 
+function mergePauses(pauseTimes) {
+  const grouped = new Map();
+  for (const p of pauseTimes) {
+    const key = `${p.startTime}|${p.endTime}`;
+    if (grouped.has(key)) {
+      grouped.get(key).fields.push(p.field);
+    } else {
+      grouped.set(key, { ...p, fields: [p.field], _type: 'pause', status: 'pause' });
+    }
+  }
+  return [...grouped.values()].map((p) => {
+    p.fields.sort((a, b) => a - b);
+    return p;
+  });
+}
+
 function createPauseCard(pause) {
   const card = document.createElement('article');
   card.className = 'match-card match-card--pause';
   const desc = pause.description ? `<div class="match-card__status">${escapeHTML(pause.description)}</div>` : '';
+  const fieldsHTML = (pause.fields || [pause.field])
+    .map((f) => `<span class="match-card__field">Feld ${f}</span>`)
+    .join('');
   card.innerHTML = `
     <div class="match-card__header">
       <span class="match-card__time">${formatTime(pause.startTime)} – ${formatTime(pause.endTime)}</span>
-      <span class="match-card__field">Feld ${pause.field}</span>
+      <span class="match-card__fields">${fieldsHTML}</span>
     </div>
     ${desc}
   `;

@@ -223,6 +223,11 @@ body {
   border-radius: 4px;
 }
 
+.match-card__fields {
+  display: flex;
+  gap: 6px;
+}
+
 .match-card__time {
   font-size: 1rem;
   font-weight: 700;
