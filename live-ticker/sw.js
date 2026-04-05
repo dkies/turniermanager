@@ -51,6 +51,7 @@ function isDataRequest(url) {
 self.addEventListener('fetch', (e) => {
   const { request } = e;
   if (request.method !== 'GET') return;
+  if (!request.url.startsWith('http')) return;
 
   if (isDataRequest(request.url)) {
     // Network-first fuer Daten

@@ -137,10 +137,12 @@ function createMatchCard(match) {
 
 let lastUpdatedISO = null;
 let lastUpdatedTimer = null;
+let hideStale = false;
 
-export function renderLastUpdated(isoString) {
+export function renderLastUpdated(isoString, isInfo = false) {
   const el = document.getElementById('last-updated');
   lastUpdatedISO = isoString;
+  hideStale = isInfo;
   if (lastUpdatedTimer) clearInterval(lastUpdatedTimer);
   if (!isoString) {
     el.textContent = '';
@@ -161,7 +163,7 @@ function updateLastUpdatedText(el) {
   const ago = timeAgo(lastUpdatedISO);
   el.textContent = `Aktualisiert: ${time} (${ago})`;
 
-  const stale = Date.now() - new Date(lastUpdatedISO).getTime() > STALE_THRESHOLD_MS;
+  const stale = !hideStale && Date.now() - new Date(lastUpdatedISO).getTime() > STALE_THRESHOLD_MS;
   document.getElementById('stale-banner').hidden = !stale;
 }
 

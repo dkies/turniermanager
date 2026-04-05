@@ -110,7 +110,7 @@ async function loadGroup(groupId) {
     extractTeams(data.matches);
     renderMatches(filterMatches(data.matches, selectedTeams), data.pauseTimes);
   }
-  renderLastUpdated(data.lastUpdated);
+  renderLastUpdated(data.lastUpdated, isInfo);
 }
 
 function applyFilter(teams) {
@@ -156,7 +156,7 @@ async function refreshCurrent() {
     extractTeams(data.matches);
     renderMatches(filterMatches(data.matches, selectedTeams), data.pauseTimes);
   }
-  renderLastUpdated(data.lastUpdated);
+  renderLastUpdated(data.lastUpdated, activeGroupId === '__info');
 }
 
 function setupVisibility() {
