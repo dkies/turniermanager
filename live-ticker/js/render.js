@@ -1,4 +1,4 @@
-import { formatTime, formatScore, getStatusClass, getStatusLabel, sortMatches, parseMarkdown } from './utils.js';
+import { formatTime, formatScore, getStatusClass, getStatusLabel, sortMatches, parseMarkdown, timeAgo } from './utils.js';
 
 const tabsWrapper = document.getElementById('tabs-wrapper');
 const tabsContainer = document.getElementById('age-group-tabs');
@@ -135,17 +135,34 @@ function createMatchCard(match) {
   return card;
 }
 
+let lastUpdatedISO = null;
+let lastUpdatedTimer = null;
+
 export function renderLastUpdated(isoString) {
   const el = document.getElementById('last-updated');
+  lastUpdatedISO = isoString;
+  if (lastUpdatedTimer) clearInterval(lastUpdatedTimer);
   if (!isoString) {
     el.textContent = '';
     return;
   }
-  const time = new Date(isoString).toLocaleTimeString('de-DE', {
+  updateLastUpdatedText(el);
+  lastUpdatedTimer = setInterval(() => updateLastUpdatedText(el), 60_000);
+}
+
+const STALE_THRESHOLD_MS = 3 * 60 * 1000;
+
+function updateLastUpdatedText(el) {
+  if (!lastUpdatedISO) return;
+  const time = new Date(lastUpdatedISO).toLocaleTimeString('de-DE', {
     hour: '2-digit',
     minute: '2-digit',
   });
-  el.textContent = `Aktualisiert: ${time}`;
+  const ago = timeAgo(lastUpdatedISO);
+  el.textContent = `Aktualisiert: ${time} (${ago})`;
+
+  const stale = Date.now() - new Date(lastUpdatedISO).getTime() > STALE_THRESHOLD_MS;
+  document.getElementById('stale-banner').hidden = !stale;
 }
 
 export function renderTournamentName(name) {
@@ -160,7 +177,8 @@ export function showOffline(lastUpdated) {
       hour: '2-digit',
       minute: '2-digit',
     });
-    timeSpan.textContent = `Stand: ${time}`;
+    const ago = timeAgo(lastUpdated);
+    timeSpan.textContent = `Stand: ${time} (${ago})`;
   } else {
     timeSpan.textContent = 'keine Daten';
   }
@@ -242,6 +260,8 @@ export function openFilterSheet(selectedTeams) {
   filterSearch.value = '';
   renderFilterList('');
   filterOverlay.hidden = false;
+  filterOverlay.setAttribute('aria-modal', 'true');
+  document.addEventListener('keydown', handleSheetKeydown);
   requestAnimationFrame(() => {
     filterOverlay.classList.add('filter-overlay--visible');
     filterSearch.focus();
@@ -249,10 +269,39 @@ export function openFilterSheet(selectedTeams) {
 }
 
 export function closeFilterSheet() {
+  document.removeEventListener('keydown', handleSheetKeydown);
   filterOverlay.classList.remove('filter-overlay--visible');
+  filterOverlay.removeAttribute('aria-modal');
   setTimeout(() => {
     filterOverlay.hidden = true;
+    filterBtn.focus();
   }, 250);
+}
+
+function handleSheetKeydown(e) {
+  if (e.key === 'Escape') {
+    closeFilterSheet();
+    return;
+  }
+  if (e.key === 'Tab') {
+    trapFocus(e);
+  }
+}
+
+function trapFocus(e) {
+  const focusable = filterSheet.querySelectorAll(
+    'button, input, [href], [tabindex]:not([tabindex="-1"])'
+  );
+  if (focusable.length === 0) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
 }
 
 function renderFilterList(query) {
@@ -287,9 +336,11 @@ export function renderFilterTags(selectedTeams, onRemove) {
   if (selectedTeams.size === 0) {
     filterTagsBar.hidden = true;
     filterBtn.classList.remove('filter-fab--active');
+    updateFilterBadge(0);
     return;
   }
   filterBtn.classList.add('filter-fab--active');
+  updateFilterBadge(selectedTeams.size);
   filterTagsBar.hidden = false;
   for (const team of selectedTeams) {
     const tag = document.createElement('span');
@@ -325,6 +376,20 @@ document.getElementById('filter-apply').addEventListener('click', () => {
   closeFilterSheet();
   if (onFilterApply) onFilterApply(new Set(pendingSelection));
 });
+
+function updateFilterBadge(count) {
+  let badge = filterBtn.querySelector('.filter-fab__badge');
+  if (count > 0) {
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.className = 'filter-fab__badge';
+      filterBtn.appendChild(badge);
+    }
+    badge.textContent = count;
+  } else if (badge) {
+    badge.remove();
+  }
+}
 
 function escapeHTML(str) {
   const div = document.createElement('span');

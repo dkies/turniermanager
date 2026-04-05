@@ -11,28 +11,32 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="assets/favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="assets/icon-180.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
 </head>
 
 <body>
+  <div class="pull-indicator" id="pull-indicator">
+    <div class="loading__spinner"></div>
+  </div>
+
   <header class="header">
     <div class="header__row">
       <h1 class="header__title" id="tournament-name">LiveTicker</h1>
       <button class="install-btn" id="install-btn" hidden>Installieren</button>
     </div>
     <p class="header__updated" id="last-updated"></p>
+    <div class="header__stale" id="stale-banner" hidden>
+      Daten evtl. veraltet &ndash; letzte Aktualisierung vor l&auml;ngerer Zeit
+    </div>
   </header>
 
   <div class="tabs-wrapper" id="tabs-wrapper">
-    <nav class="tabs" id="age-group-tabs" role="tablist"></nav>
+    <nav class="tabs" id="age-group-tabs" role="tablist" aria-label="Altersgruppen"></nav>
   </div>
 
   <div class="filter-tags" id="filter-tags" hidden></div>
 
   <!-- Team Filter Bottom Sheet -->
-  <div class="filter-overlay" id="filter-overlay" hidden>
+  <div class="filter-overlay" id="filter-overlay" hidden role="dialog" aria-label="Teams filtern">
     <div class="filter-sheet" id="filter-sheet">
       <div class="filter-sheet__header">
         <h2 class="filter-sheet__title">Teams filtern</h2>
@@ -62,8 +66,20 @@
     </svg>
   </button>
 
+  <div class="update-banner" id="update-banner" hidden>
+    Neue Version verf&uuml;gbar
+    <button class="update-banner__btn">Aktualisieren</button>
+  </div>
+
   <div class="offline-bar" id="offline-bar" hidden>
     Keine Verbindung &ndash; <span id="offline-time"></span>
+  </div>
+
+  <div class="ios-banner" id="ios-install-banner" hidden>
+    <p class="ios-banner__text">
+      Zum Homescreen: <strong>Teilen</strong> <span class="ios-banner__icon">&#x2B06;&#xFE0E;</span> &rarr; <strong>Zum Home-Bildschirm</strong>
+    </p>
+    <button class="ios-banner__close" aria-label="Schließen">&times;</button>
   </div>
 
   <script type="module" src="js/app.js"></script>
