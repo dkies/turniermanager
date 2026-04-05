@@ -1,6 +1,17 @@
 const TIMEOUT_MS = 5000;
+const LS_PREFIX = 'lt_data_';
 
 let cache = new Map();
+
+// Hydrate from localStorage on startup
+try {
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith(LS_PREFIX)) {
+      cache.set(key.slice(LS_PREFIX.length), JSON.parse(localStorage.getItem(key)));
+    }
+  }
+} catch { /* private browsing or quota */ }
 
 async function fetchWithTimeout(url, timeoutMs = TIMEOUT_MS) {
   const controller = new AbortController();
@@ -23,6 +34,7 @@ async function fetchJSON(url) {
   try {
     const data = await res.json();
     cache.set(url, data);
+    try { localStorage.setItem(LS_PREFIX + url, JSON.stringify(data)); } catch { /* quota */ }
     return data;
   } catch {
     return cache.get(url) ?? null;
