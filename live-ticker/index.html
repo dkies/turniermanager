@@ -29,12 +29,38 @@
     <nav class="tabs" id="age-group-tabs" role="tablist"></nav>
   </div>
 
+  <div class="filter-tags" id="filter-tags" hidden></div>
+
+  <!-- Team Filter Bottom Sheet -->
+  <div class="filter-overlay" id="filter-overlay" hidden>
+    <div class="filter-sheet" id="filter-sheet">
+      <div class="filter-sheet__header">
+        <h2 class="filter-sheet__title">Teams filtern</h2>
+        <button class="filter-sheet__close" id="filter-close" aria-label="Schließen">&times;</button>
+      </div>
+      <div class="filter-sheet__search">
+        <input type="text" class="filter-sheet__input" id="filter-search" placeholder="Team suchen…" autocomplete="off">
+      </div>
+      <div class="filter-sheet__list" id="filter-list"></div>
+      <div class="filter-sheet__actions">
+        <button class="filter-sheet__btn filter-sheet__btn--clear" id="filter-clear">Zurücksetzen</button>
+        <button class="filter-sheet__btn filter-sheet__btn--apply" id="filter-apply">Anwenden</button>
+      </div>
+    </div>
+  </div>
+
   <main class="match-list" id="match-list">
     <div class="loading" id="loading">
       <div class="loading__spinner"></div>
       <p>Lade Spielplan&hellip;</p>
     </div>
   </main>
+
+  <button class="filter-fab" id="filter-btn" hidden aria-label="Teams filtern">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+    </svg>
+  </button>
 
   <div class="offline-bar" id="offline-bar" hidden>
     Keine Verbindung &ndash; <span id="offline-time"></span>

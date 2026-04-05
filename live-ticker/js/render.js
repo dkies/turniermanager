@@ -205,6 +205,127 @@ export function renderInfoCards(infos) {
   });
 }
 
+/* ── Team Filter ──────────────────────────────────── */
+
+const filterOverlay = document.getElementById('filter-overlay');
+const filterSheet = document.getElementById('filter-sheet');
+const filterList = document.getElementById('filter-list');
+const filterSearch = document.getElementById('filter-search');
+const filterTagsBar = document.getElementById('filter-tags');
+const filterBtn = document.getElementById('filter-btn');
+
+let allTeams = [];
+let pendingSelection = new Set();
+let onFilterApply = null;
+
+export function setFilterCallback(callback) {
+  onFilterApply = callback;
+}
+
+export function showFilterButton(visible) {
+  filterBtn.hidden = !visible;
+  if (!visible) filterTagsBar.hidden = true;
+}
+
+export function extractTeams(matches) {
+  const teamSet = new Set();
+  for (const m of matches || []) {
+    if (m.teamA) teamSet.add(m.teamA);
+    if (m.teamB) teamSet.add(m.teamB);
+  }
+  allTeams = [...teamSet].sort((a, b) => a.localeCompare(b, 'de'));
+  return allTeams;
+}
+
+export function openFilterSheet(selectedTeams) {
+  pendingSelection = new Set(selectedTeams);
+  filterSearch.value = '';
+  renderFilterList('');
+  filterOverlay.hidden = false;
+  requestAnimationFrame(() => {
+    filterOverlay.classList.add('filter-overlay--visible');
+    filterSearch.focus();
+  });
+}
+
+export function closeFilterSheet() {
+  filterOverlay.classList.remove('filter-overlay--visible');
+  setTimeout(() => {
+    filterOverlay.hidden = true;
+  }, 250);
+}
+
+function renderFilterList(query) {
+  const q = query.toLowerCase();
+  const filtered = q ? allTeams.filter((t) => t.toLowerCase().includes(q)) : allTeams;
+  filterList.innerHTML = '';
+  for (const team of filtered) {
+    const label = document.createElement('label');
+    label.className = 'filter-team';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'filter-team__cb';
+    cb.checked = pendingSelection.has(team);
+    cb.addEventListener('change', () => {
+      if (cb.checked) {
+        pendingSelection.add(team);
+      } else {
+        pendingSelection.delete(team);
+      }
+    });
+    const span = document.createElement('span');
+    span.className = 'filter-team__name';
+    span.textContent = team;
+    label.appendChild(cb);
+    label.appendChild(span);
+    filterList.appendChild(label);
+  }
+}
+
+export function renderFilterTags(selectedTeams, onRemove) {
+  filterTagsBar.innerHTML = '';
+  if (selectedTeams.size === 0) {
+    filterTagsBar.hidden = true;
+    filterBtn.classList.remove('filter-fab--active');
+    return;
+  }
+  filterBtn.classList.add('filter-fab--active');
+  filterTagsBar.hidden = false;
+  for (const team of selectedTeams) {
+    const tag = document.createElement('span');
+    tag.className = 'filter-tag';
+    tag.innerHTML = `${escapeHTML(team)} <button class="filter-tag__remove" aria-label="Entfernen">&times;</button>`;
+    tag.querySelector('button').addEventListener('click', () => onRemove(team));
+    filterTagsBar.appendChild(tag);
+  }
+}
+
+export function filterMatches(matches, selectedTeams) {
+  if (!selectedTeams || selectedTeams.size === 0) return matches;
+  return (matches || []).filter(
+    (m) => selectedTeams.has(m.teamA) || selectedTeams.has(m.teamB)
+  );
+}
+
+// Wire up sheet UI events
+filterSearch.addEventListener('input', () => renderFilterList(filterSearch.value));
+
+document.getElementById('filter-close').addEventListener('click', closeFilterSheet);
+
+filterOverlay.addEventListener('click', (e) => {
+  if (e.target === filterOverlay) closeFilterSheet();
+});
+
+document.getElementById('filter-clear').addEventListener('click', () => {
+  pendingSelection.clear();
+  renderFilterList(filterSearch.value);
+});
+
+document.getElementById('filter-apply').addEventListener('click', () => {
+  closeFilterSheet();
+  if (onFilterApply) onFilterApply(new Set(pendingSelection));
+});
+
 function escapeHTML(str) {
   const div = document.createElement('span');
   div.textContent = str;

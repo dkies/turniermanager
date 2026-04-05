@@ -8,6 +8,13 @@ import {
   showOffline,
   hideOffline,
   showLoading,
+  showFilterButton,
+  extractTeams,
+  openFilterSheet,
+  closeFilterSheet,
+  renderFilterTags,
+  filterMatches,
+  setFilterCallback,
 } from './render.js';
 
 const INFO_TAB = { id: '__info', label: '\u2139\uFE0F Infos', file: 'data/infos.json' };
@@ -19,6 +26,8 @@ let activeGroupId = null;
 let activeGroupFile = null;
 let lastUpdatedStamp = null;
 let refreshTimer = null;
+let selectedTeams = new Set();
+let currentMatches = null;
 
 async function init() {
   tournament = await fetchTournament();
@@ -29,6 +38,12 @@ async function init() {
   }
 
   renderTournamentName(tournament.tournamentName);
+
+  // Filter setup
+  document.getElementById('filter-btn').addEventListener('click', () => {
+    openFilterSheet(selectedTeams);
+  });
+  setFilterCallback(applyFilter);
 
   const allTabs = [INFO_TAB, ...tournament.ageGroups];
   if (allTabs.length > 0) {
@@ -52,6 +67,7 @@ async function switchGroup(groupId) {
   if (groupId === activeGroupId) return;
   activeGroupId = groupId;
   lastUpdatedStamp = null;
+  currentMatches = null;
   const allTabs = [INFO_TAB, ...tournament.ageGroups];
   renderTabs(allTabs, activeGroupId, switchGroup);
   localStorage.setItem('tw_activeTab', groupId);
@@ -74,15 +90,34 @@ async function loadGroup(groupId) {
 
   hideOffline();
 
+  const isInfo = groupId === '__info';
+  showFilterButton(!isInfo);
+  if (!isInfo) renderFilterTags(selectedTeams, removeTeamFilter);
+
   if (data.lastUpdated === lastUpdatedStamp) return;
   lastUpdatedStamp = data.lastUpdated;
 
-  if (groupId === '__info') {
+  if (isInfo) {
     renderInfoCards(data.infos);
   } else {
-    renderMatches(data.matches, data.pauseTimes);
+    currentMatches = data.matches;
+    extractTeams(data.matches);
+    renderMatches(filterMatches(data.matches, selectedTeams), data.pauseTimes);
   }
   renderLastUpdated(data.lastUpdated);
+}
+
+function applyFilter(teams) {
+  selectedTeams = teams;
+  renderFilterTags(selectedTeams, removeTeamFilter);
+  if (currentMatches) {
+    renderMatches(filterMatches(currentMatches, selectedTeams));
+  }
+}
+
+function removeTeamFilter(team) {
+  selectedTeams.delete(team);
+  applyFilter(selectedTeams);
 }
 
 function startAutoRefresh() {
@@ -110,7 +145,9 @@ async function refreshCurrent() {
   if (activeGroupId === '__info') {
     renderInfoCards(data.infos);
   } else {
-    renderMatches(data.matches, data.pauseTimes);
+    currentMatches = data.matches;
+    extractTeams(data.matches);
+    renderMatches(filterMatches(data.matches, selectedTeams), data.pauseTimes);
   }
   renderLastUpdated(data.lastUpdated);
 }
