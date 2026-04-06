@@ -38,7 +38,11 @@ function inline(text) {
     .replace(/</g, '&lt;')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) => {
+      return /^https?:\/\//i.test(url.trim())
+        ? `<a href="${url}" target="_blank" rel="noopener">${label}</a>`
+        : label;
+    });
 }
 
 const STATUS_LABELS = {

@@ -94,7 +94,7 @@ function createPauseCard(pause) {
   card.className = 'match-card match-card--pause';
   const desc = pause.description ? `<div class="match-card__status">${escapeHTML(pause.description)}</div>` : '';
   const fieldsHTML = (pause.fields || [pause.field])
-    .map((f) => `<span class="match-card__field">Feld ${f}</span>`)
+    .map((f) => `<span class="match-card__field">Feld ${escapeHTML(String(f))}</span>`)
     .join('');
   card.innerHTML = `
     <div class="match-card__header">
@@ -120,7 +120,7 @@ function createMatchCard(match) {
   card.innerHTML = `
     <div class="match-card__header">
       <span class="match-card__time">${formatTime(match.startTime)}</span>
-      <span class="match-card__field">Feld ${match.field}</span>
+      <span class="match-card__field">Feld ${escapeHTML(String(match.field))}</span>
     </div>
     <div class="match-card__teams">
       <span class="match-card__team match-card__team--a">${escapeHTML(match.teamA)}</span>
