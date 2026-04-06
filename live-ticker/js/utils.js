@@ -61,15 +61,17 @@ export function formatTime(isoString) {
 
 export function formatScore(scoreA, scoreB) {
   if (scoreA == null || scoreB == null) return '';
-  return `${scoreA} : ${scoreB}`;
+  return `${Number(scoreA)} : ${Number(scoreB)}`;
 }
 
+const VALID_STATUSES = new Set(['scheduled', 'live', 'completed', 'pause']);
+
 export function getStatusClass(status) {
-  return `match-card--${status}`;
+  return VALID_STATUSES.has(status) ? `match-card--${status}` : '';
 }
 
 export function getStatusLabel(status) {
-  return STATUS_LABELS[status] || status;
+  return STATUS_LABELS[status] || escapeHTML(status);
 }
 
 export function sortMatches(matches) {
@@ -78,6 +80,12 @@ export function sortMatches(matches) {
     if (orderDiff !== 0) return orderDiff;
     return new Date(a.startTime) - new Date(b.startTime);
   });
+}
+
+export function escapeHTML(str) {
+  const el = document.createElement('span');
+  el.textContent = str;
+  return el.innerHTML;
 }
 
 export function timeAgo(isoString) {

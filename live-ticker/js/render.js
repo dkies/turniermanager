@@ -1,4 +1,4 @@
-import { formatTime, formatScore, getStatusClass, getStatusLabel, sortMatches, parseMarkdown, timeAgo } from './utils.js';
+import { formatTime, formatScore, getStatusClass, getStatusLabel, sortMatches, parseMarkdown, timeAgo, escapeHTML } from './utils.js';
 
 const tabsWrapper = document.getElementById('tabs-wrapper');
 const tabsContainer = document.getElementById('age-group-tabs');
@@ -393,8 +393,3 @@ function updateFilterBadge(count) {
   }
 }
 
-function escapeHTML(str) {
-  const div = document.createElement('span');
-  div.textContent = str;
-  return div.innerHTML;
-}
