@@ -18,10 +18,12 @@ class MatchScheduleMapper {
 
   MatchScheduleEntry mapEntry(MatchScheduleEntryDto dto) {
     return MatchScheduleEntry(
+      dto.itemType,
       dto.pitchName,
-      dto.teamAName,
-      dto.teamBName,
+      dto.teamAName ?? '',
+      dto.teamBName ?? '',
       dto.startTime,
+      dto.endTime,
     );
   }
 }

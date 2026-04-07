@@ -8,7 +8,7 @@ part of 'game_group_dto.dart';
 
 GameGroupDto _$GameGroupDtoFromJson(Map<String, dynamic> json) => GameGroupDto(
       DateTime.parse(json['startTime'] as String),
-      (json['gameDurationInMinutes'] as num).toInt(),
+      (json['playTimeInSeconds'] as num).toInt(),
     )..games = (json['games'] as List<dynamic>)
         .map((e) => GameDto.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -16,6 +16,6 @@ GameGroupDto _$GameGroupDtoFromJson(Map<String, dynamic> json) => GameGroupDto(
 Map<String, dynamic> _$GameGroupDtoToJson(GameGroupDto instance) =>
     <String, dynamic>{
       'startTime': instance.startTime.toIso8601String(),
-      'gameDurationInMinutes': instance.gameDurationInMinutes,
+      'playTimeInSeconds': instance.playTimeInSeconds,
       'games': instance.games.map((e) => e.toJson()).toList(),
     };

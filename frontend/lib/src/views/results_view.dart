@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:tournament_manager/src/constants.dart';
-import 'package:tournament_manager/src/manager/game_manager.dart';
+import 'package:tournament_manager/src/manager/game_manager_base.dart';
 import 'package:tournament_manager/src/model/age_group.dart';
 import 'package:tournament_manager/src/model/results/league.dart';
 import 'package:watch_it/watch_it.dart';
@@ -162,31 +162,35 @@ class _ResultsContentViewState extends State<ResultsContentView> {
     var results = watchPropertyValue((GameManager manager) => manager.results);
     amountItems = results.leagueTables.length;
 
-    var screenSize = MediaQuery.sizeOf(context);
     var amountLeagues = results.leagueTables.length;
-    var enclosingPadding = 20;
-    var leaguePadding = amountLeagues > 1 ? 10 : 0;
-    var displayFactor = amountLeagues > 1 ? 2 : 1;
-    var leagueWidgetSize =
-        (screenSize.width - enclosingPadding - leaguePadding) / displayFactor;
-    leagueWidgetSize = leagueWidgetSize < 750
-        ? screenSize.width - enclosingPadding
-        : leagueWidgetSize;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        var enclosingPadding = 20;
+        var leaguePadding = amountLeagues > 1 ? 10 : 0;
+        var displayFactor = amountLeagues > 1 ? 2 : 1;
+        var parentWidth = constraints.maxWidth;
+        var leagueWidgetSize =
+            (parentWidth - enclosingPadding - leaguePadding) / displayFactor;
+        leagueWidgetSize = leagueWidgetSize < 750
+            ? parentWidth - enclosingPadding
+            : leagueWidgetSize;
 
-    return Padding(
-      padding: EdgeInsets.all(enclosingPadding / 2),
-      child: ScrollablePositionedList.builder(
-        itemScrollController: itemScrollController,
-        scrollDirection: Axis.horizontal,
-        itemCount: results.leagueTables.length,
-        itemBuilder: (context, index) {
-          var entry = results.leagueTables[index];
-          return LeagueView(
-            league: entry,
-            width: leagueWidgetSize,
-          );
-        },
-      ),
+        return Padding(
+          padding: EdgeInsets.all(enclosingPadding / 2),
+          child: ScrollablePositionedList.builder(
+            itemScrollController: itemScrollController,
+            scrollDirection: Axis.horizontal,
+            itemCount: results.leagueTables.length,
+            itemBuilder: (context, index) {
+              var entry = results.leagueTables[index];
+              return LeagueView(
+                league: entry,
+                width: leagueWidgetSize,
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
@@ -277,6 +281,7 @@ class _LeagueViewState extends State<LeagueView> {
 
     List<DataColumn> columns = [];
     columns.add(DataColumn(
+      numeric: true,
       label: Text(
         '#',
         style: columnHeaderTextStyle,
@@ -293,6 +298,7 @@ class _LeagueViewState extends State<LeagueView> {
     if (leagueWidgetSize == LeagueWidgetSize.large ||
         leagueWidgetSize == LeagueWidgetSize.medium) {
       columns.add(DataColumn(
+        numeric: true,
         label: Text(
           'S',
           style: columnHeaderTextStyle,
@@ -300,6 +306,7 @@ class _LeagueViewState extends State<LeagueView> {
       ));
 
       columns.add(DataColumn(
+        numeric: true,
         label: Text(
           'U',
           style: columnHeaderTextStyle,
@@ -307,6 +314,7 @@ class _LeagueViewState extends State<LeagueView> {
       ));
 
       columns.add(DataColumn(
+        numeric: true,
         label: Text(
           'N',
           style: columnHeaderTextStyle,
@@ -323,6 +331,7 @@ class _LeagueViewState extends State<LeagueView> {
       ));
 
       columns.add(DataColumn(
+        numeric: true,
         label: Text(
           'Diff.',
           style: columnHeaderTextStyle,
@@ -331,8 +340,17 @@ class _LeagueViewState extends State<LeagueView> {
     }
 
     columns.add(DataColumn(
+      numeric: true,
       label: Text(
         'Pkt.',
+        style: columnHeaderTextStyle,
+      ),
+    ));
+
+    columns.add(DataColumn(
+      numeric: true,
+      label: Text(
+        'Wertung',
         style: columnHeaderTextStyle,
       ),
     ));
@@ -403,7 +421,7 @@ class _LeagueViewState extends State<LeagueView> {
         cells.add(
           DataCell(
             Text(
-              (result.ownScoredGoals - result.enemyScoredGoals).toString(),
+              result.goalPointsDifference.toString(),
               style: columnEntryTextStyle,
             ),
           ),
@@ -414,6 +432,17 @@ class _LeagueViewState extends State<LeagueView> {
         DataCell(
           Text(
             result.totalPoints.toString(),
+            style: columnEntryTextStyle,
+          ),
+        ),
+      );
+
+      cells.add(
+        DataCell(
+          Text(
+            result.avgGoalDiffScore != null
+                ? result.avgGoalDiffScore!.toStringAsFixed(1)
+                : '-',
             style: columnEntryTextStyle,
           ),
         ),
@@ -450,7 +479,11 @@ class _LeagueViewState extends State<LeagueView> {
                 padding: const EdgeInsets.all(10),
                 child: SingleChildScrollView(
                     controller: controller,
-                    child: DataTable(columns: columns, rows: rows)),
+                    child: DataTable(
+                      columnSpacing: 12,
+                      columns: columns,
+                      rows: rows,
+                    )),
               ),
             ),
           )

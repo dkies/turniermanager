@@ -5,15 +5,10 @@ part 'timing_request_dto.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class TimingRequestDto {
-  TimingRequestDto(
-    this.startTime,
-    this.actualStartTime,
-    this.endTime,
-  );
+  TimingRequestDto(this.plannedStartTime);
 
-  DateTime startTime;
-  DateTime actualStartTime;
-  DateTime endTime;
+  /// Planned start time of the slot (backend: plannedStartTime).
+  DateTime plannedStartTime;
 
   factory TimingRequestDto.fromJson(Map<String, dynamic> json) =>
       _$TimingRequestDtoFromJson(json);

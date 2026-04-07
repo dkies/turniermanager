@@ -3,10 +3,10 @@ import 'package:tournament_manager/src/model/referee/game.dart';
 class GameGroup {
   GameGroup(
     this.startTime,
-    this.gameDurationInMinutes,
+    this.playTimeInSeconds,
   );
 
   DateTime startTime;
-  int gameDurationInMinutes;
+  int playTimeInSeconds;
   List<Game> games = [];
 }

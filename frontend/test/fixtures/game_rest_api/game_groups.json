@@ -1,0 +1,20 @@
+[
+  {
+    "startTime": "2025-06-01T10:00:00.000",
+    "playTimeInSeconds": 1200,
+    "games": [
+      {
+        "id": "g-1",
+        "startTime": "2025-06-01T10:00:00.000",
+        "gameNumber": 1,
+        "teamA": "A",
+        "teamB": "B",
+        "pitch": "Platz 1",
+        "leagueName": "Liga 1",
+        "ageGroupName": "U12",
+        "status": "SCHEDULED",
+        "type": "GAME"
+      }
+    ]
+  }
+]

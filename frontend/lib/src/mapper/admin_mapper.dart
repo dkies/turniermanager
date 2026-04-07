@@ -13,6 +13,7 @@ class AdminMapper {
       dto.pointsTeamA,
       dto.pointsTeamB,
       dto.startTime,
+      dto.status,
     );
   }
 }

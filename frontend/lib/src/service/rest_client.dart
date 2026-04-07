@@ -1,12 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:http/browser_client.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 abstract class RestClient {
+  RestClient(this.client);
+
   @protected
-  final http.Client client = BrowserClient();
+  final http.Client client;
+
   @protected
-  final headers = {
+  final Map<String, String> headers = {
     'Content-Type': 'application/json; charset=UTF-8',
     'Access-Control-Allow-Origin': '*'
   };

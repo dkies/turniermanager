@@ -7,6 +7,7 @@ part of 'results_dto.dart';
 // **************************************************************************
 
 ResultsDto _$ResultsDtoFromJson(Map<String, dynamic> json) => ResultsDto(
+      json['roundId'] as String,
       json['roundName'] as String,
     )..leagueTables = (json['leagueTables'] as List<dynamic>)
         .map((e) => LeagueDto.fromJson(e as Map<String, dynamic>))
@@ -14,6 +15,7 @@ ResultsDto _$ResultsDtoFromJson(Map<String, dynamic> json) => ResultsDto(
 
 Map<String, dynamic> _$ResultsDtoToJson(ResultsDto instance) =>
     <String, dynamic>{
+      'roundId': instance.roundId,
       'roundName': instance.roundName,
       'leagueTables': instance.leagueTables.map((e) => e.toJson()).toList(),
     };

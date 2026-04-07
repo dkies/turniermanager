@@ -6,8 +6,9 @@ part 'results_dto.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class ResultsDto {
-  ResultsDto(this.roundName);
+  ResultsDto(this.roundId, this.roundName);
 
+  String roundId; // UUID as String
   String roundName;
   List<LeagueDto> leagueTables = [];
 

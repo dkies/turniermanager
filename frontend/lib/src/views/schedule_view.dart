@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:tournament_manager/src/constants.dart';
-import 'package:tournament_manager/src/manager/game_manager.dart';
+import 'package:tournament_manager/src/manager/game_manager_base.dart';
 import 'package:tournament_manager/src/model/age_group.dart';
 import 'package:tournament_manager/src/model/schedule/league.dart';
 import 'package:tournament_manager/src/model/schedule/match_schedule_entry.dart';
+import 'package:tournament_manager/src/serialization/schedule/item_type.dart';
 import 'package:watch_it/watch_it.dart';
 
 class ScheduleView extends StatefulWidget with WatchItStatefulWidgetMixin {
@@ -166,30 +167,34 @@ class _ScheduleContentViewState extends State<ScheduleContentView> {
         watchPropertyValue((GameManager manager) => manager.schedule);
     amountItems = schedule.leagueSchedules.length;
 
-    var screenSize = MediaQuery.sizeOf(context);
     var amountLeagues = schedule.leagueSchedules.length;
-    var enclosingPadding = 20;
-    var leaguePadding = amountLeagues > 1 ? 10 : 0;
-    var displayFactor = amountLeagues > 1 ? 2 : 1;
-    var leagueWidgetSize =
-        (screenSize.width - enclosingPadding - leaguePadding) / displayFactor;
-    leagueWidgetSize = leagueWidgetSize < 500
-        ? screenSize.width - enclosingPadding
-        : leagueWidgetSize;
-    return Padding(
-      padding: const EdgeInsets.all(10),
-      child: ScrollablePositionedList.builder(
-        itemScrollController: itemScrollController,
-        scrollDirection: Axis.horizontal,
-        itemCount: schedule.leagueSchedules.length,
-        itemBuilder: (context, index) {
-          var entry = schedule.leagueSchedules[index];
-          return LeagueView(
-            league: entry,
-            width: leagueWidgetSize,
-          );
-        },
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        var enclosingPadding = 20;
+        var leaguePadding = amountLeagues > 1 ? 10 : 0;
+        var displayFactor = amountLeagues > 1 ? 2 : 1;
+        var parentWidth = constraints.maxWidth;
+        var leagueWidgetSize =
+            (parentWidth - enclosingPadding - leaguePadding) / displayFactor;
+        leagueWidgetSize = leagueWidgetSize < 500
+            ? parentWidth - enclosingPadding
+            : leagueWidgetSize;
+        return Padding(
+          padding: const EdgeInsets.all(10),
+          child: ScrollablePositionedList.builder(
+            itemScrollController: itemScrollController,
+            scrollDirection: Axis.horizontal,
+            itemCount: schedule.leagueSchedules.length,
+            itemBuilder: (context, index) {
+              var entry = schedule.leagueSchedules[index];
+              return LeagueView(
+                league: entry,
+                width: leagueWidgetSize,
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
@@ -232,13 +237,23 @@ class LeagueView extends StatelessWidget {
               width: width,
               child: Padding(
                 padding: const EdgeInsets.all(10),
-                child: ListView.separated(
-                  itemBuilder: (context, index) {
-                    var element = league.entries[index];
-                    return ScheduleEntryView(matchScheduleEntry: element);
+                child: Builder(
+                  builder: (context) {
+                    final displayItems =
+                        _expandScheduleEntriesForBreakGroups(league.entries);
+                    return ListView.separated(
+                      itemBuilder: (context, index) {
+                        final item = displayItems[index];
+                        if (item is ScheduleBreakGroup) {
+                          return ScheduleBreakGroupView(group: item);
+                        }
+                        return ScheduleEntryView(
+                            matchScheduleEntry: item as MatchScheduleEntry);
+                      },
+                      separatorBuilder: (context, index) => const Divider(),
+                      itemCount: displayItems.length,
+                    );
                   },
-                  separatorBuilder: (context, index) => const Divider(),
-                  itemCount: league.entries.length,
                 ),
               ),
             ),
@@ -256,31 +271,34 @@ class ScheduleEntryView extends StatelessWidget {
   });
 
   final MatchScheduleEntry matchScheduleEntry;
-  final Color textColor = Colors.white;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    const textStyle = Constants.standardTextStyle;
+
+    final content = Row(
       children: [
         SizedBox(
-          width: 150,
-          child: Row(
-            children: [
-              Text(
-                matchScheduleEntry.pitchName,
-                style: Constants.standardTextStyle,
-              ),
-              const SizedBox(width: 5),
-              const Text(
-                '|',
-                style: Constants.standardTextStyle,
-              ),
-              const SizedBox(width: 5),
-              Text(
-                DateFormat.Hm().format(matchScheduleEntry.startTime),
-                style: Constants.standardTextStyle,
-              ),
-            ],
+          width: 240,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  matchScheduleEntry.pitchName,
+                  style: textStyle,
+                ),
+                const SizedBox(width: 5),
+                const Text('|', style: textStyle),
+                const SizedBox(width: 5),
+                Text(
+                  '${DateFormat.Hm().format(matchScheduleEntry.startTime)} - ${DateFormat.Hm().format(matchScheduleEntry.endTime)}',
+                  style: textStyle,
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(width: 5),
@@ -289,23 +307,116 @@ class ScheduleEntryView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                matchScheduleEntry.teamAName,
-                style: Constants.standardTextStyle,
-              ),
-              const SizedBox(width: 5),
-              const Text(
-                ':',
-                style: Constants.standardTextStyle,
-              ),
-              const SizedBox(width: 5),
-              Text(
-                matchScheduleEntry.teamBName,
-                style: Constants.standardTextStyle,
+                '${matchScheduleEntry.teamAName} : ${matchScheduleEntry.teamBName}',
+                style: textStyle,
               ),
             ],
           ),
         ),
       ],
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: content,
+    );
+  }
+}
+
+/// One or more [ItemType.break_] entries; consecutive breaks with the same start/end
+/// time are merged into one group. Display: time left, `PAUSE auf pitchName: …` right.
+class ScheduleBreakGroup {
+  ScheduleBreakGroup(this.entries);
+  final List<MatchScheduleEntry> entries;
+}
+
+/// Wraps each break run in [ScheduleBreakGroup] (merging consecutive same-slot breaks).
+List<Object> _expandScheduleEntriesForBreakGroups(
+    List<MatchScheduleEntry> entries) {
+  final out = <Object>[];
+  var i = 0;
+  while (i < entries.length) {
+    final e = entries[i];
+    if (e.itemType != ItemType.break_) {
+      out.add(e);
+      i++;
+      continue;
+    }
+    final group = <MatchScheduleEntry>[e];
+    var j = i + 1;
+    while (j < entries.length) {
+      final n = entries[j];
+      if (n.itemType != ItemType.break_) break;
+      if (n.startTime != group.first.startTime ||
+          n.endTime != group.first.endTime) {
+        break;
+      }
+      group.add(n);
+      j++;
+    }
+    // Single and grouped breaks use the same layout (time left, PAUSE lines right).
+    out.add(ScheduleBreakGroup(group));
+    i = j;
+  }
+  return out;
+}
+
+class ScheduleBreakGroupView extends StatelessWidget {
+  const ScheduleBreakGroupView({
+    super.key,
+    required this.group,
+  });
+
+  final ScheduleBreakGroup group;
+
+  @override
+  Widget build(BuildContext context) {
+    final first = group.entries.first;
+    final textStyle =
+        Constants.standardTextStyle.copyWith(color: Colors.black);
+    final timeText =
+        '${DateFormat.Hm().format(first.startTime)} - ${DateFormat.Hm().format(first.endTime)}';
+
+    final lineWidgets = <Widget>[];
+    for (var i = 0; i < group.entries.length; i++) {
+      if (i > 0) {
+        lineWidgets.add(const SizedBox(height: 4));
+      }
+      final e = group.entries[i];
+      final team = e.teamAName.trim();
+      final pauseLine = team.isEmpty
+          ? 'PAUSE auf ${e.pitchName}'
+          : 'PAUSE auf ${e.pitchName}: $team';
+      lineWidgets.add(Text(pauseLine, style: textStyle));
+    }
+
+    final content = Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 240,
+          child: Text(
+            timeText,
+            style: textStyle,
+          ),
+        ),
+        const SizedBox(width: 5),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: lineWidgets,
+          ),
+        ),
+      ],
+    );
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.yellow.shade400,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      child: content,
     );
   }
 }
