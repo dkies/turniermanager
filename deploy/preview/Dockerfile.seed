@@ -1,0 +1,10 @@
+FROM curlimages/curl:latest
+
+USER root
+
+COPY seed-data.sh /seed-data.sh
+COPY preview-sync.sh /preview-sync.sh
+
+RUN chmod +x /seed-data.sh /preview-sync.sh
+
+ENTRYPOINT ["sh", "/seed-data.sh"]
