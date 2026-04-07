@@ -1,0 +1,26 @@
+1736876760406	Rename type 'AltersKlasse'
+1736876767695	Rename field 'altersKlasse'
+1736876795029	Rename type 'Mannschaft'
+1736876853715	Rename type 'Spielfeld'
+1736876982437	Copy package
+1736876986358	Delete element
+1736878221978	Move compilation units
+1736886442886	Rename package 'de.jf.karlsruhe.model.base'
+1736886482326	Rename package 'de.jf.karlsruhe.model'
+1736887334028	Rename type 'Pitch'
+1736887340558	Rename type 'League'
+1736887346751	Rename type 'AgeGroup'
+1736887352925	Rename type 'GameSettings'
+1736888449474	Delete element
+1736888485921	Rename type 'GameControllController'
+1736891606199	Move compilation unit
+1736973481754	Delete element
+1736974325182	Delete element
+1736975442678	Rename type 'ResultTable'
+1736976790849	Delete element
+1736976839662	Rename field 'resultTables'
+1736976842978	Rename local variable 'resultTables'
+1736976855492	Rename method 'getResultTables'
+1736976969101	Delete element
+1736977008631	Rename type 'GameController'
+1736977038144	Delete element

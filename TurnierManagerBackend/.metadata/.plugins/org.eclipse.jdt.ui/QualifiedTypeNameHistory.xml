@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+    <fullyQualifiedTypeName name="de.jf.karlsruhe.model.AltersKlasse"/>
+    <fullyQualifiedTypeName name="java.time.Duration"/>
+    <fullyQualifiedTypeName name="org.springframework.web.bind.annotation.RestController"/>
+    <fullyQualifiedTypeName name="org.springframework.data.jpa.repository.JpaRepository"/>
+    <fullyQualifiedTypeName name="de.jf.karlsruhe.model.game.GameControll"/>
+    <fullyQualifiedTypeName name="de.jf.karlsruhe.model.repos.GameControllerRepository"/>
+    <fullyQualifiedTypeName name="java.util.List"/>
+    <fullyQualifiedTypeName name="de.jf.karlsruhe.model.repos.GameTableEntryRepository"/>
+    <fullyQualifiedTypeName name="de.jf.karlsruhe.model.game.TableEntry"/>
+    <fullyQualifiedTypeName name="de.jf.karlsruhe.model.repos.GameSettingsRepository"/>
+    <fullyQualifiedTypeName name="org.springframework.beans.factory.annotation.Autowired"/>
+    <fullyQualifiedTypeName name="de.jf.karlsruhe.model.repos.TeamRepository"/>
+    <fullyQualifiedTypeName name="org.springframework.http.ResponseEntity"/>
+    <fullyQualifiedTypeName name="org.springframework.web.bind.annotation.DeleteMapping"/>
+    <fullyQualifiedTypeName name="org.springframework.web.bind.annotation.PostMapping"/>
+    <fullyQualifiedTypeName name="jakarta.persistence.Entity"/>
+    <fullyQualifiedTypeName name="de.jf.karlsruhe.model.base.Pitch"/>
+    <fullyQualifiedTypeName name="de.jf.karlsruhe.model.base.AgeGroup"/>
+    <fullyQualifiedTypeName name="de.jf.karlsruhe.model.base.Team"/>
+    <fullyQualifiedTypeName name="jakarta.persistence.OneToOne"/>
+    <fullyQualifiedTypeName name="de.jf.karlsruhe.model.base.League"/>
+    <fullyQualifiedTypeName name="jakarta.persistence.OneToMany"/>
+    <fullyQualifiedTypeName name="java.time.LocalDateTime"/>
+</qualifiedTypeNameHistroy>

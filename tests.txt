@@ -1,0 +1,48 @@
+AK2
+
+Karlsbad 1
+Flehingen 1
+Karlsbad 2
+Bruchsal
+Rußheim 1
+Oberderdingen 4
+Langenbrücken 1
+Flehingen 2
+Großvillars 3
+Kürnbach 2
+Oberderdingen 3
+Rußheim 2
+Großvillars 2
+Kürnbach 1
+Großvillars 1
+Walzbachtal
+
+AK1
+Stutensee
+Flehingen 1
+Bruchsal
+Oberderdingen 2
+Großvillars
+Rußheim
+Oberderdingen 1
+Flehingen 3
+Kürnbach / Zaisenhausen
+Langenbrücken
+Flehingen 2
+Karlsbad 2
+Walzbachtal 2
+Karlsbad 1
+Walzbachtal 1
+
+AK3
+Oberderdingen 1
+Oberderdingen 2
+Flehingen 1
+Flehingen 2
+Karlsbad
+Kürnbach
+Rußheim
+
+- [] Name Team ändern
+- [] Admin unbenennen zu "Ergebnisse eintragen"
+- [] Ergebnisse sortieren nach Zeit dann Spielenummer, Abstand zwischen Spielzeiten
