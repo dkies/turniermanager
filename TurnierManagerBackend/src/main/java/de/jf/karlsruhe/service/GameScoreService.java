@@ -59,16 +59,14 @@ public class GameScoreService {
     public List<ExtendedGameDTO> getAllGamesExtended() {
         Round activeRound = getActiveRound();
 
+        List<UUID> activeLeagueIds = activeRound.getLeagues().stream()
+                .map(League::getId)
+                .toList();
         return scheduledGameRepository.findAll().stream()
+                .filter(game -> game.getScheduleItem().getLeague() != null &&
+                        activeLeagueIds.contains(game.getScheduleItem().getLeague().getId()))
                 .map(game -> {
                     ScheduleItem item = game.getScheduleItem();
-
-                    // Liga-Name anhand der Teams in der aktiven Runde suchen
-                    String leagueName = activeRound.getLeagues().stream()
-                            .filter(l -> l.getTeams().contains(game.getTeamA()) || l.getTeams().contains(game.getTeamB()))
-                            .findFirst()
-                            .map(League::getName)
-                            .orElse("Unbekannte Liga");
 
                     return new ExtendedGameDTO(
                             game.getId(),
@@ -77,7 +75,7 @@ public class GameScoreService {
                             game.getTeamA().getName(),
                             game.getTeamB().getName(),
                             item.getScheduledPitch() != null ? item.getScheduledPitch().getName() : "Kein Spielfeld",
-                            leagueName,
+                            item.getLeague().getName(),
                             item.getAgeGroup().getName(),
                             game.getTeamAScore(),
                             game.getTeamBScore(),

@@ -6,10 +6,7 @@ import de.jf.karlsruhe.model.dto.GamePlanEntryDTO;
 import de.jf.karlsruhe.model.dto.LeagueScheduleDTO;
 import de.jf.karlsruhe.model.enums.GameStatus;
 import de.jf.karlsruhe.model.enums.ScheduledItemType;
-import de.jf.karlsruhe.model.repos.AgeGroupRepository;
-import de.jf.karlsruhe.model.repos.RoundRepository;
-import de.jf.karlsruhe.model.repos.ScheduledGameRepository;
-import de.jf.karlsruhe.model.repos.ScheduledItemRepository;
+import de.jf.karlsruhe.model.repos.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +23,7 @@ public class GamePlanService {
     private final RoundRepository roundRepository;
     private final ScheduledItemRepository scheduledItemRepository;
     private final ScheduledGameRepository scheduledGameRepository;
+    private final ScheduledBreakRepository scheduledBreakRepository;
 
     @Transactional(readOnly = true)
     public GamePlanDTO getGamePlanByAgeGroup(UUID ageGroupId) {
@@ -60,10 +58,10 @@ public class GamePlanService {
         List<ScheduleItem> allScheduleItems = scheduledItemRepository.findByAgeGroupOrderByStartTimeAsc(ageGroup)
                 .stream()
                 .filter(item -> {
-                    return item.getStatus().equals(GameStatus.SCHEDULED);
-                }
+                            return item.getStatus().equals(GameStatus.SCHEDULED);
+                        }
 
-        ).toList();
+                ).toList();
 
 
         Map<ScheduleItem, ScheduledGame> gameMap = getGameMap(allScheduleItems);
@@ -117,6 +115,7 @@ public class GamePlanService {
             ScheduledGame game,
             League targetLeague,
             Set<ScheduleItem> processedBreaks) {
+
         if (ScheduledItemType.GAME.equals(item.getItemType()) && game != null) {
             if (targetLeague.getTeams().contains(game.getTeamA()) && targetLeague.getTeams().contains(game.getTeamB())) {
                 return Optional.of(new GamePlanEntryDTO(
@@ -136,14 +135,19 @@ public class GamePlanService {
             if (!processedBreaks.contains(item)) {
 
                 processedBreaks.add(item);
+                Optional<ScheduledBreak> breakItem = scheduledBreakRepository.findByScheduleItem(item);
+                String breakMessage = "Pause";
+                if (breakItem.isPresent()) {
+                    breakMessage = breakItem.get().getMessage();
+                }
 
                 return Optional.of(new GamePlanEntryDTO(
                         ScheduledItemType.BREAK.toString(),
                         item.getScheduledPitch() != null ? item.getScheduledPitch().getName() : "All",
                         item.getStartTime(),
                         item.getEndTime(),
-                        Optional.empty(),
-                        Optional.empty(),
+                        Optional.of(breakMessage),
+                        Optional.of(breakMessage),
                         Optional.empty()
                 ));
             }
