@@ -60,6 +60,7 @@ async function init() {
   startAutoRefresh();
   setupVisibility();
   setupPullToRefresh();
+  setupSwipeNavigation();
   setupIOSBanner();
 }
 
@@ -231,6 +232,63 @@ function setupPullToRefresh() {
       indicator.style.opacity = '';
     }
   });
+}
+
+/* ── Swipe Navigation zwischen Tabs ─────────────── */
+function setupSwipeNavigation() {
+  const el = document.getElementById('match-list');
+  let startX = 0;
+  let startY = 0;
+  let deltaX = 0;
+  let deltaY = 0;
+  let tracking = false;
+  let horizontal = false;
+
+  el.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) {
+      tracking = false;
+      return;
+    }
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    deltaX = 0;
+    deltaY = 0;
+    tracking = true;
+    horizontal = false;
+  }, { passive: true });
+
+  el.addEventListener('touchmove', (e) => {
+    if (!tracking) return;
+    deltaX = e.touches[0].clientX - startX;
+    deltaY = e.touches[0].clientY - startY;
+    if (!horizontal && Math.abs(deltaX) > 10 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+      horizontal = true;
+    }
+  }, { passive: true });
+
+  el.addEventListener('touchend', () => {
+    if (!tracking) return;
+    tracking = false;
+    if (!horizontal) return;
+    const threshold = 60;
+    if (Math.abs(deltaX) < threshold) return;
+    navigateTab(deltaX < 0 ? 1 : -1);
+  });
+
+  el.addEventListener('touchcancel', () => {
+    tracking = false;
+  });
+}
+
+function navigateTab(direction) {
+  if (!tournament) return;
+  const allTabs = [INFO_TAB, ...tournament.ageGroups];
+  if (allTabs.length <= 1) return;
+  const idx = allTabs.findIndex((t) => t.id === activeGroupId);
+  if (idx < 0) return;
+  const nextIdx = idx + direction;
+  if (nextIdx < 0 || nextIdx >= allTabs.length) return;
+  switchGroup(allTabs[nextIdx].id);
 }
 
 /* ── Service Worker Registration ─────────────────── */
