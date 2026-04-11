@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Turnier-Planer</title>
+  <script src="/tailwind.css"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <header class="mb-8">
+      <a href="index.html" class="text-blue-500 hover:text-blue-700 text-sm">&larr; Zurück zur Übersicht</a>
+      <h1 class="text-3xl font-bold text-center text-blue-700 mt-2">Turnier-Planer</h1>
+      <p class="text-center text-gray-600 mt-2">Berechnung der Spielzeiten pro Altersgruppe</p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- Eingaben -->
+      <div class="space-y-6">
+
+        <!-- Altersgruppen -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <h2 class="text-xl font-semibold text-blue-600 mb-4">Altersgruppen</h2>
+          <div class="space-y-6">
+
+            <div id="age-group-1">
+              <h3 class="font-medium text-gray-700 mb-3">Altersgruppe 1</h3>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">Anzahl Mannschaften</label>
+                  <input type="number" id="teams-1" min="2" value="10"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    oninput="calculate()">
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">Anzahl Ligen</label>
+                  <input type="number" id="leagues-1" min="1" value="2"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    oninput="calculate()">
+                </div>
+              </div>
+            </div>
+
+            <hr class="border-gray-200">
+
+            <div id="age-group-2">
+              <h3 class="font-medium text-gray-700 mb-3">Altersgruppe 2</h3>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">Anzahl Mannschaften</label>
+                  <input type="number" id="teams-2" min="2" value="10"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    oninput="calculate()">
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">Anzahl Ligen</label>
+                  <input type="number" id="leagues-2" min="1" value="2"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    oninput="calculate()">
+                </div>
+              </div>
+            </div>
+
+            <hr class="border-gray-200">
+
+            <div id="age-group-3">
+              <h3 class="font-medium text-gray-700 mb-3">Altersgruppe 3</h3>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">Anzahl Mannschaften</label>
+                  <input type="number" id="teams-3" min="2" value="10"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    oninput="calculate()">
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">Anzahl Ligen</label>
+                  <input type="number" id="leagues-3" min="1" value="2"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    oninput="calculate()">
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Zeiteinstellungen -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <h2 class="text-xl font-semibold text-blue-600 mb-4">Zeiteinstellungen</h2>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm text-gray-600 mb-1">Maximalzeit gesamt (Minuten)</label>
+              <input type="number" id="max-time" min="1" value="120"
+                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                oninput="calculate()">
+            </div>
+            <div>
+              <label class="block text-sm text-gray-600 mb-1">Spielzeit (Minuten)</label>
+              <input type="number" id="game-time" min="1" value="8"
+                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                oninput="calculate()">
+            </div>
+            <div>
+              <label class="block text-sm text-gray-600 mb-1">Pausenzeit zwischen Spielen (Sekunden)</label>
+              <input type="number" id="break-time" min="0" value="90"
+                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                oninput="calculate()">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Ergebnisse -->
+      <div class="space-y-6">
+
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <h2 class="text-xl font-semibold text-blue-600 mb-4">Ergebnisse</h2>
+          <div id="results" class="space-y-6">
+            <!-- wird per JS befüllt -->
+          </div>
+        </div>
+
+        <!-- Gesamtübersicht -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <h2 class="text-xl font-semibold text-blue-600 mb-4">Gesamtübersicht</h2>
+          <div id="summary" class="space-y-3">
+            <!-- wird per JS befüllt -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function formatSeconds(totalSeconds) {
+      const h = Math.floor(totalSeconds / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      const s = Math.round(totalSeconds % 60);
+      if (h === 0 && m === 0) return `${s} Sek`;
+      if (h === 0 && s === 0) return `${m} Min`;
+      if (h === 0) return `${m} Min ${s} Sek`;
+      if (m === 0 && s === 0) return `${h} Std`;
+      if (s === 0) return `${h} Std ${m} Min`;
+      return `${h} Std ${m} Min ${s} Sek`;
+    }
+
+    function calculate() {
+      const gameTimeSec = (parseFloat(document.getElementById('game-time').value) || 0) * 60;
+      const breakTimeSec = parseFloat(document.getElementById('break-time').value) || 0;
+      const maxTimeSec = (parseFloat(document.getElementById('max-time').value) || 0) * 60;
+
+      const timePerGameSec = gameTimeSec + breakTimeSec;
+
+      const resultsEl = document.getElementById('results');
+      const summaryEl = document.getElementById('summary');
+
+      let totalGamesAll = 0;
+      let totalTimeAll = 0;
+      let resultsHtml = '';
+
+      for (let i = 1; i <= 3; i++) {
+        const teams = parseInt(document.getElementById(`teams-${i}`).value) || 0;
+        const leagues = parseInt(document.getElementById(`leagues-${i}`).value) || 1;
+
+        const teamsPerLeague = Math.ceil(teams / leagues);
+        const gamesPerLeague = (teamsPerLeague * (teamsPerLeague - 1)) / 2;
+        const totalGames = gamesPerLeague * leagues;
+        const totalTimeSec = totalGames * timePerGameSec;
+
+        totalGamesAll += totalGames;
+        totalTimeAll += totalTimeSec;
+
+        const fitsInTime = totalTimeSec <= maxTimeSec;
+        const bufferSec = maxTimeSec - totalTimeSec;
+
+        const statusColor = fitsInTime ? 'text-green-600' : 'text-red-600';
+        const statusBg = fitsInTime ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
+        const statusText = fitsInTime
+          ? `Passt &mdash; ${formatSeconds(Math.abs(bufferSec))} Puffer`
+          : `Zu lang um ${formatSeconds(Math.abs(bufferSec))}`;
+
+        resultsHtml += `
+          <div class="border rounded-md p-4 ${statusBg}">
+            <h3 class="font-semibold text-gray-700 mb-3">Altersgruppe ${i}</h3>
+            <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              <span class="text-gray-500">Max. Mannschaften/Liga</span>
+              <span class="font-medium text-gray-800">${teamsPerLeague}</span>
+
+              <span class="text-gray-500">Spiele pro Liga</span>
+              <span class="font-medium text-gray-800">${gamesPerLeague}</span>
+
+              <span class="text-gray-500">Spiele gesamt</span>
+              <span class="font-medium text-gray-800">${totalGames}</span>
+
+              <span class="text-gray-500">Gesamtspieldauer</span>
+              <span class="font-medium text-gray-800">${formatSeconds(totalTimeSec)}</span>
+
+              <span class="text-gray-500">Maximalzeit</span>
+              <span class="font-medium ${statusColor}">${statusText}</span>
+            </div>
+          </div>`;
+      }
+
+      resultsEl.innerHTML = resultsHtml;
+
+      const totalFits = totalTimeAll <= maxTimeSec;
+      const totalBuffer = maxTimeSec - totalTimeAll;
+      const totalStatusColor = totalFits ? 'text-green-600' : 'text-red-600';
+      const totalStatusText = totalFits
+        ? `Passt &mdash; ${formatSeconds(Math.abs(totalBuffer))} Puffer`
+        : `Zu lang um ${formatSeconds(Math.abs(totalBuffer))}`;
+
+      summaryEl.innerHTML = `
+        <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+          <span class="text-gray-500">Zeit pro Spiel (inkl. Pause)</span>
+          <span class="font-medium text-gray-800">${formatSeconds(timePerGameSec)}</span>
+
+          <span class="text-gray-500">Spiele gesamt (alle AGs)</span>
+          <span class="font-medium text-gray-800">${totalGamesAll}</span>
+
+          <span class="text-gray-500">Gesamtdauer aller AGs</span>
+          <span class="font-medium text-gray-800">${formatSeconds(totalTimeAll)}</span>
+
+          <span class="text-gray-500">Verfügbare Maximalzeit</span>
+          <span class="font-medium text-gray-800">${formatSeconds(maxTimeSec)}</span>
+
+          <span class="text-gray-500 font-semibold">Status</span>
+          <span class="font-semibold ${totalStatusColor}">${totalStatusText}</span>
+        </div>`;
+    }
+
+    // Initial berechnen
+    calculate();
+  </script>
+
+</body>
+
+</html>
