@@ -9,4 +9,9 @@ public record TeamStatsDTO(
         int pointsAgainst,
         int goalsScored,
         int goalsAgainst
-) {}
+) {
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(team.getName(), pointsScored, pointsAgainst);
+    }
+}

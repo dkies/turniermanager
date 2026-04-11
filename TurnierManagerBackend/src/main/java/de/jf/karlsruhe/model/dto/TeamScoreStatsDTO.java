@@ -13,4 +13,9 @@ public record TeamScoreStatsDTO(
         int enemyScoredGoals,
         Optional<Double> avgGoalDiffScore,
         Optional<Double> avgPoints
-) {}
+) {
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(teamName, ownScoredGoals, enemyScoredGoals);
+    }
+}

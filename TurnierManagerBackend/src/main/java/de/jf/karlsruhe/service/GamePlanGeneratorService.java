@@ -301,7 +301,7 @@ public class GamePlanGeneratorService {
             if (diffGoalsScored != 0) return diffGoalsScored;
 
             // Wenn alles gleich ist, hash vergleichen (stabiler Sortieralgorithmus)
-            return Integer.compare(System.identityHashCode(t1), System.identityHashCode(t2));
+            return Integer.compare(t1.hashCode(), t2.hashCode());
         };
 
         statsList.sort(rankingComparator);
