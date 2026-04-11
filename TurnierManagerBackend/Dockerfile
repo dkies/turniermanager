@@ -16,6 +16,8 @@ RUN mvn package -DskipTests
 
 FROM eclipse-temurin:25-jre-ubi10-minimal@sha256:d1276c798b69fb8dc33b4c6a6974d7ed4e842b2ffe130478f88b05e27f74fb0c
 
+ENV TZ=Europe/Berlin
+
 # Set the working directory
 WORKDIR /app
 RUN mkdir /app/uploaded
