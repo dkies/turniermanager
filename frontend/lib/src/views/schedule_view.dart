@@ -324,7 +324,8 @@ class ScheduleEntryView extends StatelessWidget {
 }
 
 /// One or more [ItemType.break_] entries; consecutive breaks with the same start/end
-/// time are merged into one group. Display: time left, `PAUSE auf pitchName: …` right.
+/// time are merged into one group. Display: time left, pause lines centered in the
+/// remaining width (so wide layouts do not leave empty space only on the right).
 class ScheduleBreakGroup {
   ScheduleBreakGroup(this.entries);
   final List<MatchScheduleEntry> entries;
@@ -354,7 +355,7 @@ List<Object> _expandScheduleEntriesForBreakGroups(
       group.add(n);
       j++;
     }
-    // Single and grouped breaks use the same layout (time left, PAUSE lines right).
+    // Single and grouped breaks use the same layout (time left, PAUSE lines centered).
     out.add(ScheduleBreakGroup(group));
     i = j;
   }
@@ -402,9 +403,13 @@ class ScheduleBreakGroupView extends StatelessWidget {
         ),
         const SizedBox(width: 5),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: lineWidgets,
+          child: Align(
+            alignment: Alignment.center,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: lineWidgets,
+            ),
           ),
         ),
       ],
