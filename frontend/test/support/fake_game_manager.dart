@@ -8,6 +8,7 @@ import 'package:tournament_manager/src/model/referee/round_settings.dart';
 import 'package:tournament_manager/src/model/results/results.dart';
 import 'package:tournament_manager/src/model/schedule/match_schedule.dart';
 import 'package:tournament_manager/src/manager/game_manager_base.dart';
+import 'package:tournament_manager/src/serialization/game_status.dart';
 
 /// In-memory [GameManager] for widget tests (no REST).
 class FakeGameManager extends ChangeNotifier implements GameManager {
@@ -61,7 +62,21 @@ class FakeGameManager extends ChangeNotifier implements GameManager {
         lastSaveGameNumber = args.$1;
         lastSaveTeamAScore = args.$2;
         lastSaveTeamBScore = args.$3;
-        return saveGameReturns;
+        if (!saveGameReturns) {
+          return false;
+        }
+        final idx = _games.indexWhere((g) => g.gameNumber == args.$1);
+        if (idx == -1) {
+          return false;
+        }
+        final g = _games[idx];
+        g.pointsTeamA = args.$2;
+        g.pointsTeamB = args.$3;
+        if (g.status == GameStatus.completed) {
+          g.status = GameStatus.completedAndStated;
+        }
+        notifyListeners();
+        return true;
       },
       initialValue: false,
     );

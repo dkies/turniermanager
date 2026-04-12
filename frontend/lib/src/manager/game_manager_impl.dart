@@ -13,6 +13,7 @@ import 'package:tournament_manager/src/model/referee/round_settings.dart';
 import 'package:tournament_manager/src/model/results/results.dart';
 import 'package:tournament_manager/src/model/schedule/match_schedule.dart';
 import 'package:tournament_manager/src/serialization/admin/extended_game_dto.dart';
+import 'package:tournament_manager/src/serialization/game_status.dart';
 import 'package:tournament_manager/src/serialization/referee/break_global_creation_dto.dart';
 import 'package:tournament_manager/src/serialization/referee/break_single_creation_dto.dart';
 import 'package:tournament_manager/src/service/game_rest_api.dart';
@@ -223,8 +224,25 @@ class GameManagerImplementation extends ChangeNotifier implements GameManager {
 
     saveGameCommand = Command.createAsync(
       (gameResult) async {
-        return await _gameRestApi.saveGame(
-            gameResult.$1, gameResult.$2, gameResult.$3);
+        final ok = await _gameRestApi.saveGame(
+          gameResult.$1,
+          gameResult.$2,
+          gameResult.$3,
+        );
+        if (!ok) {
+          return false;
+        }
+        final refreshed = await _gameRestApi.getAllGames();
+        if (refreshed.isNotEmpty) {
+          games = refreshed.map((e) => _adminMapper.map(e)).toList();
+        } else {
+          _applySavedGameLocally(
+            gameResult.$1,
+            gameResult.$2,
+            gameResult.$3,
+          );
+        }
+        return true;
       },
       initialValue: false,
     );
@@ -311,5 +329,38 @@ class GameManagerImplementation extends ChangeNotifier implements GameManager {
     var filtered = ageGroups.where((element) => element.name == name);
 
     return filtered.isNotEmpty ? filtered.first : null;
+  }
+
+  /// If reloading all games after save yields no data, still update the row so
+  /// status colours and scores match the server (typically completed → completedAndStated).
+  void _applySavedGameLocally(
+    int gameNumber,
+    int teamAScore,
+    int teamBScore,
+  ) {
+    final index = _games.indexWhere((g) => g.gameNumber == gameNumber);
+    if (index == -1) {
+      notifyListeners();
+      return;
+    }
+    final g = _games[index];
+    final nextStatus = g.status == GameStatus.completed
+        ? GameStatus.completedAndStated
+        : g.status;
+    final updated = ExtendedGame(
+      g.gameNumber,
+      g.pitch,
+      g.teamA,
+      g.teamB,
+      g.leagueName,
+      g.ageGroupName,
+      teamAScore,
+      teamBScore,
+      g.startTime,
+      nextStatus,
+    );
+    final copy = List<ExtendedGame>.from(_games);
+    copy[index] = updated;
+    games = copy;
   }
 }

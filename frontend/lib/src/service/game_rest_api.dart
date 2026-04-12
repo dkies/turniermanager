@@ -687,8 +687,13 @@ class GameTestRestApi extends GameRestApi {
     return true;
   }
 
-  @override
-  Future<List<ExtendedGameDto>> getAllGames() async {
+  /// In-memory admin games for [GameTestRestApi]; survives [saveGame] like a real backend.
+  List<ExtendedGameDto>? _mockAdminGames;
+
+  List<ExtendedGameDto> _ensureMockAdminGames() {
+    if (_mockAdminGames != null) {
+      return _mockAdminGames!;
+    }
     // Wie Schedule-Mock: Slots mit 1–4 Spielen gleicher Startzeit + Einzelspiele (Admin-Gruppierung).
     const teams = [
       'Größenkönige',
@@ -750,11 +755,28 @@ class GameTestRestApi extends GameRestApi {
     addParallelSlot(slotTime, [18, 900, 505]);
     addParallelSlot(slotTime, [303]);
 
+    _mockAdminGames = result;
     return result;
   }
 
   @override
+  Future<List<ExtendedGameDto>> getAllGames() async {
+    return List<ExtendedGameDto>.from(_ensureMockAdminGames());
+  }
+
+  @override
   Future<bool> saveGame(int gameNumber, int teamAScore, int teamBScore) async {
+    final games = _ensureMockAdminGames();
+    final idx = games.indexWhere((g) => g.gameNumber == gameNumber);
+    if (idx == -1) {
+      return false;
+    }
+    final g = games[idx];
+    g.pointsTeamA = teamAScore;
+    g.pointsTeamB = teamBScore;
+    if (g.status == GameStatus.completed) {
+      g.status = GameStatus.completedAndStated;
+    }
     return true;
   }
 

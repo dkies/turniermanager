@@ -258,6 +258,7 @@ void main() {
 
     testWidgets('success saves and passes tuple to saveGameCommand', (tester) async {
       gameManager.saveGameReturns = true;
+      expect(gameManager.games.single.status, GameStatus.completed);
       bindLargeTestSurface(tester);
       await tester.pumpWidget(
         const MaterialApp(
@@ -273,6 +274,7 @@ void main() {
       expect(gameManager.lastSaveGameNumber, 1);
       expect(gameManager.lastSaveTeamAScore, 2);
       expect(gameManager.lastSaveTeamBScore, 1);
+      expect(gameManager.games.single.status, GameStatus.completedAndStated);
       expect(find.textContaining('Server-Fehler'), findsNothing);
     });
 
