@@ -824,7 +824,7 @@ class GameScoreView extends StatelessWidget with WatchItMixin {
       ..sort((a, b) {
         final timeCmp = a.startTime.compareTo(b.startTime);
         if (timeCmp != 0) return timeCmp;
-        return a.gameNumber.compareTo(b.gameNumber);
+        return a.ageGroupName.compareTo(b.ageGroupName);
       });
 
     return SeparatedColumn(
