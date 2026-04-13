@@ -67,19 +67,33 @@ services:
       - turnier-backend
 
   # Preview-Sync: holt Export-Daten und schreibt direkt ins Volume (kein FTP noetig)
-  preview-sync:
-    build:
-      context: .
-      dockerfile: Dockerfile.seed
-    entrypoint: ["sh", "/preview-sync.sh"]
+  # preview-sync:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.seed
+  #   entrypoint: ["sh", "/preview-sync.sh"]
+  #   environment:
+  #     BACKEND_URL: http://turnier-backend:8080
+  #     SYNC_INTERVAL: "15"
+  #   volumes:
+  #     - ticker-data:/data
+  #   depends_on:
+  #     - turnier-backend
+  #   restart: unless-stopped
+
+  turnier-sync:
+    build: ../../sync
+    restart: always
     environment:
-      BACKEND_URL: http://turnier-backend:8080
-      SYNC_INTERVAL: "15"
-    volumes:
-      - ticker-data:/data
+      - BACKEND_URL=http://turnier-backend:8080
+      - FTP_HOST=${FTP_HOST}
+      - FTP_USER=${FTP_USER}
+      - FTP_PASS=${FTP_PASS}
+      - FTP_PATH=${FTP_PATH:-/data}
+      - FTP_TLS=${FTP_TLS:-false}
+      - SYNC_INTERVAL=${SYNC_INTERVAL:-30}
     depends_on:
       - turnier-backend
-    restart: unless-stopped
 
 volumes:
   ticker-data:
