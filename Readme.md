@@ -32,6 +32,54 @@ docker compose -f deploy/docker-compose.yml start turnier-backend
 
 ---
 
+## Live-Ticker Sync
+
+### Architektur
+
+Der Live-Ticker zeigt Turnierdaten in Echtzeit an. Die Daten fliessen wie folgt:
+
+1. **Backend** (`/export/tournament`, `/export/agegroup/{slug}`) stellt JSON-Daten bereit
+2. **Sync-Service** (`sync/`) holt die Daten periodisch und laedt sie per FTP hoch
+3. **Live-Ticker** (`live-ticker/`) liest die JSON-Dateien und zeigt sie an
+
+### Sync-Service
+
+Der Sync-Service ist ein Python-Script (`sync/sync.py`), das als Docker-Container laeuft:
+
+- Holt alle `SYNC_INTERVAL` Sekunden (Standard: 30) die Export-Daten vom Backend
+- Laedt `tournament.json` und pro Altersgruppe eine `{slug}.json` per FTP hoch
+- Unterstuetzt TLS-verschluesselte FTP-Verbindungen
+
+**Umgebungsvariablen:**
+
+| Variable | Beschreibung | Standard |
+|---|---|---|
+| `BACKEND_URL` | URL des Backends | `http://turnier-backend:8080` |
+| `FTP_HOST` | FTP-Server Hostname | (erforderlich) |
+| `FTP_USER` | FTP-Benutzername | (erforderlich) |
+| `FTP_PASS` | FTP-Passwort | (erforderlich) |
+| `FTP_PATH` | Zielverzeichnis auf dem FTP-Server | `/data` |
+| `FTP_TLS` | TLS-Verschluesselung aktivieren | `false` |
+| `SYNC_INTERVAL` | Intervall in Sekunden | `30` |
+
+### Preview-Umgebung
+
+Fuer lokale Entwicklung steht eine Preview-Umgebung bereit, die alle Services inklusive Seed-Daten startet:
+
+```bash
+cd deploy/preview
+./start-preview.sh          # Starten
+./start-preview.sh --build  # Images neu bauen
+./start-preview.sh --reset  # Volumes loeschen + neu starten
+./start-preview.sh --clean  # Alles stoppen + aufraeumen
+```
+
+Ports: Backend :8080, Frontend :8081, Admin :8082, LiveTicker :8083
+
+Die Preview-Umgebung nutzt einen direkten Volume-Sync statt FTP.
+
+---
+
 ## Begriffe
 
 #### Altersklasse
