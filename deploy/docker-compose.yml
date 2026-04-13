@@ -65,3 +65,17 @@ services:
         mariadb-dump -h turnier-maria -u root turnier > $$FILENAME;
         echo \"Backup gespeichert: $$FILENAME\";
       done"
+
+  turnier-sync:
+    image: ghcr.io/jf-landkreis-karlsruhe/turnier-sync:latest
+    restart: always
+    environment:
+      - BACKEND_URL=http://turnier-backend:8080
+      - FTP_HOST=${FTP_HOST}
+      - FTP_USER=${FTP_USER}
+      - FTP_PASS=${FTP_PASS}
+      - FTP_PATH=${FTP_PATH:-/data}
+      - FTP_TLS=${FTP_TLS:-false}
+      - SYNC_INTERVAL=${SYNC_INTERVAL:-30}
+    depends_on:
+      - turnier-backend

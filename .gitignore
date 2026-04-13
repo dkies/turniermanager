@@ -2,3 +2,4 @@ deploy/data01/
 deploy/backups
 .vscode
 .DS_Store
+.env

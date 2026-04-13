@@ -1,0 +1,99 @@
+services:
+  database:
+    image: mariadb:latest
+    container_name: preview-maria
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: turnier
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  turnier-backend:
+    build: ../../TurnierManagerBackend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_APPLICATION_NAME: turnier-backend
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: admin
+      SPRING_DATASOURCE_URL: jdbc:mariadb://preview-maria:3306/turnier
+    depends_on:
+      database:
+        condition: service_healthy
+
+  admin-frontend:
+    build: ../../admin
+    ports:
+      - "8082:80"
+    environment:
+      BACKEND_URL: localhost:8080
+    depends_on:
+      - turnier-backend
+
+  turnier-frontend:
+    build: ../../frontend
+    ports:
+      - "8081:80"
+    environment:
+      BACKEND_URL: localhost:8080
+    depends_on:
+      - turnier-backend
+
+  live-ticker:
+    build: ../../live-ticker
+    ports:
+      - "8083:80"
+    volumes:
+      - ticker-data:/usr/share/nginx/html/data
+    depends_on:
+      - turnier-backend
+
+  # Seed: erstellt Turnierdaten via API + schreibt infos.json
+  seed:
+    build:
+      context: .
+      dockerfile: Dockerfile.seed
+    environment:
+      BACKEND_URL: http://turnier-backend:8080
+    volumes:
+      - ticker-data:/ftp-data
+    depends_on:
+      - turnier-backend
+
+  # Preview-Sync: holt Export-Daten und schreibt direkt ins Volume (kein FTP noetig)
+  # preview-sync:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.seed
+  #   entrypoint: ["sh", "/preview-sync.sh"]
+  #   environment:
+  #     BACKEND_URL: http://turnier-backend:8080
+  #     SYNC_INTERVAL: "15"
+  #   volumes:
+  #     - ticker-data:/data
+  #   depends_on:
+  #     - turnier-backend
+  #   restart: unless-stopped
+
+  turnier-sync:
+    build: ../../sync
+    restart: always
+    environment:
+      - BACKEND_URL=http://turnier-backend:8080
+      - FTP_HOST=${FTP_HOST}
+      - FTP_USER=${FTP_USER}
+      - FTP_PASS=${FTP_PASS}
+      - FTP_PATH=${FTP_PATH:-/data}
+      - FTP_TLS=${FTP_TLS:-false}
+      - SYNC_INTERVAL=${SYNC_INTERVAL:-30}
+    depends_on:
+      - turnier-backend
+
+volumes:
+  ticker-data:
