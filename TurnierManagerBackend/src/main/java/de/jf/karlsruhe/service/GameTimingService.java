@@ -27,7 +27,7 @@ public class GameTimingService {
     public void finishAllItemsAtTime(LocalDateTime plannedStartTime, LocalDateTime actualEndTime) {
         // 1. Suche exakt die Items mit dieser Startzeit
         List<ScheduleItem> itemsAtTime = scheduledItemRepository.findAll().stream()
-                .filter(item -> item.getStartTime().equals(plannedStartTime))
+                .filter(item -> Math.abs(Duration.between(item.getStartTime(), plannedStartTime).getSeconds()) <= 1)
                 .filter(item -> item.getStatus() != GameStatus.COMPLETED)
                 .filter(item -> item.getStatus() != GameStatus.COMPLETED_AND_STATED)
                 .toList();
