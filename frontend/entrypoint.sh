@@ -1,10 +1,12 @@
 #!/bin/sh
 
+set -e
+
 # Create directory if it doesn't exist
-mkdir -p /usr/share/nginx/html/assets/assets/textfiles
+mkdir -p /srv/assets/assets/textfiles
 
 # Write token to file
-echo "$BACKEND_URL" > /usr/share/nginx/html/assets/assets/textfiles/backend-url.txt
+echo "$BACKEND_URL" > /srv/assets/assets/textfiles/backend-url.txt
 
-# Start nginx in foreground
-nginx -g 'daemon off;'
+# Start Caddy in foreground
+exec caddy run --config /etc/caddy/Caddyfile --adapter caddyfile

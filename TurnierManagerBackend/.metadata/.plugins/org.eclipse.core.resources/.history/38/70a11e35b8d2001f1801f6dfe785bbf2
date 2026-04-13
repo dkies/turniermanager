@@ -1,0 +1,15 @@
+package de.jf.karlsruhe.model.base;
+
+import jakarta.persistence.Entity;
+
+@Entity
+public class AgeGroup {
+	
+	
+	
+	private String name;
+	
+	public AgeGroup() {
+	}
+	
+}

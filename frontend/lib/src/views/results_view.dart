@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:tournament_manager/src/constants.dart';
-import 'package:tournament_manager/src/manager/game_manager.dart';
+import 'package:tournament_manager/src/manager/game_manager_base.dart';
 import 'package:tournament_manager/src/model/age_group.dart';
 import 'package:tournament_manager/src/model/results/league.dart';
 import 'package:watch_it/watch_it.dart';
@@ -162,31 +162,35 @@ class _ResultsContentViewState extends State<ResultsContentView> {
     var results = watchPropertyValue((GameManager manager) => manager.results);
     amountItems = results.leagueTables.length;
 
-    var screenSize = MediaQuery.sizeOf(context);
     var amountLeagues = results.leagueTables.length;
-    var enclosingPadding = 20;
-    var leaguePadding = amountLeagues > 1 ? 10 : 0;
-    var displayFactor = amountLeagues > 1 ? 2 : 1;
-    var leagueWidgetSize =
-        (screenSize.width - enclosingPadding - leaguePadding) / displayFactor;
-    leagueWidgetSize = leagueWidgetSize < 750
-        ? screenSize.width - enclosingPadding
-        : leagueWidgetSize;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        var enclosingPadding = 20;
+        var leaguePadding = amountLeagues > 1 ? 10 : 0;
+        var displayFactor = amountLeagues > 1 ? 2 : 1;
+        var parentWidth = constraints.maxWidth;
+        var leagueWidgetSize =
+            (parentWidth - enclosingPadding - leaguePadding) / displayFactor;
+        leagueWidgetSize = leagueWidgetSize < 750
+            ? parentWidth - enclosingPadding
+            : leagueWidgetSize;
 
-    return Padding(
-      padding: EdgeInsets.all(enclosingPadding / 2),
-      child: ScrollablePositionedList.builder(
-        itemScrollController: itemScrollController,
-        scrollDirection: Axis.horizontal,
-        itemCount: results.leagueTables.length,
-        itemBuilder: (context, index) {
-          var entry = results.leagueTables[index];
-          return LeagueView(
-            league: entry,
-            width: leagueWidgetSize,
-          );
-        },
-      ),
+        return Padding(
+          padding: EdgeInsets.all(enclosingPadding / 2),
+          child: ScrollablePositionedList.builder(
+            itemScrollController: itemScrollController,
+            scrollDirection: Axis.horizontal,
+            itemCount: results.leagueTables.length,
+            itemBuilder: (context, index) {
+              var entry = results.leagueTables[index];
+              return LeagueView(
+                league: entry,
+                width: leagueWidgetSize,
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
@@ -216,6 +220,62 @@ class _LeagueViewState extends State<LeagueView> {
   var controller = ScrollController();
 
   final Color textColor = Colors.white;
+
+  static const EdgeInsets _cellPadding =
+      EdgeInsets.symmetric(horizontal: 10, vertical: 12);
+
+  static Map<int, TableColumnWidth> _columnWidths(LeagueWidgetSize size) {
+    const wRank = FlexColumnWidth(0.55);
+    const wTeam = FlexColumnWidth(1.75);
+    const wNum = FlexColumnWidth(1.0);
+    switch (size) {
+      case LeagueWidgetSize.small:
+        return {0: wRank, 1: wTeam, 2: wNum};
+      case LeagueWidgetSize.medium:
+        return {
+          0: wRank,
+          1: wTeam,
+          2: wNum,
+          3: wNum,
+          4: wNum,
+          5: wNum,
+        };
+      case LeagueWidgetSize.large:
+        return {
+          0: wRank,
+          1: wTeam,
+          2: wNum,
+          3: wNum,
+          4: wNum,
+          5: const FlexColumnWidth(1.1),
+          6: wNum,
+          7: wNum,
+        };
+    }
+  }
+
+  static TableCell _cell(
+    Widget child, {
+    required TextAlign align,
+  }) {
+    final Alignment a;
+    if (align == TextAlign.right) {
+      a = Alignment.centerRight;
+    } else if (align == TextAlign.center) {
+      a = Alignment.center;
+    } else {
+      a = Alignment.centerLeft;
+    }
+    return TableCell(
+      child: Padding(
+        padding: _cellPadding,
+        child: Align(
+          alignment: a,
+          child: child,
+        ),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -275,151 +335,117 @@ class _LeagueViewState extends State<LeagueView> {
       color: textColor,
     );
 
-    List<DataColumn> columns = [];
-    columns.add(DataColumn(
-      label: Text(
-        '#',
-        style: columnHeaderTextStyle,
+    final borderColor = Colors.white.withOpacity(0.12);
+    final headerCells = <TableCell>[
+      _cell(
+        Text('#', style: columnHeaderTextStyle),
+        align: TextAlign.right,
       ),
-    ));
-
-    columns.add(DataColumn(
-      label: Text(
-        'Mannschaft',
-        style: columnHeaderTextStyle,
+      _cell(
+        Text('Mannschaft', style: columnHeaderTextStyle),
+        align: TextAlign.left,
       ),
-    ));
+    ];
 
     if (leagueWidgetSize == LeagueWidgetSize.large ||
         leagueWidgetSize == LeagueWidgetSize.medium) {
-      columns.add(DataColumn(
-        label: Text(
-          'S',
-          style: columnHeaderTextStyle,
-        ),
-      ));
-
-      columns.add(DataColumn(
-        label: Text(
-          'U',
-          style: columnHeaderTextStyle,
-        ),
-      ));
-
-      columns.add(DataColumn(
-        label: Text(
-          'N',
-          style: columnHeaderTextStyle,
-        ),
-      ));
+      headerCells.addAll([
+        _cell(Text('S', style: columnHeaderTextStyle), align: TextAlign.right),
+        _cell(Text('U', style: columnHeaderTextStyle), align: TextAlign.right),
+        _cell(Text('N', style: columnHeaderTextStyle), align: TextAlign.right),
+      ]);
     }
 
     if (leagueWidgetSize == LeagueWidgetSize.large) {
-      columns.add(DataColumn(
-        label: Text(
-          'Sätze',
-          style: columnHeaderTextStyle,
+      headerCells.addAll([
+        _cell(
+          Text('Sätze', style: columnHeaderTextStyle),
+          align: TextAlign.right,
         ),
-      ));
-
-      columns.add(DataColumn(
-        label: Text(
-          'Diff.',
-          style: columnHeaderTextStyle,
+        _cell(
+          Text('Diff.', style: columnHeaderTextStyle),
+          align: TextAlign.right,
         ),
-      ));
+      ]);
     }
 
-    columns.add(DataColumn(
-      label: Text(
-        'Pkt.',
-        style: columnHeaderTextStyle,
+    headerCells.add(
+      _cell(
+        Text('Pkt.', style: columnHeaderTextStyle),
+        align: TextAlign.right,
       ),
-    ));
+    );
 
-    List<DataRow> rows = [];
+    final tableRows = <TableRow>[
+      TableRow(
+        decoration: BoxDecoration(color: Colors.grey[850]),
+        children: headerCells,
+      ),
+    ];
+
     for (var result in widget.league.teams) {
-      var index = widget.league.teams.indexOf(result) + 1;
-      List<DataCell> cells = [];
-
-      cells.add(
-        DataCell(
-          Text(
-            index.toString(),
-            style: columnEntryTextStyle,
-          ),
+      final index = widget.league.teams.indexOf(result) + 1;
+      final cells = <TableCell>[
+        _cell(
+          Text(index.toString(), style: columnEntryTextStyle),
+          align: TextAlign.right,
         ),
-      );
-
-      cells.add(
-        DataCell(
+        _cell(
           Text(
             result.teamName,
             style: columnEntryTextStyle,
+            overflow: TextOverflow.ellipsis,
           ),
+          align: TextAlign.left,
         ),
-      );
+      ];
 
       if (leagueWidgetSize == LeagueWidgetSize.large ||
           leagueWidgetSize == LeagueWidgetSize.medium) {
-        cells.add(
-          DataCell(
-            Text(
-              result.victories.toString(),
-              style: columnEntryTextStyle,
-            ),
+        cells.addAll([
+          _cell(
+            Text(result.victories.toString(), style: columnEntryTextStyle),
+            align: TextAlign.right,
           ),
-        );
-
-        cells.add(
-          DataCell(
-            Text(
-              result.draws.toString(),
-              style: columnEntryTextStyle,
-            ),
+          _cell(
+            Text(result.draws.toString(), style: columnEntryTextStyle),
+            align: TextAlign.right,
           ),
-        );
-
-        cells.add(
-          DataCell(
-            Text(
-              result.defeats.toString(),
-              style: columnEntryTextStyle,
-            ),
+          _cell(
+            Text(result.defeats.toString(), style: columnEntryTextStyle),
+            align: TextAlign.right,
           ),
-        );
+        ]);
       }
 
       if (leagueWidgetSize == LeagueWidgetSize.large) {
-        cells.add(
-          DataCell(
+        cells.addAll([
+          _cell(
             Text(
               '${result.ownScoredGoals} : ${result.enemyScoredGoals}',
               style: columnEntryTextStyle,
+              overflow: TextOverflow.ellipsis,
             ),
+            align: TextAlign.right,
           ),
-        );
-
-        cells.add(
-          DataCell(
+          _cell(
             Text(
-              (result.ownScoredGoals - result.enemyScoredGoals).toString(),
+              result.goalPointsDifference.toString(),
               style: columnEntryTextStyle,
             ),
+            align: TextAlign.right,
           ),
-        );
+        ]);
       }
 
       cells.add(
-        DataCell(
-          Text(
-            result.totalPoints.toString(),
-            style: columnEntryTextStyle,
-          ),
+        _cell(
+          Text(result.totalPoints.toString(), style: columnEntryTextStyle),
+          align: TextAlign.right,
         ),
       );
 
-      rows.add(DataRow(cells: cells));
+      tableRows.add(TableRow(children: cells));
     }
 
     return Card(
@@ -449,8 +475,19 @@ class _LeagueViewState extends State<LeagueView> {
               child: Padding(
                 padding: const EdgeInsets.all(10),
                 child: SingleChildScrollView(
-                    controller: controller,
-                    child: DataTable(columns: columns, rows: rows)),
+                  controller: controller,
+                  child: Table(
+                    columnWidths: _columnWidths(leagueWidgetSize),
+                    defaultVerticalAlignment:
+                        TableCellVerticalAlignment.middle,
+                    border: TableBorder(
+                      top: BorderSide(color: borderColor),
+                      bottom: BorderSide(color: borderColor),
+                      horizontalInside: BorderSide(color: borderColor),
+                    ),
+                    children: tableRows,
+                  ),
+                ),
               ),
             ),
           )

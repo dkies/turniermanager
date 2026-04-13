@@ -1,0 +1,24 @@
+{
+  "roundId": "round-test-1",
+  "roundName": "Runde 1",
+  "leagueTables": [
+    {
+      "leagueId": "liga-1",
+      "leagueName": "Liga A",
+      "ageGroup": null,
+      "teams": [
+        {
+          "teamName": "Team Alpha",
+          "victories": 3,
+          "defeats": 1,
+          "draws": 0,
+          "goalPointsDifference": 5,
+          "totalPoints": 9,
+          "ownScoredGoals": 10,
+          "enemyScoredGoals": 5,
+          "avgGoalDiffScore": 2.5
+        }
+      ]
+    }
+  ]
+}

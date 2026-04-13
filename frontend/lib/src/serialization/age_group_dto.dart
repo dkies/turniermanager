@@ -7,7 +7,7 @@ part 'age_group_dto.g.dart';
 class AgeGroupDto {
   AgeGroupDto(this.id, this.name);
 
-  String id;
+  String id; // UUID as String
   String name;
 
   factory AgeGroupDto.fromJson(Map<String, dynamic> json) =>

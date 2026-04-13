@@ -1,93 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Qualification Tournament</title>
-    <script src="apiBaseApi.js"></script>
-    <script src="config.js"></script>
-    <script src="/tailwind.css"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Qualification Tournament</title>
+  <script src="apiBaseApi.js"></script>
+  <script src="config.js"></script>
+  <script src="/tailwind.css"></script>
 </head>
+
 <body class="bg-gray-50 p-5">
-    <div class="max-w-2xl mx-auto">
-        <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Create Qualification Tournament</h1>
-        
-        <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
-            <p class="font-medium mb-3">Before creating a qualification tournament, make sure you have:</p>
-            <ol class="list-decimal pl-5 mb-4 space-y-1">
-                <li>Created a basic tournament</li>
-                <li>Added age groups</li>
-                <li>Added teams to those age groups</li>
-                <li>Added pitches for scheduling games</li>
-            </ol>
-            <p class="text-gray-600 text-sm">This will automatically create qualification leagues for each age group and schedule games.</p>
-        </div>
-        
-        <div class="mt-8">
-            <button id="createQualificationButton" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors duration-200 shadow-sm">Create Qualification Tournament</button>
-        </div>
-        
-        <div class="mt-6" id="response"></div>
-        <div class="mt-6 hidden" id="statusContainer">
-            <div class="w-full bg-gray-200 rounded-full h-2.5">
-                <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300 w-0"></div>
-            </div>
-            <p id="statusText" class="text-center mt-2 text-gray-700">Processing...</p>
-        </div>
+  <div class="max-w-2xl mx-auto">
+    <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Create Qualification Tournament</h1>
+
+    <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+      <p class="font-medium mb-3">Before creating a qualification tournament, make sure you have:</p>
+      <ol class="list-decimal pl-5 mb-4 space-y-1">
+        <li>Created a basic tournament</li>
+        <li>Added age groups</li>
+        <li>Added teams to those age groups</li>
+        <li>Added pitches for scheduling games</li>
+      </ol>
+      <p class="text-gray-600 text-sm">This will automatically create qualification leagues for each age group and
+        schedule games.</p>
     </div>
-    
-    <script>
-        document.getElementById('createQualificationButton').addEventListener('click', function() {
-            const responseContainer = document.getElementById('response');
-            const statusContainer = document.getElementById('statusContainer');
-            const progressBar = document.getElementById('progressBar');
-            const statusText = document.getElementById('statusText');
-            
-            // Show processing status
-            responseContainer.innerHTML = '';
-            statusContainer.classList.remove('hidden');
-            progressBar.style.width = '25%';
-            statusText.textContent = 'Creating qualification tournament...';
-            
-            const url = new URL(CONFIG.getApiUrl('qualification'), window.location.origin);
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => {
-                progressBar.style.width = '75%';
-                
-                if (!response.ok) {
-                    throw new Error(`Server responded with status ${response.status}`);
-                }
-                
-                return response.json();
-            })
-            .then(data => {
-                // Hide progress and show success
-                progressBar.style.width = '100%';
-                setTimeout(() => {
-                    statusContainer.classList.add('hidden');
-                    responseContainer.innerHTML = 
-                        `<div class="bg-green-100 border border-green-200 text-green-800 px-4 py-3 rounded">
-                            <p class="font-medium">Qualification tournament "${data.name}" created successfully!</p>
+
+    <div class="mt-8">
+      <button id="createQualificationButton"
+        class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors duration-200 shadow-sm">Start
+        Qualification Tournament</button>
+    </div>
+
+    <div class="mt-6" id="response"></div>
+    <div class="mt-6 hidden" id="statusContainer">
+      <div class="w-full bg-gray-200 rounded-full h-2.5">
+        <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300 w-0"></div>
+      </div>
+      <p id="statusText" class="text-center mt-2 text-gray-700">Processing...</p>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('createQualificationButton').addEventListener('click', function () {
+      const responseContainer = document.getElementById('response');
+      const statusContainer = document.getElementById('statusContainer');
+      const progressBar = document.getElementById('progressBar');
+      const statusText = document.getElementById('statusText');
+
+      // Show processing status
+      responseContainer.innerHTML = '';
+      statusContainer.classList.remove('hidden');
+      progressBar.style.width = '25%';
+      statusText.textContent = 'Creating qualification tournament...';
+
+      fetch(CONFIG.getApiUrl('qualification'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+        .then(response => {
+          progressBar.style.width = '75%';
+
+          if (!response.ok) {
+            throw new Error(`Server responded with status ${response.status}`);
+          }
+
+        })
+        .then(() => {
+          // Hide progress and show success
+          progressBar.style.width = '100%';
+          setTimeout(() => {
+            statusContainer.classList.add('hidden');
+            responseContainer.innerHTML =
+              `<div class="bg-green-100 border border-green-200 text-green-800 px-4 py-3 rounded">
+                            <p class="font-medium">Qualification tournament created successfully!</p>
                             <p class="mt-2 text-sm">Leagues and games have been generated for all age groups.</p>
                         </div>`;
-                }, 500);
-            })
-            .catch(error => {
-                // Hide progress and show error
-                statusContainer.classList.add('hidden');
-                responseContainer.innerHTML = 
-                    `<div class="bg-red-100 border border-red-200 text-red-800 px-4 py-3 rounded">
+          }, 500);
+        })
+        .catch(error => {
+          // Hide progress and show error
+          statusContainer.classList.add('hidden');
+          responseContainer.innerHTML =
+            `<div class="bg-red-100 border border-red-200 text-red-800 px-4 py-3 rounded">
                         <p class="font-medium">Error creating qualification tournament: ${error.message}</p>
                         <p class="mt-2 text-sm">Make sure you have created a basic tournament, age groups, teams, and pitches.</p>
                     </div>`;
-                console.error('Error:', error);
-            });
+          console.error('Error:', error);
         });
-    </script>
+    });
+  </script>
 </body>
+
 </html>

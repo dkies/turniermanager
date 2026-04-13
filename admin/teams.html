@@ -1,229 +1,237 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Team Management</title>
-    <script src="/tailwind.css"></script>
-    <script src="apiBaseApi.js"></script>
-    <script src="config.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team Management</title>
+  <script src="/tailwind.css"></script>
+  <script src="apiBaseApi.js"></script>
+  <script src="config.js"></script>
 </head>
+
 <body class="bg-gray-100 min-h-screen">
-    <div class="container mx-auto p-6">
-        <h1 class="text-3xl font-bold mb-8 text-center text-blue-800">Team Management</h1>
-        
-        <!-- Team Creation Form -->
-        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-            <h2 class="text-xl font-semibold mb-4 text-blue-700">Create New Team</h2>
-            <form id="teamForm" class="space-y-4">
-                <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700">Team Name</label>
-                    <input type="text" id="name" name="name" required 
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
-                    <p class="mt-1 text-sm text-gray-500">e.g., "FC Barcelona", "Manchester United"</p>
-                </div>
-                
-                <div>
-                    <label for="ageGroup" class="block text-sm font-medium text-gray-700">Age Group</label>
-                    <select id="ageGroup" name="ageGroup" required
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Select Age Group</option>
-                        <!-- Age groups will be loaded here -->
-                    </select>
-                </div>
-                
-                <div class="flex justify-end">
-                    <button type="submit" 
-                        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        Create Team
-                    </button>
-                </div>
-            </form>
+  <div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-8 text-center text-blue-800">Team Management</h1>
+
+    <!-- Team Creation Form -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+      <h2 class="text-xl font-semibold mb-4 text-blue-700">Create New Team</h2>
+      <form id="teamForm" class="space-y-4">
+        <div>
+          <label for="name" class="block text-sm font-medium text-gray-700">Team Name</label>
+          <input type="text" id="name" name="name" required
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
+          <p class="mt-1 text-sm text-gray-500">e.g., "FC Barcelona", "Manchester United"</p>
         </div>
-        
-        <!-- Bulk Upload Section -->
-        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-            <h2 class="text-xl font-semibold mb-4 text-blue-700">Bulk Upload Teams</h2>
-            <div class="space-y-4">
-                <div>
-                    <label for="bulkAgeGroup" class="block text-sm font-medium text-gray-700">Age Group for All Teams</label>
-                    <select id="bulkAgeGroup" name="bulkAgeGroup" required
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Select Age Group</option>
-                        <!-- Age groups will be loaded here -->
-                    </select>
-                </div>
-                
-                <div>
-                    <label for="teamNames" class="block text-sm font-medium text-gray-700">Team Names (One per line)</label>
-                    <textarea id="teamNames" name="teamNames" rows="5" 
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="FC Barcelona&#10;Manchester United&#10;Bayern Munich"></textarea>
-                </div>
-                
-                <div class="flex justify-end">
-                    <button id="bulkUploadBtn" type="button" 
-                        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                        Upload Teams
-                    </button>
-                </div>
-            </div>
+
+        <div>
+          <label for="ageGroup" class="block text-sm font-medium text-gray-700">Age Group</label>
+          <select id="ageGroup" name="ageGroup" required
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="">Select Age Group</option>
+            <!-- Age groups will be loaded here -->
+          </select>
         </div>
-        
-        <!-- Teams List -->
-        <div class="bg-white p-6 rounded-lg shadow-md">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold text-blue-700">Teams List</h2>
-                <div class="flex items-center space-x-4">
-                    <div>
-                        <label for="filterAgeGroup" class="block text-sm font-medium text-gray-700">Filter by Age Group</label>
-                        <select id="filterAgeGroup" name="filterAgeGroup"
-                            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">All Age Groups</option>
-                            <!-- Age groups will be loaded here -->
-                        </select>
-                    </div>
-                    <button id="refreshBtn" class="text-blue-600 hover:text-blue-800">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age Group</th>
-                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="teamsTableBody" class="bg-white divide-y divide-gray-200">
-                        <!-- Teams will be inserted here -->
-                    </tbody>
-                </table>
-            </div>
-            <div id="noTeams" class="text-center py-4 text-gray-500 hidden">
-                No teams found. Create your first team using the form above.
-            </div>
+
+        <div class="flex justify-end">
+          <button type="submit"
+            class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Create Team
+          </button>
         </div>
+      </form>
     </div>
 
-    <script>
-        const TEAM_API_URL = CONFIG.getApiUrl('teams');
-        const AGEGROUP_API_URL = CONFIG.getApiUrl('ageGroups');
-        let allTeams = [];
-        let allAgeGroups = [];
-        
-        // Load data when the page loads
-        document.addEventListener('DOMContentLoaded', async () => {
-            await loadAgeGroups();
-            loadTeams();
-            
-            // Setup event listeners
-            document.getElementById('teamForm').addEventListener('submit', handleFormSubmit);
-            document.getElementById('bulkUploadBtn').addEventListener('click', handleBulkUpload);
-            document.getElementById('refreshBtn').addEventListener('click', loadTeams);
-            document.getElementById('filterAgeGroup').addEventListener('change', filterTeams);
-        });
-        
-        // Load age groups from the API
-        async function loadAgeGroups() {
-            try {
-                const response = await fetch(`${AGEGROUP_API_URL}/getAll`);
-                allAgeGroups = await response.json();
-                
-                // Populate age group dropdowns
-                populateAgeGroupDropdowns();
-            } catch (error) {
-                console.error('Error loading age groups:', error);
-                alert('Failed to load age groups. Please try again later.');
-            }
-        }
-        
-        // Populate all age group dropdowns
-        function populateAgeGroupDropdowns() {
-            const dropdowns = ['ageGroup', 'bulkAgeGroup'];
-            
-            dropdowns.forEach(dropdownId => {
-                populateDropdown(dropdownId, allAgeGroups);
-            });
+    <!-- Bulk Upload Section -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+      <h2 class="text-xl font-semibold mb-4 text-blue-700">Bulk Upload Teams</h2>
+      <div class="space-y-4">
+        <div>
+          <label for="bulkAgeGroup" class="block text-sm font-medium text-gray-700">Age Group for All Teams</label>
+          <select id="bulkAgeGroup" name="bulkAgeGroup" required
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="">Select Age Group</option>
+            <!-- Age groups will be loaded here -->
+          </select>
+        </div>
 
-            populateDropdown('filterAgeGroup', allAgeGroups.map(ag => ({
-                id: ag.name,
-                name: ag.name
-            })));
-        }
+        <div>
+          <label for="teamNames" class="block text-sm font-medium text-gray-700">Team Names (One per line)</label>
+          <textarea id="teamNames" name="teamNames" rows="5"
+            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="FC Barcelona&#10;Manchester United&#10;Bayern Munich"></textarea>
+        </div>
 
-        function populateDropdown(dropdownId, options) {
-            const dropdown = document.getElementById(dropdownId);
-            
-            // Clear existing options (except the first one)
-            while (dropdown.options.length > 1) {
-                dropdown.remove(1);
-            }
-            
-            // Add options
-            options.forEach(option => {
-                const opt = document.createElement('option');
-                opt.value = option.id;
-                opt.textContent = option.name;
-                dropdown.appendChild(opt);
-            });
-        }
-        
-        // Load teams from the API
-        async function loadTeams() {
-            try {
-                const response = await fetch(`${TEAM_API_URL}/getAll`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                allTeams = await response.json();
-                displayTeams(allTeams);
-            } catch (error) {
-                console.error('Error loading teams:', error);
-                alert('Failed to load teams. Please try again later.');
-                // If the endpoint doesn't exist yet, show an empty state
-                displayTeams([]);
-            }
-        }
+        <div class="flex justify-end">
+          <button id="bulkUploadBtn" type="button"
+            class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            Upload Teams
+          </button>
+        </div>
+      </div>
+    </div>
 
-        // Filter teams by age group
-        function filterTeams() {
-            const ageGroupName = document.getElementById('filterAgeGroup').value;
-            
-            if (!ageGroupName) {
-                // Show all teams if no filter is selected
-                displayTeams(allTeams);
-            } else {
-                // Filter teams by the selected age group
-                const filteredTeams = allTeams.filter(team => 
-                    team.ageGroup && team.ageGroup === ageGroupName
-                );
-                displayTeams(filteredTeams);
-            }
+    <!-- Teams List -->
+    <div class="bg-white p-6 rounded-lg shadow-md">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold text-blue-700">Teams List</h2>
+        <div class="flex items-center space-x-4">
+          <div>
+            <label for="filterAgeGroup" class="block text-sm font-medium text-gray-700">Filter by Age Group</label>
+            <select id="filterAgeGroup" name="filterAgeGroup"
+              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">All Age Groups</option>
+              <!-- Age groups will be loaded here -->
+            </select>
+          </div>
+          <button id="refreshBtn" class="text-blue-600 hover:text-blue-800">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd"
+                d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Name</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age
+                Group</th>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions</th>
+            </tr>
+          </thead>
+          <tbody id="teamsTableBody" class="bg-white divide-y divide-gray-200">
+            <!-- Teams will be inserted here -->
+          </tbody>
+        </table>
+      </div>
+      <div id="noTeams" class="text-center py-4 text-gray-500 hidden">
+        No teams found. Create your first team using the form above.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TEAM_API_URL = CONFIG.getApiUrl('teams');
+    const AGEGROUP_API_URL = CONFIG.getApiUrl('ageGroups');
+    let allTeams = [];
+    let allAgeGroups = [];
+
+    // Load data when the page loads
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadAgeGroups();
+      loadTeams();
+
+      // Setup event listeners
+      document.getElementById('teamForm').addEventListener('submit', handleFormSubmit);
+      document.getElementById('bulkUploadBtn').addEventListener('click', handleBulkUpload);
+      document.getElementById('refreshBtn').addEventListener('click', loadTeams);
+      document.getElementById('filterAgeGroup').addEventListener('change', filterTeams);
+    });
+
+    // Load age groups from the API
+    async function loadAgeGroups() {
+      try {
+        const response = await fetch(`${AGEGROUP_API_URL}/getAll`);
+        allAgeGroups = await response.json();
+
+        // Populate age group dropdowns
+        populateAgeGroupDropdowns();
+      } catch (error) {
+        console.error('Error loading age groups:', error);
+        alert('Failed to load age groups. Please try again later.');
+      }
+    }
+
+    // Populate all age group dropdowns
+    function populateAgeGroupDropdowns() {
+      const dropdowns = ['ageGroup', 'bulkAgeGroup'];
+
+      dropdowns.forEach(dropdownId => {
+        populateDropdown(dropdownId, allAgeGroups);
+      });
+
+      populateDropdown('filterAgeGroup', allAgeGroups.map(ag => ({
+        id: ag.name,
+        name: ag.name
+      })));
+    }
+
+    function populateDropdown(dropdownId, options) {
+      const dropdown = document.getElementById(dropdownId);
+
+      // Clear existing options (except the first one)
+      while (dropdown.options.length > 1) {
+        dropdown.remove(1);
+      }
+
+      // Add options
+      options.forEach(option => {
+        const opt = document.createElement('option');
+        opt.value = option.id;
+        opt.textContent = option.name;
+        dropdown.appendChild(opt);
+      });
+    }
+
+    // Load teams from the API
+    async function loadTeams() {
+      try {
+        const response = await fetch(`${TEAM_API_URL}/getAll`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        
-        // Display teams in the table
-        function displayTeams(teams) {
-            const tableBody = document.getElementById('teamsTableBody');
-            const noTeamsMsg = document.getElementById('noTeams');
-            
-            // Clear existing table content
-            tableBody.innerHTML = '';
-            
-            if (teams.length === 0) {
-                noTeamsMsg.classList.remove('hidden');
-            } else {
-                noTeamsMsg.classList.add('hidden');
-                
-                // Add each team to the table
-                teams.forEach(team => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
+        allTeams = await response.json();
+        displayTeams(allTeams);
+      } catch (error) {
+        console.error('Error loading teams:', error);
+        alert('Failed to load teams. Please try again later.');
+        // If the endpoint doesn't exist yet, show an empty state
+        displayTeams([]);
+      }
+    }
+
+    // Filter teams by age group
+    function filterTeams() {
+      const ageGroupName = document.getElementById('filterAgeGroup').value;
+
+      if (!ageGroupName) {
+        // Show all teams if no filter is selected
+        displayTeams(allTeams);
+      } else {
+        // Filter teams by the selected age group
+        const filteredTeams = allTeams.filter(team =>
+          team.ageGroup && team.ageGroup === ageGroupName
+        );
+        displayTeams(filteredTeams);
+      }
+    }
+
+    // Display teams in the table
+    function displayTeams(teams) {
+      const tableBody = document.getElementById('teamsTableBody');
+      const noTeamsMsg = document.getElementById('noTeams');
+
+      // Clear existing table content
+      tableBody.innerHTML = '';
+
+      if (teams.length === 0) {
+        noTeamsMsg.classList.remove('hidden');
+      } else {
+        noTeamsMsg.classList.add('hidden');
+
+        // Add each team to the table
+        teams.forEach(team => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${team.id}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${team.name}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${team.ageGroup}</td>
@@ -238,123 +246,125 @@
                             </div>
                         </td>
                     `;
-                    tableBody.appendChild(row);
-                });
-                
-                // Add event listeners to action buttons
-                document.querySelectorAll('.delete-btn').forEach(btn => {
-                    btn.addEventListener('click', handleDelete);
-                });
-            }
+          tableBody.appendChild(row);
+        });
+
+        // Add event listeners to action buttons
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', handleDelete);
+        });
+      }
+    }
+
+    // Handle form submission for creating a new team
+    async function handleFormSubmit(event) {
+      event.preventDefault();
+
+      const ageGroupId = document.getElementById('ageGroup').value;
+
+      const formData = {
+        name: document.getElementById('name').value,
+        ageGroupId: ageGroupId
+      };
+
+      try {
+        const response = await fetch(`${TEAM_API_URL}/create`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+          // Reset the form and reload the teams
+          document.getElementById('teamForm').reset();
+          loadTeams();
+        } else {
+          throw new Error('Failed to create team');
         }
-        
-        // Handle form submission for creating a new team
-        async function handleFormSubmit(event) {
-            event.preventDefault();
-            
-            const ageGroupId = document.getElementById('ageGroup').value;
-            const ageGroup = allAgeGroups.find(ag => ag.id === ageGroupId);
-            
-            const formData = {
-                name: document.getElementById('name').value,
-                ageGroup: ageGroup
-            };
-            
-            try {
-                const response = await fetch(`${TEAM_API_URL}/create`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
-                });
-                
-                if (response.ok) {
-                    // Reset the form and reload the teams
-                    document.getElementById('teamForm').reset();
-                    loadTeams();
-                } else {
-                    throw new Error('Failed to create team');
-                }
-            } catch (error) {
-                console.error('Error creating team:', error);
-                alert('Failed to create team. Please try again.');
-            }
+      } catch (error) {
+        console.error('Error creating team:', error);
+        alert('Failed to create team. Please try again.');
+      }
+    }
+
+    // Handle bulk upload of teams
+    async function handleBulkUpload() {
+      const ageGroupId = document.getElementById('bulkAgeGroup').value;
+      if (!ageGroupId) {
+        alert('Please select an age group for the teams.');
+        return;
+      }
+
+      const teamNamesText = document.getElementById('teamNames').value.trim();
+      if (!teamNamesText) {
+        alert('Please enter at least one team name.');
+        return;
+      }
+
+      const teamNames = teamNamesText.split('\n').filter(name => name.trim() !== '');
+      if (teamNames.length === 0) {
+        alert('Please enter at least one valid team name.');
+        return;
+      }
+
+      // Create team objects
+      const teams = teamNames.map(name => ({
+        name: name.trim(),
+        ageGroupId: ageGroupId
+      }));
+
+      try {
+        const response = await fetch(`${TEAM_API_URL}/bulk`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ teams })
+        });
+
+        if (response.ok) {
+          // Reset the form and reload the teams
+          document.getElementById('bulkAgeGroup').value = '';
+          document.getElementById('teamNames').value = '';
+          loadTeams();
+          alert(`Successfully added ${teams.length} teams.`);
+        } else {
+          throw new Error('Failed to upload teams');
         }
-        
-        // Handle bulk upload of teams
-        async function handleBulkUpload() {
-            const ageGroupId = document.getElementById('bulkAgeGroup').value;
-            if (!ageGroupId) {
-                alert('Please select an age group for the teams.');
-                return;
-            }
-            
-            const teamNamesText = document.getElementById('teamNames').value.trim();
-            if (!teamNamesText) {
-                alert('Please enter at least one team name.');
-                return;
-            }
-            
-            const teamNames = teamNamesText.split('\n').filter(name => name.trim() !== '');
-            if (teamNames.length === 0) {
-                alert('Please enter at least one valid team name.');
-                return;
-            }
-            
-            const ageGroup = allAgeGroups.find(ag => ag.id === ageGroupId);
-            
-            // Create team objects
-            const teams = teamNames.map(name => ({
-                name: name.trim(),
-                ageGroup: ageGroup
-            }));
-            
-            try {
-                const response = await fetch(`${TEAM_API_URL}/bulk`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(teams)
-                });
-                
-                if (response.ok) {
-                    // Reset the form and reload the teams
-                    document.getElementById('bulkAgeGroup').value = '';
-                    document.getElementById('teamNames').value = '';
-                    loadTeams();
-                    alert(`Successfully added ${teams.length} teams.`);
-                } else {
-                    throw new Error('Failed to upload teams');
-                }
-            } catch (error) {
-                console.error('Error uploading teams:', error);
-                alert('Failed to upload teams. Please try again.');
-            }
+      } catch (error) {
+        console.error('Error uploading teams:', error);
+        alert('Failed to upload teams. Please try again.');
+      }
+    }
+
+    // Handle deletion of a team
+    async function handleDelete(event) {
+      const id = event.target.dataset.id;
+
+      if (confirm('Are you sure you want to delete this team?')) {
+        try {
+          const response = await fetch(`${TEAM_API_URL}/delete`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(id)
+          });
+
+          if (response.ok) {
+            loadTeams();
+          } else {
+            throw new Error('Failed to delete team');
+          }
+        } catch (error) {
+          console.error('Error deleting team:', error);
+          alert('Failed to delete team. Please try again.');
         }
-        
-        // Handle deletion of a team
-        async function handleDelete(event) {
-            const id = event.target.dataset.id;
-            
-            if (confirm('Are you sure you want to delete this team?')) {
-                try {
-                    const response = await fetch(`${TEAM_API_URL}/team/${id}`, {
-                        method: 'DELETE'
-                    });
-                    
-                    if (response.ok) {
-                        loadTeams();
-                    } else {
-                        throw new Error('Failed to delete team');
-                    }
-                } catch (error) {
-                    console.error('Error deleting team:', error);
-                    alert('Failed to delete team. Please try again.');
-                }
-            }
-        }
-    </script>
+      }
+    }
+  </script>
 </body>
+
 </html>

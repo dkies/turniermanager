@@ -1,0 +1,8 @@
+[
+  { "id": "1", "name": "Platz 1", "ageGroup": null },
+  {
+    "id": "2",
+    "name": "Platz 2",
+    "ageGroup": { "id": "age-1", "name": "U12" }
+  }
+]

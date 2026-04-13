@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   flutter_web_plugins:
     sdk: flutter
   flutter_command: ^7.0.0
@@ -19,7 +21,7 @@ dependencies:
   go_router: ^14.6.2
   scrollable_positioned_list: ^0.3.8
   stop_watch_timer: ^3.2.1
-  intl: ^0.20.2
+  intl: ^0.19.0
   audioplayers: ^6.4.0
   separated_row: ^3.0.4
   separated_column: ^3.0.4
@@ -40,7 +42,15 @@ flutter:
   # Enable generation of localized Strings from arb files.
   generate: true
 
+  # Font für deutsche Sonderzeichen (ß, ä, ö, ü) – siehe assets/fonts/README.md
+  # Nur eine Datei nötig; Bold optional.
+  fonts:
+    - family: NotoSans
+      fonts:
+        - asset: assets/fonts/NotoSans-Regular.ttf
+
   assets:
     - assets/images/
     - assets/sounds/
     - assets/textfiles/
+    - assets/fonts/

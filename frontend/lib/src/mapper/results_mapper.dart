@@ -26,6 +26,8 @@ class ResultsMapper {
       dto.defeats,
       dto.ownScoredGoals,
       dto.enemyScoredGoals,
+      dto.goalPointsDifference,
+      dto.avgGoalDiffScore,
     );
   }
 }

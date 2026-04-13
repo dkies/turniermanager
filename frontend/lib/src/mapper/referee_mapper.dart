@@ -22,7 +22,7 @@ class RefereeMapper {
   GameGroup mapGameGroup(GameGroupDto dto) {
     return GameGroup(
       dto.startTime,
-      dto.gameDurationInMinutes,
+      dto.playTimeInSeconds,
     )..games = dto.games.map((game) => mapGame(game)).toList();
   }
 
@@ -33,19 +33,28 @@ class RefereeMapper {
   }
 
   Game mapGame(GameDto dto) {
+    // New structure: all fields are Strings
     return Game(
+      dto.id,
       dto.gameNumber,
-      mapPitch(dto.pitch),
-      mapTeam(dto.teamA),
-      mapTeam(dto.teamB),
+      Pitch('', dto.pitch), // Create Pitch with empty id and name from string
+      Team(dto.teamA), // Create Team from string
+      Team(dto.teamB), // Create Team from string
       dto.leagueName,
       dto.ageGroupName,
+      dto.type,
     );
   }
 
   RoundSettings mapRoundSettings(RoundSettingsDto dto) {
-    return RoundSettings(mapGameSettings(dto.gameSettings))
-      ..numberPerRounds = dto.numberPerRounds;
+    final gameSettings = GameSettings(
+      DateTime.now(),
+      dto.breakTimeInSeconds,
+      dto.playTimeInSeconds,
+    );
+    return RoundSettings(gameSettings, roundName: dto.roundName)
+      ..numberPerRounds =
+          Map<String, int>.from(dto.maxTeamsPerLeaguePerAgeGroup);
   }
 
   GameSettings mapGameSettings(GameSettingsDto dto) {
@@ -57,8 +66,12 @@ class RefereeMapper {
   }
 
   RoundSettingsDto reverseMapRoundSettings(RoundSettings model) {
-    return RoundSettingsDto(reverseMapGameSettings(model.gameSettings))
-      ..numberPerRounds = model.numberPerRounds;
+    return RoundSettingsDto(
+      Map<String, int>.from(model.numberPerRounds),
+      model.gameSettings.playTime,
+      model.gameSettings.breakTime,
+      model.roundName,
+    );
   }
 
   GameSettingsDto reverseMapGameSettings(GameSettings model) {

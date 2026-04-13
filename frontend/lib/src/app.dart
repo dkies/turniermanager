@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:tournament_manager/src/manager/game_manager.dart';
+import 'package:tournament_manager/src/manager/game_manager_base.dart';
 import 'package:tournament_manager/src/manager/settings_manager.dart';
 import 'package:tournament_manager/src/views/admin_view.dart';
 import 'package:tournament_manager/src/views/age_group_view.dart';
@@ -21,22 +22,20 @@ class MainWidget extends StatelessWidget {
       GoRoute(
         path: LinkOverview.routeName,
         builder: (context, state) {
-          final GameManager gameManager = di<GameManager>();
+          final gameManager = di<GameManager>();
           gameManager.getAgeGroupsCommand();
-
           return const LinkOverview();
         },
         routes: [
           GoRoute(
             path: ScheduleView.routeName,
             builder: (context, state) {
-              final GameManager gameManager = di<GameManager>();
+              final gameManager = di<GameManager>();
               gameManager.getAgeGroupsCommand();
 
-              var ageGroupParam =
+              final ageGroupParam =
                   state.uri.queryParameters[ScheduleView.ageGroupQueryParam] ??
                       "Altersklasse ??";
-
               gameManager.getScheduleByAgeGroupNameCommand(ageGroupParam);
 
               return ScheduleView(ageGroupParam);
@@ -45,13 +44,12 @@ class MainWidget extends StatelessWidget {
           GoRoute(
             path: ResultsView.routeName,
             builder: (context, state) {
-              final GameManager gameManager = di<GameManager>();
+              final gameManager = di<GameManager>();
               gameManager.getAgeGroupsCommand();
 
-              var ageGroupParam =
+              final ageGroupParam =
                   state.uri.queryParameters[ResultsView.ageGroupQueryParam] ??
                       "Altersklasse ??";
-
               gameManager.getResultsByAgeGroupNameCommand(ageGroupParam);
 
               return ResultsView(ageGroupParam);
@@ -60,13 +58,12 @@ class MainWidget extends StatelessWidget {
           GoRoute(
             path: AgeGroupView.routeName,
             builder: (context, state) {
-              final GameManager gameManager = di<GameManager>();
+              final gameManager = di<GameManager>();
               gameManager.getAgeGroupsCommand();
 
-              var ageGroupParam =
+              final ageGroupParam =
                   state.uri.queryParameters[AgeGroupView.ageGroupQueryParam] ??
                       "Altersklasse ??";
-
               gameManager.getScheduleByAgeGroupNameCommand(ageGroupParam);
               gameManager.getResultsByAgeGroupNameCommand(ageGroupParam);
 
@@ -76,11 +73,10 @@ class MainWidget extends StatelessWidget {
           GoRoute(
             path: RefereeView.routeName,
             builder: (context, state) {
-              final GameManager gameManager = di<GameManager>();
-              final SettingsManager settingsManager = di<SettingsManager>();
+              final gameManager = di<GameManager>();
+              final settingsManager = di<SettingsManager>();
 
               settingsManager.getCurrentTimeInMillisecondsCommand();
-
               gameManager.getCurrentRoundCommand();
               settingsManager.getCanPauseCommand();
               settingsManager.getCurrentlyRunningGamesCommand();
@@ -91,7 +87,8 @@ class MainWidget extends StatelessWidget {
           GoRoute(
             path: AdminView.routeName,
             builder: (context, state) {
-              final GameManager gameManager = di<GameManager>();
+              final gameManager = di<GameManager>();
+              gameManager.getAgeGroupsCommand();
               gameManager.getAllGamesCommand();
               gameManager.getAllPitchesCommand();
 
@@ -113,14 +110,24 @@ class MainWidget extends StatelessWidget {
         }
 
         return MaterialApp.router(
-          // Providing a restorationScopeId allows the Navigator built by the
-          // MaterialApp to restore the navigation stack when a user leaves and
-          // returns to the app after it has been killed while running in the
-          // background.
           restorationScopeId: 'app',
           title: "Turniermanager",
-          theme: ThemeData.dark(),
+          theme: ThemeData.dark().copyWith(
+            textTheme: ThemeData.dark().textTheme.apply(
+                  fontFamily: 'NotoSans',
+                ),
+          ),
           routerConfig: _router,
+          locale: const Locale('de', 'DE'),
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('de', 'DE'),
+            Locale('en'),
+          ],
         );
       },
     );

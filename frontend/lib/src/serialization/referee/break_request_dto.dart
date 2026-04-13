@@ -6,12 +6,16 @@ part 'break_request_dto.g.dart';
 @JsonSerializable()
 class BreakRequestDto {
   BreakRequestDto(
-    this.breakTime,
-    this.duration,
+    this.startTime,
+    this.endTime,
+    this.ageGroupName,
+    this.message,
   );
 
-  DateTime breakTime;
-  int duration;
+  DateTime startTime;
+  DateTime endTime;
+  String ageGroupName; // UUID as String
+  String message;
 
   factory BreakRequestDto.fromJson(Map<String, dynamic> json) =>
       _$BreakRequestDtoFromJson(json);
