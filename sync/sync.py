@@ -1,6 +1,10 @@
 """
-Sync script that fetches tournament data from the backend API
-and uploads JSON files to an FTP server for the live-ticker.
+Sync script that fetches tournament data from multiple backend instances
+and uploads merged JSON files to an FTP server for the live-ticker.
+
+Supports multiple backends for the same event where each backend manages
+different age groups. The script merges tournament data (union of age groups)
+and fetches each age group from the backend that provides it.
 """
 
 import io
@@ -8,6 +12,7 @@ import json
 import logging
 import os
 import time
+from datetime import datetime, timezone
 from ftplib import FTP, FTP_TLS
 
 import requests
@@ -18,7 +23,16 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-BACKEND_URL = os.environ.get("BACKEND_URL", "http://turnier-backend:8080").rstrip("/")
+# Unterstuetzt BACKEND_URLS (kommasepariert) und BACKEND_URL (einzeln, Rueckwaertskompatibilitaet)
+BACKEND_URLS = [
+    u.strip().rstrip("/")
+    for u in os.environ.get(
+        "BACKEND_URLS",
+        os.environ.get("BACKEND_URL", "http://turnier-backend:8080"),
+    ).split(",")
+    if u.strip()
+]
+
 FTP_HOST = os.environ["FTP_HOST"]
 FTP_USER = os.environ["FTP_USER"]
 FTP_PASS = os.environ["FTP_PASS"]
@@ -27,8 +41,8 @@ FTP_USE_TLS = os.environ.get("FTP_TLS", "false").lower() == "true"
 SYNC_INTERVAL = int(os.environ.get("SYNC_INTERVAL", "30"))
 
 
-def fetch_json(path: str) -> dict | None:
-    url = f"{BACKEND_URL}{path}"
+def fetch_json(backend_url: str, path: str) -> dict | None:
+    url = f"{backend_url}{path}"
     try:
         resp = requests.get(url, timeout=10)
         if resp.status_code == 200:
@@ -37,6 +51,38 @@ def fetch_json(path: str) -> dict | None:
     except requests.RequestException as e:
         log.error("Failed to fetch %s: %s", url, e)
     return None
+
+
+def fetch_from_all(path: str) -> list[dict]:
+    """Fetches path from all backends, returns list of successful responses."""
+    results = []
+    for url in BACKEND_URLS:
+        data = fetch_json(url, path)
+        if data is not None:
+            results.append(data)
+    return results
+
+
+def merge_tournaments(tournaments: list[dict]) -> dict:
+    """Merges tournament data from multiple backends.
+
+    Takes the tournament name from the first backend and builds
+    a unified ageGroups list (deduplicated by id).
+    """
+    merged = {
+        "tournamentName": tournaments[0]["tournamentName"],
+        "lastUpdated": datetime.now(timezone.utc).astimezone().isoformat(),
+        "ageGroups": [],
+    }
+
+    seen_ids = set()
+    for t in tournaments:
+        for ag in t.get("ageGroups", []):
+            if ag["id"] not in seen_ids:
+                seen_ids.add(ag["id"])
+                merged["ageGroups"].append(ag)
+
+    return merged
 
 
 def upload_ftp(files: dict[str, bytes]) -> bool:
@@ -59,27 +105,33 @@ def upload_ftp(files: dict[str, bytes]) -> bool:
 
 
 def sync_once():
-    tournament = fetch_json("/export/tournament")
-    if tournament is None:
-        log.warning("Could not fetch tournament data, skipping cycle")
+    # Turnierdaten von allen Backends holen
+    tournaments = fetch_from_all("/export/tournament")
+    if not tournaments:
+        log.warning("Could not fetch tournament data from any backend, skipping cycle")
         return
 
-    files: dict[str, bytes] = {}
+    # Turnierdaten zusammenfuehren
+    tournament = merge_tournaments(tournaments)
 
-    # tournament.json
+    files: dict[str, bytes] = {}
     files["tournament.json"] = json.dumps(tournament, ensure_ascii=False, indent=2).encode("utf-8")
 
-    # Per age group JSON
+    # Pro Altersgruppe: vom ersten Backend holen, das Daten liefert
     for ag in tournament.get("ageGroups", []):
         slug = ag["id"]
-        data = fetch_json(f"/export/agegroup/{slug}")
-        if data is not None:
-            filename = f"{slug}.json"
-            files[filename] = json.dumps(data, ensure_ascii=False, indent=2).encode("utf-8")
-        else:
-            log.warning("Could not fetch data for age group '%s'", slug)
+        data = None
+        for url in BACKEND_URLS:
+            data = fetch_json(url, f"/export/agegroup/{slug}")
+            if data is not None:
+                break
 
-    # Upload all files to FTP
+        if data is not None:
+            files[f"{slug}.json"] = json.dumps(data, ensure_ascii=False, indent=2).encode("utf-8")
+        else:
+            log.warning("Could not fetch data for age group '%s' from any backend", slug)
+
+    # Alle Dateien per FTP hochladen
     if files:
         if upload_ftp(files):
             log.info("Sync complete: %d files uploaded", len(files))
@@ -89,8 +141,8 @@ def sync_once():
 
 def main():
     log.info(
-        "Starting sync (backend=%s, ftp=%s:%s, interval=%ds, tls=%s)",
-        BACKEND_URL, FTP_HOST, FTP_PATH, SYNC_INTERVAL, FTP_USE_TLS,
+        "Starting sync (backends=%s, ftp=%s:%s, interval=%ds, tls=%s)",
+        BACKEND_URLS, FTP_HOST, FTP_PATH, SYNC_INTERVAL, FTP_USE_TLS,
     )
 
     while True:
