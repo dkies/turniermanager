@@ -8,9 +8,7 @@
   <meta name="description" content="Spielplan und Ergebnisse">
   <title>LiveTicker</title>
   <link rel="stylesheet" href="css/styles.css">
-  <link rel="manifest" href="manifest.json">
   <link rel="icon" href="assets/favicon.ico" sizes="any">
-  <link rel="apple-touch-icon" href="assets/icon-180.png">
 </head>
 
 <body>
@@ -21,7 +19,6 @@
   <header class="header">
     <div class="header__row">
       <h1 class="header__title" id="tournament-name">LiveTicker</h1>
-      <button class="install-btn" id="install-btn" hidden>Installieren</button>
     </div>
     <p class="header__updated" id="last-updated"></p>
     <div class="header__stale" id="stale-banner" hidden>
@@ -66,21 +63,13 @@
     </svg>
   </button>
 
-  <div class="update-banner" id="update-banner" hidden>
-    Neue Version verf&uuml;gbar
-    <button class="update-banner__btn">Aktualisieren</button>
-  </div>
-
   <div class="offline-bar" id="offline-bar" hidden>
     Keine Verbindung &ndash; <span id="offline-time"></span>
   </div>
 
-  <div class="ios-banner" id="ios-install-banner" hidden>
-    <p class="ios-banner__text">
-      Zum Homescreen: <strong>Teilen</strong> <span class="ios-banner__icon">&#x2B06;&#xFE0E;</span> &rarr; <strong>Zum Home-Bildschirm</strong>
-    </p>
-    <button class="ios-banner__close" aria-label="Schließen">&times;</button>
-  </div>
+  <footer class="app-footer">
+    <a href="https://jf-landkreis-karlsruhe.de/impressum/" target="_blank" rel="noopener">Impressum</a>
+  </footer>
 
   <script type="module" src="js/app.js"></script>
 </body>

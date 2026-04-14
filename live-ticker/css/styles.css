@@ -107,25 +107,6 @@ body {
   letter-spacing: -0.01em;
 }
 
-.install-btn {
-  flex-shrink: 0;
-  padding: 5px 14px;
-  border: 2px solid #fff;
-  border-radius: 20px;
-  background: transparent;
-  color: #fff;
-  font-family: var(--font);
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-
-.install-btn:active {
-  background: #fff;
-  color: var(--color-primary);
-}
-
 .header__updated {
   font-size: 0.75rem;
   opacity: 0.8;
@@ -412,47 +393,6 @@ body {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-
-/* ── Update Banner ──────────────────────────────── */
-.update-banner {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--color-primary);
-  color: #fff;
-  text-align: center;
-  padding: 12px var(--spacing);
-  font-size: 0.85rem;
-  font-weight: 600;
-  z-index: 110;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
-}
-
-.update-banner[hidden] {
-  display: none;
-}
-
-.update-banner__btn {
-  padding: 6px 16px;
-  border: 2px solid #fff;
-  border-radius: 20px;
-  background: transparent;
-  color: #fff;
-  font-family: var(--font);
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.update-banner__btn:active {
-  background: #fff;
-  color: var(--color-primary);
 }
 
 /* ── Offline Bar ─────────────────────────────────── */
@@ -810,45 +750,16 @@ body {
   color: #fff;
 }
 
-/* ── iOS Install Banner ─────────────────────────── */
-.ios-banner {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--color-surface);
-  border-top: 1px solid var(--color-border);
-  padding: 14px var(--spacing);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  z-index: 90;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+/* ── App Footer ─────────────────────────────────── */
+.app-footer {
+  text-align: center;
+  padding: 1.5rem 1rem 2rem;
+  font-size: 0.75rem;
+  opacity: 0.5;
 }
 
-.ios-banner[hidden] {
-  display: none;
-}
-
-.ios-banner__text {
-  font-size: 0.85rem;
-  line-height: 1.4;
-}
-
-.ios-banner__icon {
-  font-size: 1rem;
-}
-
-.ios-banner__close {
-  flex-shrink: 0;
-  border: none;
-  background: none;
-  font-size: 1.3rem;
-  color: var(--color-text-muted);
-  cursor: pointer;
-  padding: 4px;
+.app-footer a {
+  color: inherit;
 }
 
 /* ── Tablet+ ─────────────────────────────────────── */

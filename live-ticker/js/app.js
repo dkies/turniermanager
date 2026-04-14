@@ -61,7 +61,6 @@ async function init() {
   setupVisibility();
   setupPullToRefresh();
   setupSwipeNavigation();
-  setupIOSBanner();
 }
 
 async function retryInit() {
@@ -171,21 +170,6 @@ function setupVisibility() {
   });
 }
 
-/* ── iOS Install Banner ─────────────────────────────── */
-function setupIOSBanner() {
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  const isStandalone = window.navigator.standalone === true;
-  if (!isIOS || isStandalone || localStorage.getItem('lt_iosBannerDismissed')) return;
-
-  const banner = document.getElementById('ios-install-banner');
-  banner.hidden = false;
-  banner.querySelector('.ios-banner__close').addEventListener('click', () => {
-    banner.hidden = true;
-    localStorage.setItem('lt_iosBannerDismissed', '1');
-  });
-}
-
 /* ── Pull-to-Refresh ────────────────────────────────── */
 function setupPullToRefresh() {
   const indicator = document.getElementById('pull-indicator');
@@ -290,71 +274,5 @@ function navigateTab(direction) {
   if (nextIdx < 0 || nextIdx >= allTabs.length) return;
   switchGroup(allTabs[nextIdx].id);
 }
-
-/* ── Service Worker Registration ─────────────────── */
-if ('serviceWorker' in navigator) {
-  let swRefreshing = false;
-
-  navigator.serviceWorker.register('/sw.js').then((reg) => {
-    // Wenn ein neuer SW wartet (z.B. ohne skipWaiting), Banner zeigen
-    if (reg.waiting) showUpdateBanner(reg.waiting);
-
-    // Neuer SW wurde installiert und wartet
-    reg.addEventListener('updatefound', () => {
-      const newSW = reg.installing;
-      if (!newSW) return;
-      newSW.addEventListener('statechange', () => {
-        if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-          showUpdateBanner(newSW);
-        }
-      });
-    });
-
-    // Regelmaessig nach Updates suchen (alle 5 Minuten)
-    setInterval(() => reg.update().catch(() => {}), 5 * 60 * 1000);
-  }).catch(() => {});
-
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!swRefreshing) {
-      swRefreshing = true;
-      location.reload();
-    }
-  });
-}
-
-function showUpdateBanner(waitingSW) {
-  const banner = document.getElementById('update-banner');
-  if (!banner || !banner.hidden) return;
-  banner.hidden = false;
-  banner.querySelector('.update-banner__btn').addEventListener('click', () => {
-    waitingSW.postMessage({ type: 'SKIP_WAITING' });
-    banner.hidden = true;
-  }, { once: true });
-}
-
-/* ── PWA Install Prompt ──────────────────────────── */
-let deferredPrompt = null;
-const installBtn = document.getElementById('install-btn');
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  installBtn.hidden = false;
-});
-
-installBtn.addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  if (outcome === 'accepted') {
-    installBtn.hidden = true;
-  }
-  deferredPrompt = null;
-});
-
-window.addEventListener('appinstalled', () => {
-  installBtn.hidden = true;
-  deferredPrompt = null;
-});
 
 document.addEventListener('DOMContentLoaded', init);
