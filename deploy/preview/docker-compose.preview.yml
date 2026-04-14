@@ -85,7 +85,7 @@ services:
     build: ../../sync
     restart: always
     environment:
-      - BACKEND_URL=http://turnier-backend:8080
+      - BACKEND_URLS=${BACKEND_URLS:-http://turnier-backend:8080}
       - FTP_HOST=${FTP_HOST}
       - FTP_USER=${FTP_USER}
       - FTP_PASS=${FTP_PASS}

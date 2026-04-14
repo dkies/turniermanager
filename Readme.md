@@ -38,15 +38,25 @@ docker compose -f deploy/docker-compose.yml start turnier-backend
 
 Der Live-Ticker zeigt Turnierdaten in Echtzeit an. Die Daten fliessen wie folgt:
 
-1. **Backend** (`/export/tournament`, `/export/agegroup/{slug}`) stellt JSON-Daten bereit
-2. **Sync-Service** (`sync/`) holt die Daten periodisch und laedt sie per FTP hoch
+1. **Backend(s)** (`/export/tournament`, `/export/agegroup/{slug}`) stellen JSON-Daten bereit
+2. **Sync-Service** (`sync/`) holt die Daten periodisch von allen Backends, merged sie und laedt sie per FTP hoch
 3. **Live-Ticker** (`live-ticker/`) liest die JSON-Dateien und zeigt sie an
+
+### Multi-Backend-Betrieb
+
+Es koennen mehrere Backend-Instanzen fuer dasselbe Event laufen, wobei jede Instanz
+unterschiedliche Altersgruppen verwaltet. Der Sync-Service holt die Daten von allen
+Backends und fuehrt sie zusammen:
+
+- `tournament.json`: Altersgruppen aus allen Backends werden vereinigt
+- Altersgruppen-JSONs: werden jeweils vom zustaendigen Backend geholt
 
 ### Sync-Service
 
 Der Sync-Service ist ein Python-Script (`sync/sync.py`), das als Docker-Container laeuft:
 
-- Holt alle `SYNC_INTERVAL` Sekunden (Standard: 30) die Export-Daten vom Backend
+- Holt alle `SYNC_INTERVAL` Sekunden (Standard: 30) die Export-Daten von allen Backends
+- Merged `tournament.json` (Vereinigung der Altersgruppen)
 - Laedt `tournament.json` und pro Altersgruppe eine `{slug}.json` per FTP hoch
 - Unterstuetzt TLS-verschluesselte FTP-Verbindungen
 
@@ -54,7 +64,7 @@ Der Sync-Service ist ein Python-Script (`sync/sync.py`), das als Docker-Containe
 
 | Variable | Beschreibung | Standard |
 |---|---|---|
-| `BACKEND_URL` | URL des Backends | `http://turnier-backend:8080` |
+| `BACKEND_URLS` | Kommaseparierte URLs der Backends | `http://turnier-backend:8080` |
 | `FTP_HOST` | FTP-Server Hostname | (erforderlich) |
 | `FTP_USER` | FTP-Benutzername | (erforderlich) |
 | `FTP_PASS` | FTP-Passwort | (erforderlich) |
